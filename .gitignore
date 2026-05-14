@@ -1,0 +1,34 @@
+# --- JAVA / SPRING BOOT ---
+**/target/
+**.class
+**.jar
+**.war
+**.ear
+.mtj.tmp/
+
+# --- FLUTTER / DART ---
+**/.dart_tool/
+**/build/
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/fvm/
+**/ios/.generated/
+**/android/local.properties
+**/android/key.properties
+
+# --- IDEs (Eclipse, VS Code, IntelliJ) ---
+**/.settings/
+**/.project
+**/.classpath
+**/.metadata/
+**/.factorypath
+**/.vscode/
+**/.idea/
+**.iml
+
+# --- SISTEMA / DOCKER ---
+**.DS_Store
+**Thumbs.db
+**.env
+**docker-compose.override.yml

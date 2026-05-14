@@ -1,0 +1,32 @@
+server:
+  port: 8081 #Puerto para Dashboard Management
+  servlet:
+    context-path: /lumentrack/dashboard
+spring:
+  application:
+    name: dashboard-management
+  datasource:
+    url: ${AIVEN_DB_URL}
+    username: ${AIVEN_DB_USER}
+    password: ${AIVEN_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # or 'create', 'create-drop', 'none'
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        dialect: org.hibernate.dialect.MySQLDialect
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always # Esto permite que Actuator verifique la conexión a la DB
+

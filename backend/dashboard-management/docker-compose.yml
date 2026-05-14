@@ -1,0 +1,23 @@
+name: lumentrack-system
+services:
+  lumentrack-dashboard-service:
+    build: .
+    image: lumentrack-dashboard-api:0.2
+    container_name: lumentrack-dashboard-backend-api
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      # Mapeo explícito (opcional pero recomendado)
+      - AIVEN_DB_URL=${AIVEN_DB_URL}
+      - AIVEN_DB_USER=${AIVEN_DB_USER}
+      - AIVEN_DB_PASSWORD=${AIVEN_DB_PASSWORD}
+    # --- CONFIGURACIÓN DEL HEALTHCHECK ---
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s      # Tiempo entre pruebas
+      timeout: 10s       # Tiempo de espera para la respuesta
+      retries: 3         # Cuántos intentos fallidos antes de marcar como unhealthy
+      start_period: 40s  # Tiempo que le damos a Spring para arrancar antes de empezar a probar
+    restart: always
