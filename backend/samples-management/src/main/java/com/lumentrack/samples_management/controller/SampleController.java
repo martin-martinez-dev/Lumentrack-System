@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lumentrack.samples_management.model.Samples;
+import com.lumentrack.samples_management.model.SampleViewModel;
 import com.lumentrack.samples_management.service.SampleService;
 
 @RestController
@@ -31,10 +32,23 @@ public class SampleController {
 	private SampleService sampleService;
 	
 	@PostMapping("/save")
-	public ResponseEntity<Samples> saveSample( @RequestBody Samples sample ) {
-		logger.info( "Start saving for sample: " + sample.getSampleName() );
+	public ResponseEntity<Samples> saveSample( @RequestBody SampleViewModel viewModel ) {
+		logger.info( "Start saving for sample: " + viewModel.getSampleName() );
 		
-		return new ResponseEntity<Samples>( sampleService.saveSample(sample), HttpStatus.CREATED );
+		Samples sample = new Samples();
+		
+		// 2. Transferimos los datos del DTO/ViewModel que mandó Flutter hacia la Entidad
+	    sample.setSampleName(viewModel.getSampleName());
+	    sample.setOrderId(viewModel.getOrderId()); // <--- Aquí recuperas el ID del ComboBox de Flutter
+	    sample.setSamplePhotoUrl(viewModel.getSamplePhotoUrl());
+	    sample.setSamplePhotoId(viewModel.getSamplePhotoId());
+	    sample.setEstimatedDeliveryDate(viewModel.getEstimatedDeliveryDate());
+	    sample.setRealDeliveryDate(viewModel.getRealDeliveryDate());
+	    
+	    // 3. Guardamos la entidad real mediante tu servicio
+	    Samples savedSample = sampleService.saveSample(sample);
+		
+	    return new ResponseEntity<>(savedSample, HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/list")
@@ -66,6 +80,13 @@ public class SampleController {
 		logger.info( "Delete sample for id: " + id );
 		
 		sampleService.deleteSample(id);
+	}
+	
+	@GetMapping("/getSamples")
+	public List<SampleViewModel> getSamplesDetails() {
+		logger.info("Getting the Samples Details for the Samples View");
+		
+		return sampleService.getSampleDetails();
 	}
 	
 }

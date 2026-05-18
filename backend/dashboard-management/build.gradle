@@ -12,6 +12,8 @@ springBoot {
 }
 
 java {
+	sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(25)
 	}
@@ -52,4 +54,23 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    // 1. Configuración para tus Mappers
+    options.compilerArgs << "-Amapstruct.defaultComponentModel=spring"
+    
+    // 2. Asegura cumplimiento estricto de la versión 25
+    options.release = 25
+    
+    // 3. Opcional: Ayuda a debuguear problemas de encoding en Docker (Ubuntu Noble)
+    options.encoding = 'UTF-8'
+}
+
+bootJar {
+    archiveFileName = 'lumentrack-dashboard-backend.jar'
+}
+
+jar {
+    enabled = false
 }

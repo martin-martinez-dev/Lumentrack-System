@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '/models/dashboard_model.dart';
-import '/services/dashboard_service.dart';
+import '../../models/dashboard_model.dart';
+import '../../services/dashboard_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -11,174 +11,147 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-  // Definimos el Future que traerá los datos del backend
-  late Future<DashboardData> _futureDashboard;
   final DashboardService _service = DashboardService();
+  late Future<DashboardData> _futureDashboard;
 
   @override
   void initState() {
     super.initState();
-    // Iniciamos la petición al backend al cargar la pantalla
     _futureDashboard = _service.fetchDashboardData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Lumentrack',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      // Usamos FutureBuilder para manejar los estados: Carga, Error o Éxito
-      body: FutureBuilder<DashboardData>(
-        future: _futureDashboard,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text('No se encontraron datos'));
-          }
+    // Eliminamos Scaffold/AppBar aquí para que use el del MainWrapper
+    return FutureBuilder<DashboardData>(
+      future: _futureDashboard,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return const Center(child: Text('Error de conexión al puerto 8081'));
+        }
 
-          // Si llegamos aquí, tenemos datos exitosos en snapshot.data
-          final data = snapshot.data!;
+        final data = snapshot.data!;
 
-          return Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        return RefreshIndicator(
+          color: const Color(0xFF934B3D),
+          onRefresh: () async {
+            setState(() {
+              _futureDashboard = _service.fetchDashboardData();
+            });
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Panel de Control',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+
+                // Tarjetas de Resumen
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    const Text(
-                      'Panel de Control',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // 1. Cuadros de resumen con datos del servicio
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildSummaryCard(
-                          "Muestras",
-                          "${data.sampleCount}",
-                          const Color(0xFF934B3D),
-                        ),
-                        _buildSummaryCard(
-                          "Producción",
-                          "${data.ordersCount}",
-                          const Color(0xFF3E5B42),
-                        ),
-                        _buildSummaryCard(
-                          "Tareas",
-                          "${data.tasksCount}",
-                          const Color(0xFFD9B44A),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // 2. Gráfica de Pay (se actualiza con valores reales)
-                    SizedBox(
-                      height: 200,
-                      child: PieChart(
-                        PieChartData(
-                          sections: [
-                            PieChartSectionData(
-                              value: data.sampleCount.toDouble(),
-                              color: const Color(0xFF934B3D),
-                              radius: 50,
-                              title: '${data.sampleCount}',
-                            ),
-                            PieChartSectionData(
-                              value: data.ordersCount.toDouble(),
-                              color: const Color(0xFF3E5B42),
-                              radius: 50,
-                              title: '${data.ordersCount}',
-                            ),
-                            PieChartSectionData(
-                              value: data.tasksCount.toDouble(),
-                              color: const Color(0xFFD9B44A),
-                              radius: 50,
-                              title: '${data.tasksCount}',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-                    const Divider(),
-
-                    // 3. Listas Colapsables con nombres del backend
-                    _buildCollapsibleList(
+                    _buildSummaryCard(
                       "Muestras",
-                      data.samplesList,
-                      Icons.lightbulb_outline,
+                      "${data.sampleCount}",
+                      const Color(0xFF934B3D),
                     ),
-                    _buildCollapsibleList(
+                    _buildSummaryCard(
                       "Producción",
-                      data.ordersList,
-                      Icons.inventory_2_outlined,
+                      "${data.ordersCount}",
+                      const Color(0xFF3E5B42),
                     ),
-                    _buildCollapsibleList(
+                    _buildSummaryCard(
                       "Tareas",
-                      data.tasksList,
-                      Icons.grid_view_rounded,
+                      "${data.tasksCount}",
+                      const Color(0xFFD9B44A),
                     ),
                   ],
                 ),
-              ),
+
+                const SizedBox(height: 30),
+
+                // Gráfica de Pay
+                SizedBox(
+                  height: 200,
+                  child: PieChart(
+                    PieChartData(
+                      sections: [
+                        PieChartSectionData(
+                          value: data.sampleCount.toDouble(),
+                          color: const Color(0xFF934B3D),
+                          title: '${data.sampleCount}',
+                          radius: 50,
+                        ),
+                        PieChartSectionData(
+                          value: data.ordersCount.toDouble(),
+                          color: const Color(0xFF3E5B42),
+                          title: '${data.ordersCount}',
+                          radius: 50,
+                        ),
+                        PieChartSectionData(
+                          value: data.tasksCount.toDouble(),
+                          color: const Color(0xFFD9B44A),
+                          title: '${data.tasksCount}',
+                          radius: 50,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+                const Divider(),
+
+                // Listas Colapsables
+                _buildCollapsibleList(
+                  "Muestras",
+                  data.samplesList,
+                  Icons.lightbulb_outline,
+                ),
+                _buildCollapsibleList(
+                  "Producción",
+                  data.ordersList,
+                  Icons.inventory_2_outlined,
+                ),
+                _buildCollapsibleList(
+                  "Tareas",
+                  data.tasksList,
+                  Icons.grid_view_rounded,
+                ),
+              ],
             ),
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.lightbulb),
-            label: 'Muestras',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2),
-            label: 'Producción',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_outlined),
-            label: 'Admin',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // Métodos auxiliares de diseño (se mantienen igual pero reciben datos dinámicos)
+  // Métodos _buildSummaryCard y _buildCollapsibleList se mantienen iguales...
   Widget _buildSummaryCard(String title, String count, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.05),
       ),
       child: Column(
         children: [
-          Text(title, style: const TextStyle(fontSize: 12)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          ),
           Text(
             count,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -194,15 +167,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     IconData icon,
   ) {
     return ExpansionTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Icon(icon, color: const Color(0xFF934B3D)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       children: items.isEmpty
-          ? [const ListTile(title: Text("Sin elementos"))]
+          ? [const ListTile(title: Text("Sin elementos pendientes"))]
           : items
                 .map(
                   (item) => ListTile(
                     title: Text(item),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: const Icon(Icons.chevron_right, size: 18),
                   ),
                 )
                 .toList(),

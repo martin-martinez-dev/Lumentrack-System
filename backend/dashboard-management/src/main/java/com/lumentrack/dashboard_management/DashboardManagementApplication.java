@@ -31,7 +31,7 @@ public class DashboardManagementApplication {
 		System.out.println("                      \\__,_|_|\\__,_|                      ");
 		System.out.println("                                                          ");
 		System.out.println("                                                          ");
-		System.out.println("Powered by ZBK Development");
+		System.out.println("                Powered by ZBK Development                ");
 		
 		SpringApplication.run(DashboardManagementApplication.class, args);
 	}

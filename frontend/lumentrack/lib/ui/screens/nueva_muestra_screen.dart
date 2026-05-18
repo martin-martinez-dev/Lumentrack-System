@@ -19,7 +19,7 @@ class _NuevaMuestraScreenState extends State<NuevaMuestraScreen> {
   final _dateCtrl = TextEditingController();
 
   File? _imageFile;
-  String? _selectedProjectId;
+  String? _selectedOrderId;
   String _clientName = ""; // Campo no editable
   DateTime? _rawDate;
 
@@ -43,7 +43,7 @@ class _NuevaMuestraScreenState extends State<NuevaMuestraScreen> {
 
   // Lógica de guardado e integración con Cloudinary
   Future<void> _saveSample() async {
-    if (_imageFile == null || _selectedProjectId == null) {
+    if (_imageFile == null || _selectedOrderId == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Falta imagen o proyecto")));
@@ -67,7 +67,7 @@ class _NuevaMuestraScreenState extends State<NuevaMuestraScreen> {
 
       // 2. Guardar Muestra en base de datos
       final sampleData = {
-        'projectId': int.parse(_selectedProjectId!),
+        'orderId': int.parse(_selectedOrderId!),
         'sampleName': _nameCtrl.text,
         'estimatedDeliveryDate': DateFormat(
           'yyyy-MM-dd HH:mm:ss',
@@ -134,7 +134,7 @@ class _NuevaMuestraScreenState extends State<NuevaMuestraScreen> {
                     .toList(),
                 onChanged: (val) {
                   setState(() {
-                    _selectedProjectId = val;
+                    _selectedOrderId = val;
                     _clientName = _projects.firstWhere(
                       (p) => p['id'] == val,
                     )['cliente']!;

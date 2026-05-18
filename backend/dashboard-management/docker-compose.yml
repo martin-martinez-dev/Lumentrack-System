@@ -1,7 +1,9 @@
 name: lumentrack-system
 services:
   lumentrack-dashboard-service:
-    build: .
+    build:
+      context: ./backend/lumentrack-dashboard-service
+      dockerfile: Dockerfile
     image: lumentrack-dashboard-api:0.2
     container_name: lumentrack-dashboard-backend-api
     ports:
@@ -15,7 +17,7 @@ services:
       - AIVEN_DB_PASSWORD=${AIVEN_DB_PASSWORD}
     # --- CONFIGURACIÓN DEL HEALTHCHECK ---
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 30s      # Tiempo entre pruebas
       timeout: 10s       # Tiempo de espera para la respuesta
       retries: 3         # Cuántos intentos fallidos antes de marcar como unhealthy

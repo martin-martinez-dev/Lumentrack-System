@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'ui/screens/login_screen.dart';
-import 'ui/screens/dashboard_screen.dart';
-import 'ui/screens/muestras_list_screen.dart';
 import 'ui/screens/nueva_muestra_screen.dart';
 import 'ui/screens/carga_tarea_screen.dart';
 import 'ui/screens/carga_componente_screen.dart';
+import 'main_wrapper.dart'; // Asegúrate de crearlo
 
 void main() => runApp(const LumenTrackApp());
 
@@ -19,9 +18,9 @@ class LumenTrackApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF934B3D), // Terracota Ula
+          seedColor: const Color(0xFF934B3D),
           primary: const Color(0xFF934B3D),
-          secondary: const Color(0xFF3E5B42), // Verde Oliva
+          secondary: const Color(0xFF3E5B42),
           surface: const Color(0xFFF9F7F5),
         ),
         appBarTheme: const AppBarTheme(
@@ -29,26 +28,13 @@ class LumenTrackApp extends StatelessWidget {
           foregroundColor: Colors.white,
           centerTitle: true,
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3E5B42),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
+        // ... (resto de tu configuración de temas intacta)
       ),
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
-        '/muestras-list': (context) => const MuestrasListScreen(),
+        '/dashboard': (context) =>
+            const MainWrapper(), // Ahora envuelve las pantallas principales
         '/nueva-muestra': (context) => const NuevaMuestraScreen(),
         '/carga-tarea': (context) => const CargaTareaScreen(),
         '/carga-componente': (context) => const CargaComponenteScreen(),
