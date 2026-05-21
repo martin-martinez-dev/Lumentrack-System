@@ -63,4 +63,10 @@ public class TaskController {
 		service.deleteTasks(id);
 	}
 	
+	@GetMapping("/getTasksDetails/{id}")
+	public Tasks getTasksDetails( @PathVariable("id") Integer id ) {
+		logger.info("Getting task details for id " + id);
+		return service.getTaskDetails(id);
+	}
+	
 }

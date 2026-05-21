@@ -1,13 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../models/samples_view_model.dart';
+import 'package:intl/intl.dart';
+import '../../models/samples_model.dart';
 import '../../models/orders_model.dart';
+import '../../models/cloudinary_response_model.dart';
 import '../../services/samples_service.dart';
-import '../../services/orders_service.dart'; // <--- Importamos tu servicio de órdenes
+import '../../services/orders_service.dart';
+import '../../services/images_service.dart';
+import 'component_form_screen.dart'; // 🟢 Importación integrada
 
 class SampleFormScreen extends StatefulWidget {
-  final SampleView? sample;
+  final Sample? sample;
 
   const SampleFormScreen({super.key, this.sample});
 
@@ -18,24 +22,29 @@ class SampleFormScreen extends StatefulWidget {
 class _SampleFormScreenState extends State<SampleFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Inyección de ambos servicios independientes
   final SamplesService _samplesService = SamplesService();
-  final OrdersService _ordersService = OrdersService(); // <--- Instanciado aquí
+  final OrdersService _ordersService = OrdersService();
+  final ImagesService _imagesService = ImagesService();
 
-  // Controladores para los campos de texto
   late TextEditingController _nameController;
-  late TextEditingController _dateController;
+  late TextEditingController _estimatedDateController;
+  late TextEditingController _realDateController;
 
-  // Variables para el control del ComboBox de Órdenes
   int? _selectedOrderId;
   List<Order> _availableOrders = [];
   bool _isLoadingOrders = true;
 
-  // Variables de control de estado de la UI
   bool _isEditing = false;
   bool _isNew = false;
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  bool _isUploadingToCloudinary = false;
+  String? _uploadedPhotoUrl;
+  String? _uploadedPhotoId;
+
+  // State local para renderizar de manera reactiva la lista de componentes de la muestra
+  List<dynamic> _associatedComponents = [];
 
   @override
   void initState() {
@@ -46,29 +55,37 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
     _nameController = TextEditingController(
       text: widget.sample?.sampleName ?? '',
     );
-    _dateController = TextEditingController(
+    _estimatedDateController = TextEditingController(
       text: widget.sample?.estimatedDeliveryDate ?? '',
     );
 
+    String inicialRealDate = widget.sample?.realDeliveryDate ?? '';
+    if (inicialRealDate.toLowerCase().contains('sin fecha')) {
+      inicialRealDate = '';
+    }
+    _realDateController = TextEditingController(text: inicialRealDate);
+
     if (!_isNew) {
       _selectedOrderId = widget.sample?.orderId;
+      _uploadedPhotoUrl = widget.sample?.samplePhotoUrl;
+      _uploadedPhotoId = widget.sample?.samplePhotoId;
+      // Asignamos los componentes que vienen directo en el objeto unificado de la Muestra
+      _associatedComponents = widget.sample?.componentList ?? [];
     }
 
-    // Cargamos el catálogo usando el servicio correcto
     _loadOrdersCatalog();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _dateController.dispose();
+    _estimatedDateController.dispose();
+    _realDateController.dispose();
     super.dispose();
   }
 
-  // Carga inicial utilizando OrdersService
   Future<void> _loadOrdersCatalog() async {
     try {
-      // Usamos el servicio de órdenes para traer el listado desde el controlador de Java
       final orders = await _ordersService.fetchOrders();
       setState(() {
         _availableOrders = orders;
@@ -78,7 +95,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       setState(() => _isLoadingOrders = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error al cargar catálogo de órdenes: $e"),
+          content: Text("Error al cargar órdenes de producción: $e"),
           backgroundColor: Colors.red,
         ),
       );
@@ -87,13 +104,11 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
 
   Future<void> _takePicture() async {
     if (!_isEditing) return;
-
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.camera,
-      maxWidth: 1000,
+      maxWidth: 1200,
       imageQuality: 85,
     );
-
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -101,8 +116,63 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
     }
   }
 
+  Future<void> _uploadImageToCloudinary() async {
+    if (_imageFile == null) return;
+    setState(() {
+      _isUploadingToCloudinary = true;
+    });
+    try {
+      CloudinaryResponse response = await _imagesService.uploadImage(
+        _imageFile!,
+        "samples",
+      );
+      setState(() {
+        _uploadedPhotoUrl = response.url;
+        _uploadedPhotoId = response.publicId;
+        _imageFile = null;
+        _isUploadingToCloudinary = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Imagen vinculada con éxito"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      setState(() => _isUploadingToCloudinary = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error en Cloudinary: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<DateTime?> _askDateOnly(BuildContext context) async {
+    return await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF3E5B42), // Verde Oliva Lumentrack
+            onPrimary: Colors.white,
+            onSurface: Colors.black87,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool canUpload =
+        _isEditing && !_isUploadingToCloudinary && _imageFile != null;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -120,9 +190,13 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                   _isEditing = !_isEditing;
                   if (!_isEditing) {
                     _nameController.text = widget.sample?.sampleName ?? '';
-                    _dateController.text =
+                    _estimatedDateController.text =
                         widget.sample?.estimatedDeliveryDate ?? '';
+                    _realDateController.text =
+                        widget.sample?.realDeliveryDate ?? '';
                     _imageFile = null;
+                    _uploadedPhotoUrl = widget.sample?.samplePhotoUrl;
+                    _uploadedPhotoId = widget.sample?.samplePhotoId;
                   }
                 });
               },
@@ -130,39 +204,101 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         ],
       ),
       body: _isLoadingOrders
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Color(0xFF3E5B42)),
+                  SizedBox(height: 16),
+                  Text(
+                    "Cargando datos de la muestra...",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
               child: Form(
                 key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildPhotoSection(),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: canUpload ? _uploadImageToCloudinary : null,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: canUpload
+                                ? const Color(0xFF3E5B42)
+                                : Colors.grey[300]!,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        icon: _isUploadingToCloudinary
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF3E5B42),
+                                ),
+                              )
+                            : Icon(
+                                Icons.cloud_upload_outlined,
+                                color: canUpload
+                                    ? const Color(0xFF3E5B42)
+                                    : Colors.grey,
+                              ),
+                        label: Text(
+                          _isUploadingToCloudinary
+                              ? "SUBIENDO..."
+                              : "SUBIR IMAGEN A CLOUDINARY",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: canUpload
+                                ? const Color(0xFF3E5B42)
+                                : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 25),
 
                     _buildTextField(
                       controller: _nameController,
                       label: "Nombre de la Luminaria",
                       icon: Icons.lightbulb_outline,
+                      enabled: _isEditing,
                     ),
                     const SizedBox(height: 15),
 
-                    // COMBO BOX: ÓRDENES DE PRODUCCIÓN
                     DropdownButtonFormField<int>(
                       value: _selectedOrderId,
                       disabledHint: Text(
-                        _availableOrders
-                            .firstWhere(
-                              (o) => o.orderId == _selectedOrderId,
-                              orElse: () => Order(
-                                orderNumber: 0,
-                                orderName:
-                                    widget.sample?.orderName ?? 'Sin Orden',
-                                clientId: 0,
-                                estimatedDeliveryDate: '',
-                              ),
-                            )
-                            .orderName,
+                        _availableOrders.isEmpty
+                            ? (widget.sample?.orderName ?? 'Sin Orden')
+                            : _availableOrders
+                                  .firstWhere(
+                                    (o) => o.orderId == _selectedOrderId,
+                                    orElse: () => Order(
+                                      orderNumber: 0,
+                                      orderName:
+                                          widget.sample?.orderName ??
+                                          'Sin Orden',
+                                      clientId: 0,
+                                      estimatedDeliveryDate: '',
+                                    ),
+                                  )
+                                  .orderName,
                         style: const TextStyle(color: Colors.black87),
                       ),
                       decoration: InputDecoration(
@@ -177,40 +313,71 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                         fillColor: Colors.grey[100],
                         filled: !_isNew,
                       ),
-                      onChanged: (_isNew && _isEditing)
-                          ? (int? newValue) {
-                              setState(() {
-                                _selectedOrderId = newValue;
-                              });
-                            }
+                      onChanged: _isNew
+                          ? (int? value) =>
+                                setState(() => _selectedOrderId = value)
                           : null,
                       validator: (value) =>
-                          value == null ? "Debes seleccionar una orden" : null,
-                      items: _availableOrders.map<DropdownMenuItem<int>>((
-                        Order order,
-                      ) {
-                        return DropdownMenuItem<int>(
-                          value: order.orderId,
-                          child: Text(order.orderName),
-                        );
-                      }).toList(),
+                          value == null ? "Debes vincular una orden" : null,
+                      items: _availableOrders
+                          .map(
+                            (o) => DropdownMenuItem(
+                              value: o.orderId,
+                              child: Text(o.orderName),
+                            ),
+                          )
+                          .toList(),
                     ),
-
                     const SizedBox(height: 15),
 
                     _buildTextField(
-                      controller: _dateController,
-                      label: "Fecha de Entrega (yyyy-MM-dd HH:mm:ss)",
+                      controller: _estimatedDateController,
+                      label: "Fecha Estimada de Entrega",
                       icon: Icons.calendar_today,
+                      enabled: _isNew,
+                      readOnly: true,
+                      onTap: _isNew
+                          ? () async {
+                              final date = await _askDateOnly(context);
+                              if (date != null) {
+                                setState(() {
+                                  _estimatedDateController.text = DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(date);
+                                });
+                              }
+                            }
+                          : null,
                     ),
+                    const SizedBox(height: 15),
 
-                    const SizedBox(height: 40),
+                    _buildTextField(
+                      controller: _realDateController,
+                      label: "Fecha Real de Entrega",
+                      icon: Icons.calendar_month_outlined,
+                      enabled: _isEditing,
+                      readOnly: true,
+                      requiredField: false,
+                      onTap: _isEditing
+                          ? () async {
+                              final date = await _askDateOnly(context);
+                              if (date != null) {
+                                setState(() {
+                                  _realDateController.text = DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(date);
+                                });
+                              }
+                            }
+                          : null,
+                    ),
+                    const SizedBox(height: 30),
 
                     if (_isEditing)
                       ElevatedButton(
                         onPressed: _processData,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF934B3D),
+                          backgroundColor: const Color(0xFF934B3D), // Terracota
                           minimumSize: const Size(double.infinity, 55),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -225,6 +392,60 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                           ),
                         ),
                       ),
+
+                    // COMPONENTES ASOCIADOS: Se despliega si la muestra ya está registrada en base de datos
+                    if (!_isNew) ...[
+                      const Divider(height: 50, thickness: 1.5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Componentes Asignados",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3E5B42),
+                                ),
+                              ),
+                              Text(
+                                "Insumos vinculados a esta muestra (${_associatedComponents.length})",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // 🟢 Control seguro: El botón solo se muestra si la muestra no es nueva
+                          IconButton(
+                            icon: const Icon(
+                              Icons.add_circle,
+                              color: Color(0xFF3E5B42),
+                              size: 32,
+                            ),
+                            onPressed: () async {
+                              // 🟢 Lógica habilitada con el refresco automático reactivo
+                              final bool? actualizado = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ComponentFormScreen(
+                                    sampleId: widget.sample!.sampleId!,
+                                  ),
+                                ),
+                              );
+                              if (actualizado == true) {
+                                _recargarMuestra();
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                      _buildComponentsList(),
+                    ],
                   ],
                 ),
               ),
@@ -232,26 +453,146 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
     );
   }
 
-  Widget _buildPhotoSection() {
-    return Stack(
-      alignment: Alignment.bottomRight,
-      children: [
-        Container(
-          height: 250,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey[300]!),
+  Widget _buildComponentsList() {
+    if (_associatedComponents.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: const Column(
+          children: [
+            Icon(Icons.layers_clear_outlined, color: Colors.grey, size: 40),
+            SizedBox(height: 8),
+            Text(
+              "Sin componentes. Presiona '+' para agregar.",
+              style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _associatedComponents.length,
+      itemBuilder: (context, index) {
+        final component = _associatedComponents[index];
+
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          elevation: 1.5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: ClipRRect(
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            leading: component.componentPhotoUrl.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      component.componentPhotoUrl,
+                      width: 55,
+                      height: 55,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Container(
+                    width: 55,
+                    height: 55,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3E5B42).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.token_outlined,
+                      color: Color(0xFF3E5B42),
+                    ),
+                  ),
+            title: Text(
+              component.componentName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                "${component.componentType} • Encargado: ${component.ulaLightEmployee}",
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              ),
+            ),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: Colors.grey,
+            ),
+            onTap: () async {
+              final int? targetId = component.componentId;
+              if (targetId == null) return;
+
+              // TODO: Descomentar al implementar la vista responsiva de detalles
+              // final bool? refresh = await Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => ComponentDetailResponsivoScreen(componentId: targetId),
+              //   ),
+              // );
+              // if (refresh == true) { _recargarMuestra(); }
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // Método auxiliar para recargar la información de la muestra desde el backend al regresar de un módulo hijo
+  Future<void> _recargarMuestra() async {
+    if (widget.sample?.sampleId == null) return;
+    try {
+      final sampleActualizada = await _samplesService.getSampleById(
+        widget.sample!.sampleId!,
+      );
+      setState(() {
+        _associatedComponents = sampleActualizada.componentList;
+      });
+    } catch (e) {
+      debugPrint("Error al sincronizar componentes de la muestra: $e");
+    }
+  }
+
+  Widget _buildPhotoSection() {
+    return Container(
+      height: 250,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: _imageFile != null
-                ? Image.file(_imageFile!, fit: BoxFit.cover)
-                : (widget.sample?.samplePhotoUrl.isNotEmpty ?? false
+                ? Image.file(
+                    _imageFile!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  )
+                : (_uploadedPhotoUrl != null && _uploadedPhotoUrl!.isNotEmpty
                       ? Image.network(
-                          widget.sample!.samplePhotoUrl,
+                          _uploadedPhotoUrl!,
                           fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
                         )
                       : const Center(
                           child: Icon(
@@ -261,18 +602,18 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                           ),
                         )),
           ),
-        ),
-        if (_isEditing)
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: FloatingActionButton(
-              mini: true,
-              backgroundColor: const Color(0xFF3E5B42),
-              onPressed: _takePicture,
-              child: const Icon(Icons.camera_alt, color: Colors.white),
+          if (_isEditing)
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: FloatingActionButton(
+                mini: true,
+                backgroundColor: const Color(0xFF3E5B42),
+                onPressed: _takePicture,
+                child: const Icon(Icons.camera_alt, color: Colors.white),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -280,22 +621,29 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required bool enabled,
+    bool readOnly = false,
+    bool requiredField = true,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
       controller: controller,
-      enabled: _isEditing,
+      enabled: enabled,
+      readOnly: readOnly,
+      onTap: onTap,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFF3E5B42)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: !_isEditing,
-        fillColor: Colors.grey[100],
+        filled: !enabled,
+        fillColor: enabled ? Colors.white : Colors.grey[100],
       ),
-      validator: (value) => value!.isEmpty ? "Este campo es obligatorio" : null,
+      validator: (value) => (requiredField && (value == null || value.isEmpty))
+          ? "Este campo es obligatorio"
+          : null,
     );
   }
 
-  // Persistencia utilizando SamplesService
   void _processData() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -310,36 +658,28 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         (o) => o.orderId == _selectedOrderId,
       );
 
-      final sampleData = SampleView(
+      final sampleData = Sample(
         sampleId: widget.sample?.sampleId,
         sampleName: _nameController.text,
         orderId: _selectedOrderId!,
         orderName: selectedOrderObj.orderName,
-        samplePhotoUrl: widget.sample?.samplePhotoUrl ?? '',
-        samplePhotoId: widget.sample?.samplePhotoId ?? '',
-
-        //Se convierte el formato de fecha
+        samplePhotoUrl: _uploadedPhotoUrl ?? '',
+        samplePhotoId: _uploadedPhotoId ?? '',
         estimatedDeliveryDate:
-            SampleView.formatToServer(_dateController.text) ?? '',
-        realDeliveryDate:
-            SampleView.formatToServer(
-              widget.sample?.realDeliveryDate ?? 'Sin fecha',
-            ) ??
-            '',
+            Sample.formatToServer(_estimatedDateController.text) ?? '',
+        realDeliveryDate: _realDateController.text.isNotEmpty
+            ? (Sample.formatToServer(_realDateController.text) ?? '')
+            : 'Sin fecha',
+        componentList:
+            widget.sample?.componentList ??
+            [], // Preservamos los componentes en la mutación local
       );
 
-      print("=== ENVIANDO DATOS AL BACKEND ===");
-      print("Modo: ${_isNew ? 'NUEVO' : 'EDICIÓN (UPDATE)'}");
-      print("JSON a enviar: ${sampleData.toJson()}");
-
       if (_isNew) {
-        // El guardado sigue perteneciendo al microservicio de muestras
         await _samplesService.createSample(sampleData);
       } else {
         await _samplesService.updateSample(sampleData);
       }
-
-      print("=== PETICIÓN COMPLETADA CON ÉXITO ===");
 
       Navigator.pop(context);
       Navigator.pop(context, true);
@@ -347,7 +687,9 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _isNew ? "Muestra registrada con éxito" : "Cambios guardados",
+            _isNew
+                ? "Muestra registrada con éxito"
+                : "Cambios guardados con éxito",
           ),
         ),
       );
@@ -355,7 +697,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error de comunicación: $e"),
+          content: Text("Error en la petición: $e"),
           backgroundColor: Colors.red,
         ),
       );

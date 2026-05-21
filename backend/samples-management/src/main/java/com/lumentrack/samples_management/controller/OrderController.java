@@ -63,4 +63,10 @@ public class OrderController {
 		service.deleteProjectById(id);
 	}
 	
+	@GetMapping("/getOrderDetails/{id}")
+	public Orders getOrderDetails( @PathVariable("id") Integer id ) {
+		logger.info("Retrieving the details for the order with Id: " + id);
+		return service.getOrderDetails(id);
+	}
+	
 }

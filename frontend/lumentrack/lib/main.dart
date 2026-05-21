@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ui/screens/login_screen.dart';
-import 'ui/screens/nueva_muestra_screen.dart';
+//import 'ui/screens/nueva_muestra_screen.dart';
 import 'ui/screens/carga_tarea_screen.dart';
 import 'ui/screens/carga_componente_screen.dart';
 import 'main_wrapper.dart'; // Asegúrate de crearlo
@@ -35,7 +35,7 @@ class LumenTrackApp extends StatelessWidget {
         '/': (context) => const LoginScreen(),
         '/dashboard': (context) =>
             const MainWrapper(), // Ahora envuelve las pantallas principales
-        '/nueva-muestra': (context) => const NuevaMuestraScreen(),
+        //'/nueva-muestra': (context) => const NuevaMuestraScreen(),
         '/carga-tarea': (context) => const CargaTareaScreen(),
         '/carga-componente': (context) => const CargaComponenteScreen(),
       },

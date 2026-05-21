@@ -1,6 +1,7 @@
 package com.lumentrack.samples_management.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,10 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.lumentrack.samples_management.exception.ResourceNotFoundException;
+import com.lumentrack.samples_management.model.Components;
 import com.lumentrack.samples_management.model.Orders;
-import com.lumentrack.samples_management.model.SampleViewModel;
 import com.lumentrack.samples_management.model.Samples;
+import com.lumentrack.samples_management.repository.ComponentsRepository;
 import com.lumentrack.samples_management.repository.OrdersRepository;
 import com.lumentrack.samples_management.repository.SamplesRepository;
 
@@ -29,6 +33,9 @@ public class SampleService {
 	
 	@Autowired
 	private OrdersRepository orderRepository;
+	
+	@Autowired
+	private ComponentsRepository componentsRepository;
 	
 	public Samples saveSample( Samples sample ) {
 		logger.info( "Saving sample on service: " + sample.getSampleName() );
@@ -48,10 +55,14 @@ public class SampleService {
 		return repository.findById(id);
 	}
 	
+	@Transactional
 	public Samples updateSampleDeliveryDate(Samples updatedSample) {
 		logger.info( "Updating information for the sample: " + updatedSample.getSampleName() );
 		
 		return repository.findById(updatedSample.getSampleId()).map(sample -> {
+			sample.setSampleName( updatedSample.getSampleName() );
+			sample.setSamplePhotoId( updatedSample.getSamplePhotoId() );
+			sample.setSamplePhotoUrl( updatedSample.getSamplePhotoUrl() );
 			sample.setRealDeliveryDate( updatedSample.getRealDeliveryDate() );
 			return repository.save( sample );
 		}).orElseThrow( () -> new RuntimeException("Muestra no encontrada") );
@@ -66,10 +77,8 @@ public class SampleService {
 		repository.deleteById( sample.getSampleId() );
 	}
 	
-	public List<SampleViewModel> getSampleDetails() {
+	public List<Samples> getSampleDetailsList() {
 		logger.info("Getting the Samples Details");
-		
-		List<SampleViewModel> samples = new ArrayList<SampleViewModel>();
 		
 		List<Samples> allSamples = repository.findAll();
 		List<Orders> allOrders = orderRepository.findAll();
@@ -85,7 +94,7 @@ public class SampleService {
             String orderName = (associatedOrder != null) ? associatedOrder.getOrderName() : "Orden No Encontrada";
 
             // Construimos el ViewModel de forma fluida gracias a Lombok
-            return SampleViewModel.builder()
+            return Samples.builder()
                     .sampleId(sample.getSampleId())
                     .sampleName(sample.getSampleName())
                     .orderId(sample.getOrderId())
@@ -96,6 +105,30 @@ public class SampleService {
                     .realDeliveryDate(sample.getRealDeliveryDate())
                     .build();
         }).collect(Collectors.toList());
+		
+	}
+	
+	public Samples getSampleDetails( Integer sampleId ) {
+		Samples sample = repository.findById(sampleId).orElseThrow(() -> new ResourceNotFoundException(
+                "La muestra con id " + sampleId + " no existe."
+            ));
+		
+		Optional<Orders> order = orderRepository.findById( sample.getOrderId() );
+		
+		List<Components> componentList = componentsRepository.findBySampleId(sampleId);
+		List<Components> safeComponents = ( componentList != null ) ? componentList : Collections.emptyList();
+		
+		return Samples.builder()
+				.sampleId( sample.getSampleId() )
+				.sampleName( sample.getSampleName() )
+				.orderId( sample.getOrderId() )
+				.orderName( order.get().getOrderName() )
+				.samplePhotoUrl( sample.getSamplePhotoUrl() )
+				.samplePhotoId( sample.getSamplePhotoId() )
+				.estimatedDeliveryDate( sample.getEstimatedDeliveryDate() )
+				.realDeliveryDate( sample.getRealDeliveryDate() )
+				.componentList( safeComponents )
+				.build();
 		
 	}
 	

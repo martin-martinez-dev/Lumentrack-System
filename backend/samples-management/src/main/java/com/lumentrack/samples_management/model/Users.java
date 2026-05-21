@@ -1,16 +1,11 @@
 package com.lumentrack.samples_management.model;
 
-import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,37 +16,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // Genera el constructor vacío obligatorio para Jackson
 @AllArgsConstructor // Genera el constructor con todos los campos
 @Builder // Te permite mapear y construir este objeto de forma fluida
-@Table(name="tasks")
-public class Tasks {
+@Table(name="users")
+public class Users {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer taskId;
+	private Integer userId;
 	
 	@Column( nullable = false )
-	private String taskName;
+	private String userName;
 	
 	@Column( nullable = false )
-	private String taskDescription;
+	private String userLastName;
 	
 	@Column( nullable = false )
-	private Integer componentId;
-	
-	@Transient
-	private String componentName;
-	
-	@Column( nullable = false )
-	private String taskPhotoUrl;
-	
-	@Column( nullable = false )
-	private String taskPhotoId;
-	
-	@Column( nullable = false )
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime taskEstimatedDate;
+	private String userMail;
 	
 	@Column( nullable = true )
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime taskRealDateTime;
+	private String userPhoneNumber;
+	
+	@Column( nullable = false )
+	private String userRole;
 	
 }

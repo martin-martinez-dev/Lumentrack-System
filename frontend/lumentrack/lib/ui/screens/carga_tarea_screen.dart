@@ -19,19 +19,19 @@ class _CargaTareaScreenState extends State<CargaTareaScreen> {
   Future<void> _save() async {
     if (_selectedDate == null) return;
 
-    final task = Task(
-      taskName: _nameCtrl.text,
-      taskDescription: _descCtrl.text,
-      taskEstimatedDate: _selectedDate!,
-    );
+    //final task = Task(
+    //  taskName: _nameCtrl.text,
+    //  taskDescription: _descCtrl.text,
+    //  taskEstimatedDate: _selectedDate!,
+    //);
 
-    final res = await http.post(
-      Uri.parse("${ApiConfig.tasks}save"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(task.toJson()),
-    );
+    //final res = await http.post(
+    //  Uri.parse("${ApiConfig.tasks}save"),
+    //  headers: {'Content-Type': 'application/json'},
+    //  body: jsonEncode(task.toJson()),
+    //);
 
-    if (res.statusCode == 200 && mounted) Navigator.pop(context);
+    //if (res.statusCode == 200 && mounted) Navigator.pop(context);
   }
 
   @override

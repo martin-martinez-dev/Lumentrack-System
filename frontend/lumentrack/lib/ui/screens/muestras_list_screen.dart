@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/samples_view_model.dart';
+import '../../models/samples_model.dart';
 import '../../services/samples_service.dart';
-import 'sample_form_screen.dart'; // <--- 1. IMPORTAMOS LA PANTALLA DE EDICIÓN Y DETALLE
+import 'sample_form_screen.dart';
 
 class MuestrasListScreen extends StatefulWidget {
   const MuestrasListScreen({super.key});
@@ -12,188 +12,135 @@ class MuestrasListScreen extends StatefulWidget {
 
 class _MuestrasListScreenState extends State<MuestrasListScreen> {
   final SamplesService _samplesService = SamplesService();
-  late Future<List<SampleView>> _futureSamples;
+  late Future<List<Sample>> _futureSamples;
 
   @override
   void initState() {
     super.initState();
-    _futureSamples = _samplesService.fetchSampleDetails();
+    _refrescarListado();
   }
 
-  // Función centralizada para refrescar el estado del FutureBuilder
   void _refrescarListado() {
     setState(() {
       _futureSamples = _samplesService.fetchSampleDetails();
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<SampleView>>(
-      future: _futureSamples,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return _buildErrorWidget(snapshot.error.toString());
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return _buildEmptyWidget();
-        }
-
-        final samples = snapshot.data!;
-
-        return RefreshIndicator(
-          color: const Color(0xFF934B3D),
-          onRefresh: () async => _refrescarListado(),
-          child: samples.isEmpty
-              ? const Center(child: Text("No hay muestras disponibles"))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: samples.length,
-                  itemBuilder: (context, index) {
-                    final sample = samples[index];
-                    return _buildSampleCard(sample);
-                  },
-                ),
-        );
-      },
+  void _nuevaMuestra() async {
+    final seGuardo = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const SampleFormScreen()),
     );
+    if (seGuardo == true) {
+      _refrescarListado();
+    }
   }
 
-  Widget _buildSampleCard(SampleView sample) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Imagen de la luminaria (Corregida y centrada a todo lo ancho)
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-            child: sample.samplePhotoUrl.isNotEmpty
-                ? Image.network(
-                    sample.samplePhotoUrl,
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, e, s) => Container(
-                      height: 150,
-                      width: double.infinity,
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(
-                          Icons.broken_image_outlined,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(
-                    height: 150,
-                    width: double.infinity,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: Icon(
-                        Icons.lightbulb_outline,
-                        size: 50,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-          ),
-
-          // 2. Información Principal (Cuerpo del Card)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  sample.sampleName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "Orden: ${sample.orderName}",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const Divider(height: 24),
-
-                // 3. SECCIÓN INFERIOR: Acciones e Información de Entrega
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Entrega estimada:",
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                          Text(
-                            sample
-                                .formattedEstimatedDeliveryDate, // <--- Usamos tu getter formateado dd/MM/yyyy
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF3E5B42),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Icono de acción que dispara la navegación integrada
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_circle_right_outlined,
-                        color: Color(0xFF934B3D),
-                        size: 28,
-                      ),
-                      onPressed: () {
-                        // 2. LLAMADA A LA FUNCIÓN DE NAVEGACIÓN REAL
-                        _verDetallesMuestra(sample);
-                      },
-                      tooltip: 'Ver Detalles y Editar',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 3. LOGICA DE TRANSICIÓN INTERACTIVA CON RETORNO ASÍNCRONO
-  void _verDetallesMuestra(SampleView sample) async {
-    // Viaja a la pantalla enviando el objeto actual de la tarjeta
-    final seModifico = await Navigator.push<bool>(
+  void _editarMuestra(Sample sample) async {
+    final seActualizo = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (context) => SampleFormScreen(sample: sample)),
     );
-
-    // Si al cerrar el formulario devolvió 'true' (exito en /update), refrescamos
-    if (seModifico == true) {
+    if (seActualizo == true) {
       _refrescarListado();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Listado de Muestras",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF3E5B42),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF934B3D),
+        tooltip: 'Registrar Nueva Muestra',
+        onPressed: _nuevaMuestra,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
+      body: FutureBuilder<List<Sample>>(
+        future: _futureSamples,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return _buildErrorWidget(snapshot.error.toString());
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return _buildEmptyWidget();
+          }
+
+          final samples = snapshot.data!;
+
+          return RefreshIndicator(
+            color: const Color(0xFF934B3D),
+            onRefresh: () async => _refrescarListado(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12.0),
+              itemCount: samples.length,
+              itemBuilder: (context, index) {
+                final sample = samples[index];
+                return Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(12.0),
+                    leading: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: sample.samplePhotoUrl.isNotEmpty
+                            ? Image.network(
+                                sample.samplePhotoUrl,
+                                fit: BoxFit.cover,
+                              )
+                            : const Icon(
+                                Icons.broken_image_outlined,
+                                color: Colors.grey,
+                              ),
+                      ),
+                    ),
+                    title: Text(
+                      sample.sampleName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text("Orden: ${sample.orderName}"),
+                        Text("Entrega Real: ${sample.realDeliveryDate}"),
+                      ],
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Color(0xFF3E5B42),
+                    ),
+                    onTap: () => _editarMuestra(sample),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildErrorWidget(String error) {
@@ -206,7 +153,7 @@ class _MuestrasListScreenState extends State<MuestrasListScreen> {
             const Icon(Icons.error_outline, size: 60, color: Colors.redAccent),
             const SizedBox(height: 16),
             const Text(
-              'Error al cargar muestras',
+              'Error de comunicación',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -228,7 +175,10 @@ class _MuestrasListScreenState extends State<MuestrasListScreen> {
 
   Widget _buildEmptyWidget() {
     return const Center(
-      child: Text("No hay muestras registradas en la base de datos."),
+      child: Text(
+        "No hay muestras registradas en el sistema.",
+        style: TextStyle(color: Colors.grey, fontSize: 16),
+      ),
     );
   }
 }

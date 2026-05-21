@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lumentrack.samples_management.model.Samples;
-import com.lumentrack.samples_management.model.SampleViewModel;
 import com.lumentrack.samples_management.service.SampleService;
 
 @RestController
@@ -32,7 +31,7 @@ public class SampleController {
 	private SampleService sampleService;
 	
 	@PostMapping("/save")
-	public ResponseEntity<Samples> saveSample( @RequestBody SampleViewModel viewModel ) {
+	public ResponseEntity<Samples> saveSample( @RequestBody Samples viewModel ) {
 		logger.info( "Start saving for sample: " + viewModel.getSampleName() );
 		
 		Samples sample = new Samples();
@@ -71,6 +70,8 @@ public class SampleController {
 	public Samples updateSample(@RequestBody Samples sample) {
 		logger.info( "Update for sample: " + sample.getSampleName() );
 		
+		logger.info("Executing for object: " + sample.toString() );
+		
 		return sampleService.updateSampleDeliveryDate(sample);
 	}
 	
@@ -82,11 +83,18 @@ public class SampleController {
 		sampleService.deleteSample(id);
 	}
 	
-	@GetMapping("/getSamples")
-	public List<SampleViewModel> getSamplesDetails() {
+	@GetMapping("/getSamplesDetailsList")
+	public List<Samples> getSamplesDetailsList() {
 		logger.info("Getting the Samples Details for the Samples View");
 		
-		return sampleService.getSampleDetails();
+		return sampleService.getSampleDetailsList();
+	}
+	
+	@GetMapping("/getSampleDetails/{id}")
+	public Samples getSampleDetails( @PathVariable("id") Integer id ) {
+		logger.info("Getting the Details of the Sample with id: " + id);
+		
+		return sampleService.getSampleDetails(id);
 	}
 	
 }

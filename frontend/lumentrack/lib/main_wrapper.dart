@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'ui/screens/dashboard_screen.dart';
 import 'ui/screens/muestras_list_screen.dart';
-// import 'ui/screens/orders_list_screen.dart'; // Para el puerto 8083
+import 'ui/screens/order_list_screen.dart'; // Para el puerto 8083
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -15,8 +15,8 @@ class _MainWrapperState extends State<MainWrapper> {
 
   final List<Widget> _screens = [
     const DashboardScreen(),
+    const OrdersListScreen(),
     const MuestrasListScreen(), // Conectada al puerto 8082
-    const Center(child: Text("Pantalla de Órdenes (8083)")),
     const Center(child: Text("Administración")),
   ];
 
@@ -35,17 +35,28 @@ class _MainWrapperState extends State<MainWrapper> {
         selectedItemColor: const Color(0xFF934B3D), // Terracota
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
+        elevation: 8,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Inicio'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.lightbulb_outline),
-            label: 'Muestras',
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Inicio',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory_2_outlined),
-            label: 'Orders',
+            activeIcon: Icon(Icons.inventory_2),
+            label: 'Proyectos',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Admin'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.lightbulb_outline),
+            activeIcon: Icon(Icons.lightbulb),
+            label: 'Modelos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings),
+            label: 'Admin',
+          ),
         ],
       ),
     );

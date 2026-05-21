@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lumentrack.samples_management.model.Materials;
 import com.lumentrack.samples_management.repository.MaterialsRepository;
@@ -34,6 +35,7 @@ public class MaterialService {
 		return repository.findById(id);
 	}
 	
+	@Transactional
 	public Materials updateMaterialInformation(Materials updatedMaterial) {
 		logger.info("Updating information for material: " + updatedMaterial.getMaterialName());
 		return repository.findById( updatedMaterial.getMaterialId() ).map(materials -> {
@@ -46,7 +48,7 @@ public class MaterialService {
 		logger.info("Deleting information for material with id: " + id);
 		//Verifying that the Material exists
 		Materials material = repository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Muestra no encontrada con id: " + id));
+				.orElseThrow(() -> new RuntimeException("Material no encontrado con id: " + id));
 		
 		logger.info("Material with id: " + id + " has been found!!!");
 		logger.info("Deleting information for material: " + material.getMaterialName());

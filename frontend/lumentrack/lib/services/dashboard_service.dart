@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/dashboard_model.dart';
+import '../core/api_config.dart';
 
 class DashboardService {
-  //final String baseUrl =
-  //    "http://10.0.2.2:8081/lumentrack/dashboard/getData"; // endpoint para
-  final String baseUrl =
-      "http://192.168.100.15:8081/lumentrack/dashboard/getData"; // Ajusta tu endpoint
+  //Escritorio
+  final String baseUrl = ApiConfig.dashboard;
 
   Future<DashboardData> fetchDashboardData() async {
     final response = await http.get(Uri.parse(baseUrl));

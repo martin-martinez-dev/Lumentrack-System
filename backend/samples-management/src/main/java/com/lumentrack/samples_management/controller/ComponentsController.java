@@ -63,4 +63,10 @@ public class ComponentsController {
 		service.deleteComponent(id);
 	}
 	
+	@GetMapping("/getComponentDetails/{id}")
+	public Components getComponentDetails( @PathVariable("id") Integer id ) {
+		logger.info("Getting the details for the component id " + id);
+		return service.getComponentsDetails(id);
+	}
+	
 }
