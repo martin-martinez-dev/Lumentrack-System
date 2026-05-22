@@ -48,13 +48,15 @@ class Task {
     'taskPhotoUrl': taskPhotoUrl,
     'taskPhotoId': taskPhotoId,
     // Mapeo seguro de fechas para evitar enviar cadenas vacías al backend
-    'taskEstimatedDate': taskEstimatedDate.isEmpty ? null : taskEstimatedDate,
+    'taskEstimatedDate': taskEstimatedDate.isEmpty
+        ? null
+        : Task.formatToServer(taskEstimatedDate),
     'taskRealDateTime':
         (taskRealDateTime.isEmpty ||
             taskRealDateTime.toLowerCase().contains('sin fecha') ||
             taskRealDateTime.toLowerCase().contains('sin entrega'))
         ? null
-        : taskRealDateTime,
+        : Task.formatToServer(taskRealDateTime),
   };
 
   // =========================================================================
@@ -86,20 +88,43 @@ class Task {
   }
 
   /// Convierte una fecha de formato UI (dd/MM/yyyy HH:mm) al formato ISO de Spring Boot (yyyy-MM-dd HH:mm:ss)
+  /// Este método es robusto para manejar múltiples formatos de entrada y siempre retorna el formato ISO 8601.
   static String? formatToServer(String uiDate) {
     if (uiDate.isEmpty ||
         uiDate.toLowerCase().contains('sin') ||
         uiDate.toLowerCase().contains('pendiente')) {
       return null;
     }
-    if (uiDate.contains('-')) return uiDate;
 
     try {
-      DateFormat inputFormat = DateFormat('dd/MM/yyyy HH:mm');
-      DateTime parsedDate = inputFormat.parse(uiDate);
-      return DateFormat('yyyy-MM-dd HH:mm:ss').format(parsedDate);
+      DateTime parsedDate;
+
+      // 1. Si ya es yyyy-MM-dd HH:mm:ss
+      if (uiDate.length == 19 && uiDate.contains('-') && uiDate.contains(' ')) {
+        return uiDate;
+      }
+      // 2. Intentar parsear como ISO 8601
+      else if (uiDate.contains('T')) {
+        parsedDate = DateTime.parse(uiDate);
+      }
+      // 3. Intentar parsear como yyyy-MM-dd
+      else if (uiDate.length == 10 && uiDate.contains('-')) {
+        parsedDate = DateFormat('yyyy-MM-dd').parse(uiDate);
+      }
+      // 4. Formatos con barra (UI)
+      else if (uiDate.contains('/')) {
+        String pattern = uiDate.contains(' ')
+            ? 'dd/MM/yyyy HH:mm'
+            : 'dd/MM/yyyy';
+        parsedDate = DateFormat(pattern).parse(uiDate);
+      } else {
+        parsedDate = DateTime.parse(uiDate);
+      }
+
+      // Retornamos solo la fecha para coincidir con LocalDate en el Backend
+      return DateFormat('yyyy-MM-dd').format(parsedDate);
     } catch (e) {
-      return uiDate;
+      return null;
     }
   }
 }

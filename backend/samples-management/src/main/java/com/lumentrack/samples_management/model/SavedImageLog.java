@@ -1,6 +1,6 @@
 package com.lumentrack.samples_management.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -28,8 +28,8 @@ public class SavedImageLog {
 	private String imageCloudinaryId;
 	
 	@Column( nullable = false )
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime savedDateTime;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private LocalDate savedDateTime;
 	
 	@Column( nullable = false )
 	private String imageStatus;

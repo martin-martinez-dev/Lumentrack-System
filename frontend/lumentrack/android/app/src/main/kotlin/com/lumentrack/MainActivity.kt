@@ -1,4 +1,4 @@
-package com.example.lumentrack
+package com.lumentrack
 
 import io.flutter.embedding.android.FlutterActivity
 

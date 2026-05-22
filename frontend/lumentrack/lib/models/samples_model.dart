@@ -58,15 +58,15 @@ class Sample {
     'samplePhotoId': samplePhotoId,
     // Formateo correcto para nulos nativos si están vacíos
     'estimatedDeliveryDate':
-        estimatedDeliveryDate.isEmpty || estimatedDeliveryDate == "Sin fecha"
+        (estimatedDeliveryDate.isEmpty || estimatedDeliveryDate == "Sin fecha")
         ? null
-        : estimatedDeliveryDate,
+        : Sample.formatToServer(estimatedDeliveryDate),
     'realDeliveryDate':
-        realDeliveryDate.isEmpty ||
+        (realDeliveryDate.isEmpty ||
             realDeliveryDate == "Sin fecha" ||
-            realDeliveryDate == "Sin entrega"
+            realDeliveryDate == "Sin entrega")
         ? null
-        : realDeliveryDate,
+        : Sample.formatToServer(realDeliveryDate),
     // Nota: 'orderName' y 'componentList' no se envían al guardar si el backend mapea crudo,
     // pero si usas cascada en Spring Boot puedes descomentar la siguiente línea:
     // 'componentList': componentList.map((e) => e.toJson()).toList(),
@@ -102,19 +102,41 @@ class Sample {
     }
   }
 
-  /// Convierte una fecha de formato UI (dd/MM/yyyy HH:mm) al formato ISO de Spring Boot (yyyy-MM-dd HH:mm:ss)
+  /// Convierte la fecha al formato simple yyyy-MM-dd para LocalDate en el Backend
   static String? formatToServer(String uiDate) {
     if (uiDate.isEmpty || uiDate == "Sin fecha" || uiDate == "Sin entrega") {
       return null;
     }
-    if (uiDate.contains('-')) return uiDate;
 
     try {
-      DateFormat inputFormat = DateFormat('dd/MM/yyyy HH:mm');
-      DateTime parsedDate = inputFormat.parse(uiDate);
-      return DateFormat('yyyy-MM-dd HH:mm:ss').format(parsedDate);
+      DateTime parsedDate;
+
+      // 1. Intentar parsear como yyyy-MM-dd HH:mm:ss
+      if (uiDate.length == 19 && uiDate.contains('-') && uiDate.contains(' ')) {
+        return uiDate;
+      }
+      // 2. Intentar parsear como ISO 8601
+      else if (uiDate.contains('T')) {
+        parsedDate = DateTime.parse(uiDate);
+      }
+      // 3. Intentar parsear como yyyy-MM-dd
+      else if (uiDate.length == 10 && uiDate.contains('-')) {
+        parsedDate = DateFormat('yyyy-MM-dd').parse(uiDate);
+      }
+      // 4. Intentar parsear formatos con barra (UI)
+      else if (uiDate.contains('/')) {
+        String pattern = uiDate.contains(' ')
+            ? 'dd/MM/yyyy HH:mm'
+            : 'dd/MM/yyyy';
+        parsedDate = DateFormat(pattern).parse(uiDate);
+      } else {
+        parsedDate = DateTime.parse(uiDate);
+      }
+
+      // Retornamos solo la fecha para coincidir con LocalDate
+      return DateFormat('yyyy-MM-dd').format(parsedDate);
     } catch (e) {
-      return uiDate;
+      return null;
     }
   }
 }

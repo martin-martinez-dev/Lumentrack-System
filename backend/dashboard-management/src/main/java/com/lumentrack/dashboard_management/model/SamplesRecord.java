@@ -1,6 +1,6 @@
 package com.lumentrack.dashboard_management.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -10,8 +10,8 @@ public record SamplesRecord (
 	String sampleName,
 	String samplePhotoUrl,
 	String samplePhotoId,
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	LocalDateTime estimatedDeliveryDate,
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	LocalDateTime realDeliveryDate
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	LocalDate estimatedDeliveryDate,
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	LocalDate realDeliveryDate
 ) { }

@@ -4,11 +4,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../models/samples_model.dart';
 import '../../models/orders_model.dart';
+import '../../models/component_model.dart';
 import '../../models/cloudinary_response_model.dart';
 import '../../services/samples_service.dart';
 import '../../services/orders_service.dart';
 import '../../services/images_service.dart';
-import 'component_form_screen.dart'; // 🟢 Importación integrada
+import 'component_form_screen.dart'; // Importación integrada
 
 class SampleFormScreen extends StatefulWidget {
   final Sample? sample;
@@ -44,7 +45,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
   String? _uploadedPhotoId;
 
   // State local para renderizar de manera reactiva la lista de componentes de la muestra
-  List<dynamic> _associatedComponents = [];
+  List<Component> _associatedComponents = [];
 
   @override
   void initState() {
@@ -69,8 +70,12 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       _selectedOrderId = widget.sample?.orderId;
       _uploadedPhotoUrl = widget.sample?.samplePhotoUrl;
       _uploadedPhotoId = widget.sample?.samplePhotoId;
-      // Asignamos los componentes que vienen directo en el objeto unificado de la Muestra
+
+      // 1. Carga inicial instantánea con lo que hereda de la vista anterior (UX veloz)
       _associatedComponents = widget.sample?.componentList ?? [];
+
+      // 2. 🟢 CONEXIÓN ASÍNCRONA: Vamos al backend por los datos reales y unificados en segundo plano
+      _inicializarComponentesGenuinos();
     }
 
     _loadOrdersCatalog();
@@ -82,6 +87,23 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
     _estimatedDateController.dispose();
     _realDateController.dispose();
     super.dispose();
+  }
+
+  // 🟢 NUEVO MÉTODO: Trae la muestra completa usando el endpoint detallado con componentes
+  Future<void> _inicializarComponentesGenuinos() async {
+    if (widget.sample?.sampleId == null) return;
+    try {
+      final sampleCompleta = await _samplesService.fetchSampleWithComponents(
+        widget.sample!.sampleId!,
+      );
+      setState(() {
+        _associatedComponents = sampleCompleta.componentList;
+      });
+    } catch (e) {
+      debugPrint(
+        "Error al inicializar componentes desde el JSON unificado: $e",
+      );
+    }
   }
 
   Future<void> _loadOrdersCatalog() async {
@@ -302,7 +324,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                         style: const TextStyle(color: Colors.black87),
                       ),
                       decoration: InputDecoration(
-                        labelText: 'Orden de Production',
+                        labelText: 'Orden de Producción',
                         prefixIcon: const Icon(
                           Icons.assignment_outlined,
                           color: Color(0xFF3E5B42),
@@ -419,7 +441,6 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                               ),
                             ],
                           ),
-                          // 🟢 Control seguro: El botón solo se muestra si la muestra no es nueva
                           IconButton(
                             icon: const Icon(
                               Icons.add_circle,
@@ -427,7 +448,6 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                               size: 32,
                             ),
                             onPressed: () async {
-                              // 🟢 Lógica habilitada con el refresco automático reactivo
                               final bool? actualizado = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -483,6 +503,9 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       itemBuilder: (context, index) {
         final component = _associatedComponents[index];
 
+        // Extracción segura de la URL de foto
+        final String photoUrl = component.componentPhotoUrl ?? '';
+
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6),
           elevation: 1.5,
@@ -494,11 +517,11 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
               horizontal: 16,
               vertical: 8,
             ),
-            leading: component.componentPhotoUrl.isNotEmpty
+            leading: photoUrl.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      component.componentPhotoUrl,
+                      photoUrl,
                       width: 55,
                       height: 55,
                       fit: BoxFit.cover,
@@ -517,13 +540,13 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                     ),
                   ),
             title: Text(
-              component.componentName,
+              component.componentName ?? 'Sin nombre',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
-                "${component.componentType} • Encargado: ${component.ulaLightEmployee}",
+                "${component.componentType ?? 'General'} • Encargado: ${component.ulaLightEmployee ?? 'Sin asignar'}",
                 style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
             ),
@@ -533,17 +556,21 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
               color: Colors.grey,
             ),
             onTap: () async {
-              final int? targetId = component.componentId;
-              if (targetId == null) return;
+              // Navegamos a la pantalla de edición del componente enviando el objeto actual
+              final bool? refresh = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ComponentFormScreen(
+                    sampleId: widget.sample!.sampleId!,
+                    component:
+                        component, // Pasamos el componente seleccionado para editarlo
+                  ),
+                ),
+              );
 
-              // TODO: Descomentar al implementar la vista responsiva de detalles
-              // final bool? refresh = await Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => ComponentDetailResponsivoScreen(componentId: targetId),
-              //   ),
-              // );
-              // if (refresh == true) { _recargarMuestra(); }
+              if (refresh == true) {
+                _recargarMuestra(); // Sincronizamos la lista si hubo cambios
+              }
             },
           ),
         );
@@ -551,11 +578,12 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
     );
   }
 
-  // Método auxiliar para recargar la información de la muestra desde el backend al regresar de un módulo hijo
+  // Método auxiliar para recargar la información al regresar de un módulo hijo
   Future<void> _recargarMuestra() async {
     if (widget.sample?.sampleId == null) return;
     try {
-      final sampleActualizada = await _samplesService.getSampleById(
+      // 🟢 USAR EL MISMO MÉTODO QUE EN INITSTATE: Asegura que traiga la lista de componentes
+      final sampleActualizada = await _samplesService.fetchSampleWithComponents(
         widget.sample!.sampleId!,
       );
       setState(() {
@@ -671,8 +699,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
             ? (Sample.formatToServer(_realDateController.text) ?? '')
             : 'Sin fecha',
         componentList:
-            widget.sample?.componentList ??
-            [], // Preservamos los componentes en la mutación local
+            _associatedComponents, // Preservamos el estado reactivo actual
       );
 
       if (_isNew) {

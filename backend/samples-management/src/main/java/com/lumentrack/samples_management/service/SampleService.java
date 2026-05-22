@@ -109,6 +109,7 @@ public class SampleService {
 	}
 	
 	public Samples getSampleDetails( Integer sampleId ) {
+		logger.info("Starting the service for the extraction of the Sample Details");
 		Samples sample = repository.findById(sampleId).orElseThrow(() -> new ResourceNotFoundException(
                 "La muestra con id " + sampleId + " no existe."
             ));

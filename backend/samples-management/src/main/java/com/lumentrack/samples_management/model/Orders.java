@@ -1,6 +1,6 @@
 package com.lumentrack.samples_management.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -42,12 +42,12 @@ public class Orders {
 	private String clientName;
 	
 	@Column( nullable = false )
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime estimatedDeliveryDate;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private LocalDate estimatedDeliveryDate;
 	
 	@Column( nullable = true )
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime realDeliveryDate;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private LocalDate realDeliveryDate;
 	
 	@Transient
 	private List<Samples> sampleList;

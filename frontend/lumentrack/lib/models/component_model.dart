@@ -80,12 +80,12 @@ class Component {
     // Formateo correcto para nulos nativos si se captura vacío en la UI
     'deliveryDate': deliveryDate.isEmpty || deliveryDate == "Sin fecha"
         ? null
-        : deliveryDate,
+        : Component.formatToServer(deliveryDate),
     'materialId': materialId,
     'statusResume': statusResume,
     'ulaLightEmployee': ulaLightEmployee,
     // Opcional por si el backend requiere persistencia en cascada de subtareas:
-    // 'taskList': taskList.map((e) => e.toJson()).toList(),
+    'taskList': taskList.map((e) => e.toJson()).toList(),
   };
 
   // =========================================================================
@@ -113,17 +113,35 @@ class Component {
       return null;
     }
 
-    // Si ya viene formateada con la T de LocalDateTime o guiones de edición previa, pasa directo
-    if (uiDate.contains('-') || uiDate.contains('T')) return uiDate;
-
     try {
-      DateFormat inputFormat = DateFormat('dd/MM/yyyy');
-      DateTime parsedDate = inputFormat.parse(uiDate);
+      DateTime parsedDate;
 
-      // Construimos el String añadiéndole la hora base cero para que Jackson no lance un HttpMessageNotReadableException
-      return "${DateFormat('yyyy-MM-dd').format(parsedDate)}T00:00:00";
+      // 1. Intentar parsear como yyyy-MM-dd HH:mm:ss (Formato final)
+      if (uiDate.length == 19 && uiDate.contains('-') && uiDate.contains(' ')) {
+        return uiDate;
+      }
+      // 2. Intentar parsear como ISO 8601 (yyyy-MM-ddTHH:mm:ss) para normalizar
+      else if (uiDate.contains('T')) {
+        parsedDate = DateTime.parse(uiDate);
+      }
+      // 3. Intentar parsear como yyyy-MM-dd (Proveniente del DatePicker)
+      else if (uiDate.length == 10 && uiDate.contains('-')) {
+        parsedDate = DateFormat('yyyy-MM-dd').parse(uiDate);
+      }
+      // 4. Intentar parsear como dd/MM/yyyy HH:mm
+      else if (uiDate.contains('/')) {
+        String pattern = uiDate.contains(' ')
+            ? 'dd/MM/yyyy HH:mm'
+            : 'dd/MM/yyyy';
+        parsedDate = DateFormat(pattern).parse(uiDate);
+      } else {
+        parsedDate = DateTime.parse(uiDate);
+      }
+
+      // Retornamos solo la fecha para coincidir con LocalDate en el Backend
+      return DateFormat('yyyy-MM-dd').format(parsedDate);
     } catch (e) {
-      return uiDate;
+      return null;
     }
   }
 }

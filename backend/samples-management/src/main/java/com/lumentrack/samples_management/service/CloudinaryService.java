@@ -17,7 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,7 @@ public class CloudinaryService {
             SavedImageLog imageLog = new SavedImageLog();
             imageLog.setImageCloudinaryUrl(result.get("secure_url").toString());
             imageLog.setImageCloudinaryId(result.get("public_id").toString());
-            imageLog.setSavedDateTime( LocalDateTime.now() );
+            imageLog.setSavedDateTime( LocalDate.now() );
             imageLog.setImageStatus("Saved");
             
             imageRepository.save(imageLog);

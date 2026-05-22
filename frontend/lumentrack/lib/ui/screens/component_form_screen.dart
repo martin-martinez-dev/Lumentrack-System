@@ -149,6 +149,21 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
     }
   }
 
+  // 🟢 NUEVO: Refresca solo la lista de tareas sin resetear los Dropdowns (Mejor UX)
+  Future<void> _refreshComponentTasks() async {
+    if (widget.component?.componentId == null) return;
+    try {
+      final detailedComponent = await _componentsService.getComponentDetails(
+        widget.component!.componentId!,
+      );
+      setState(() {
+        _componentTasks = detailedComponent.taskList;
+      });
+    } catch (e) {
+      debugPrint("Error al sincronizar tareas del componente: $e");
+    }
+  }
+
   Future<void> _takePicture() async {
     if (!_isEditing) return;
     final XFile? pickedFile = await _picker.pickImage(
@@ -621,10 +636,13 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TaskFormScreen(task: task),
+                  builder: (context) => TaskFormScreen(
+                    componentId: widget.component!.componentId!,
+                    task: task,
+                  ),
                 ),
               );
-              if (result == true) _loadInitialData();
+              if (result == true) _refreshComponentTasks();
             },
           ),
         );
@@ -640,9 +658,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
             TaskFormScreen(componentId: widget.component!.componentId),
       ),
     );
-    if (result == true) {
-      _loadInitialData();
-    }
+    if (result == true) _refreshComponentTasks();
   }
 
   void _submitForm() async {
@@ -667,7 +683,8 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
         componentPhotoUrl: _uploadedPhotoUrl ?? '',
         componentPhotoId: _uploadedPhotoId ?? '',
         deliveryDate: _deliveryDateController.text.isNotEmpty
-            ? _deliveryDateController.text
+            ? Component.formatToServer(_deliveryDateController.text) ??
+                  'Sin fecha'
             : 'Sin fecha', // 🟢 Guardado correcto
         statusResume:
             _selectedStatus!, // 🟢 Atributo asignado desde el ComboBox hardcodeado

@@ -1,6 +1,6 @@
 package com.lumentrack.samples_management.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -53,8 +53,8 @@ public class Components {
 	@Column( nullable = false )
 	private Boolean isExternal;
 	
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime deliveryDate;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private LocalDate deliveryDate;
 	
 	@Column( nullable = false )
 	private Integer materialId;
