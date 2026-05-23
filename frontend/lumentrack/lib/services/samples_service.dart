@@ -19,7 +19,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      List<dynamic> body = json.decode(response.body);
+      List<dynamic> body = json.decode(utf8.decode(response.bodyBytes));
       return body.map((item) => Sample.fromJson(item)).toList();
     }
     throw Exception('Error del servidor al listar muestras base');
@@ -32,7 +32,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      return Sample.fromJson(json.decode(response.body));
+      return Sample.fromJson(json.decode(utf8.decode(response.bodyBytes)));
     }
     throw Exception('Sample con ID $id no encontrado');
   }
@@ -83,7 +83,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      List<dynamic> body = json.decode(response.body);
+      List<dynamic> body = json.decode(utf8.decode(response.bodyBytes));
       return body.map((item) => Sample.fromJson(item)).toList();
     }
     throw Exception('Error de servidor al cargar detalles de muestras');
@@ -97,7 +97,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      return Sample.fromJson(json.decode(response.body));
+      return Sample.fromJson(json.decode(utf8.decode(response.bodyBytes)));
     } else {
       throw Exception('Error al recuperar los componentes de la luminaria');
     }

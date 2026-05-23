@@ -37,7 +37,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       text: widget.order?.orderName ?? '',
     );
     _numberController = TextEditingController(
-      text: widget.order != null ? widget.order!.orderNumber.toString() : '',
+      text: widget.order?.orderNumber ?? '',
     );
     _clientController = TextEditingController(
       text: widget.order != null ? widget.order!.clientId.toString() : '',
@@ -100,8 +100,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                   if (!_isEditing) {
                     // Si cancela, restauramos los valores originales de la Orden
                     _nameController.text = widget.order?.orderName ?? '';
-                    _numberController.text =
-                        widget.order?.orderNumber.toString() ?? '';
+                    _numberController.text = widget.order?.orderNumber ?? '';
                     _clientController.text =
                         widget.order?.clientId.toString() ?? '';
                     _estimatedDateController.text =
@@ -130,7 +129,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                 label: "Número de Orden",
                 icon: Icons.tag,
                 enabled: _isEditing,
-                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 15),
               _buildTextField(
@@ -226,7 +224,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       final orderData = Order(
         orderId: widget.order?.orderId,
         orderName: _nameController.text,
-        orderNumber: int.parse(_numberController.text),
+        orderNumber: _numberController.text,
         clientId: int.parse(_clientController.text),
         estimatedDeliveryDate: _estimatedDateController.text,
         realDeliveryDate:

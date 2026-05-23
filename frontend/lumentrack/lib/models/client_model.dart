@@ -21,7 +21,7 @@ class Client {
   // Factory para deserealizar las respuestas del ClientController de Spring Boot
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
-      clientId: json['clientId'],
+      clientId: json['clientId'] as int?,
       clientName: json['clientName'] ?? '',
       companyName: json['companyName'] ?? '',
       clientContactName: json['clientContactName'] ?? '',

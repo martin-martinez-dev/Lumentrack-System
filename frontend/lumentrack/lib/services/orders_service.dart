@@ -16,10 +16,13 @@ class OrdersService {
   /// 1. Mapea a: getAllProjects() -> GET /api/orders/list
   Future<List<Order>> fetchOrders() async {
     try {
-      final response = await http.get(Uri.parse("$_baseUrl/list"));
+      final response = await http.get(
+        Uri.parse("$_baseUrl/list"),
+        headers: _headers,
+      );
 
       if (response.statusCode == 200) {
-        List<dynamic> body = jsonDecode(response.body);
+        List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
         return body.map((dynamic item) => Order.fromJson(item)).toList();
       } else {
         throw Exception(
@@ -37,10 +40,13 @@ class OrdersService {
     try {
       final response = await http.get(
         Uri.parse("$_baseUrl/getOrderDetails/$orderId"),
+        headers: _headers,
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> body = jsonDecode(response.body);
+        final Map<String, dynamic> body = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
         return Order.fromJson(
           body,
         ); // El factory de Order ya procesa internamente la 'sampleList'
@@ -64,7 +70,9 @@ class OrdersService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final Map<String, dynamic> body = jsonDecode(response.body);
+        final Map<String, dynamic> body = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
         return Order.fromJson(body);
       } else {
         throw Exception('No se pudo registrar el proyecto en el servidor.');
@@ -77,14 +85,16 @@ class OrdersService {
   /// 4. Mapea a: updateProject(Orders updatedProject) -> PUT /api/orders/update
   Future<Order> updateOrder(Order order) async {
     try {
-      final response = await http.put(
+      final response = await http.post(
         Uri.parse("$_baseUrl/update"),
         headers: _headers,
         body: jsonEncode(order.toJson()),
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> body = jsonDecode(response.body);
+        final Map<String, dynamic> body = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
         return Order.fromJson(body);
       } else {
         throw Exception('Error al actualizar la información del proyecto.');

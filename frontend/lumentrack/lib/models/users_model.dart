@@ -23,11 +23,30 @@ class UserItem {
   factory UserItem.fromJson(Map<String, dynamic> json) {
     return UserItem(
       userId: json['userId'] as int?,
-      userName: json['userName'] ?? '',
-      userLastName: json['userLastName'] ?? '',
-      userMail: json['userMail'] ?? '',
-      userPhoneNumber: json['userPhoneNumber'],
-      userRole: json['userRole'] ?? '',
+      userName: (json['userName'] as String?) ?? '',
+      userLastName: (json['userLastName'] as String?) ?? '',
+      userMail: (json['userMail'] as String?) ?? '',
+      userPhoneNumber: json['userPhoneNumber'] as String?,
+      userRole: (json['userRole'] as String?) ?? '',
+    );
+  }
+
+  /// Método copyWith para facilitar la edición en formularios (Equivalente al @Builder de Lombok)
+  UserItem copyWith({
+    int? userId,
+    String? userName,
+    String? userLastName,
+    String? userMail,
+    String? userPhoneNumber,
+    String? userRole,
+  }) {
+    return UserItem(
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userLastName: userLastName ?? this.userLastName,
+      userMail: userMail ?? this.userMail,
+      userPhoneNumber: userPhoneNumber ?? this.userPhoneNumber,
+      userRole: userRole ?? this.userRole,
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ui/screens/dashboard_screen.dart';
 import 'ui/screens/muestras_list_screen.dart';
 import 'ui/screens/order_list_screen.dart'; // Para el puerto 8083
+import 'ui/screens/admin_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -17,7 +18,7 @@ class _MainWrapperState extends State<MainWrapper> {
     const DashboardScreen(),
     const OrdersListScreen(),
     const MuestrasListScreen(), // Conectada al puerto 8082
-    const Center(child: Text("Administración")),
+    const AdminScreen(),
   ];
 
   @override
@@ -50,7 +51,7 @@ class _MainWrapperState extends State<MainWrapper> {
           BottomNavigationBarItem(
             icon: Icon(Icons.lightbulb_outline),
             activeIcon: Icon(Icons.lightbulb),
-            label: 'Modelos',
+            label: 'Muestras',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),

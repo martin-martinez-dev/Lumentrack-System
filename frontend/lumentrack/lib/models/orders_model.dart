@@ -2,7 +2,7 @@ import 'samples_model.dart';
 
 class Order {
   final int? orderId;
-  final int orderNumber;
+  final String orderNumber;
   final String orderName;
   final int clientId;
   final String?
@@ -30,7 +30,7 @@ class Order {
 
     return Order(
       orderId: json['orderId'],
-      orderNumber: json['orderNumber'] ?? 0,
+      orderNumber: (json['orderNumber']?.toString()) ?? '',
       orderName: json['orderName'] ?? '',
       clientId: json['clientId'] ?? 0,
       clientName:

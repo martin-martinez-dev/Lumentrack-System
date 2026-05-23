@@ -49,6 +49,7 @@ public class OrderService {
 			projects.setOrderName( updatedProject.getOrderName() );
 			projects.setEstimatedDeliveryDate( updatedProject.getEstimatedDeliveryDate() );
 			projects.setRealDeliveryDate( updatedProject.getRealDeliveryDate() );
+			projects.setOrderNumber( updatedProject.getOrderNumber() );
 			return repository.save(projects);
 		}).orElseThrow( () -> new RuntimeException("Proyecto no encontrado") );
 	}

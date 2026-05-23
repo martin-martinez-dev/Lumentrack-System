@@ -30,7 +30,7 @@ public class Orders {
 	private Integer orderId;
 	
 	@Column( nullable = false )
-	private Integer orderNumber;
+	private String orderNumber;
 	
 	@Column( nullable = false )
 	private String orderName;

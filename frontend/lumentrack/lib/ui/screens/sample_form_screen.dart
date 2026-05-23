@@ -312,7 +312,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                                   .firstWhere(
                                     (o) => o.orderId == _selectedOrderId,
                                     orElse: () => Order(
-                                      orderNumber: 0,
+                                      orderNumber: '',
                                       orderName:
                                           widget.sample?.orderName ??
                                           'Sin Orden',

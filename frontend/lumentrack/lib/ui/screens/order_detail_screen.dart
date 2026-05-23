@@ -53,7 +53,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         final order = await _ordersService.fetchOrderDetails(widget.orderId!);
         _currentOrder = order;
         _nameController.text = order.orderName;
-        _numberController.text = order.orderNumber.toString();
+        _numberController.text = order.orderNumber;
         _estimatedDateController.text = order.estimatedDeliveryDate;
         _selectedClientId =
             order.clientId; // Seteamos el ID actual de la base de datos
@@ -123,8 +123,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   _isEditing = !_isEditing;
                   if (!_isEditing) {
                     _nameController.text = _currentOrder?.orderName ?? '';
-                    _numberController.text =
-                        _currentOrder?.orderNumber.toString() ?? '';
+                    _numberController.text = _currentOrder?.orderNumber ?? '';
                     _estimatedDateController.text =
                         _currentOrder?.estimatedDeliveryDate ?? '';
                     _selectedClientId =
@@ -164,7 +163,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 label: "Número de Orden",
                 icon: Icons.tag,
                 enabled: _isEditing,
-                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 15),
 
@@ -358,7 +356,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       final orderData = Order(
         orderId: _currentOrder?.orderId,
         orderName: _nameController.text,
-        orderNumber: int.parse(_numberController.text),
+        orderNumber: _numberController.text,
         clientId:
             _selectedClientId!, // Obligatorio y controlado por el Dropdown
         clientName: null, // 🔥 Totalmente válido ahora que es 'String?'
