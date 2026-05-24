@@ -2,7 +2,7 @@ name: lumentrack-system
 services:
   lumentrack-dashboard-service:
     build:
-      context: ./backend/lumentrack-dashboard-service
+      context: .
       dockerfile: Dockerfile
     image: lumentrack-dashboard-api:0.2
     container_name: lumentrack-dashboard-backend-api

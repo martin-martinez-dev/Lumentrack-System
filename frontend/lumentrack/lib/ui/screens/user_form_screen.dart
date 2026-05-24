@@ -25,8 +25,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
   final List<String> _roles = [
     "Administrador",
     "Diseñador",
-    "Ventas",
     "Producción",
+    "Ventas",
   ];
 
   @override

@@ -18,7 +18,7 @@ services:
       - CLOUDINARY_SECRET=${CLOUDINARY_SECRET}
     # --- CONFIGURACIÓN DEL HEALTHCHECK ---
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 30s      # Tiempo entre pruebas
       timeout: 10s       # Tiempo de espera para la respuesta
       retries: 3         # Cuántos intentos fallidos antes de marcar como unhealthy

@@ -1,7 +1,13 @@
 # Lumentrack - Estado del Desarrollo (Fase Alpha)
 
 **Progreso Actual:** 80%
-**Última Actualización:** Mayo 2024
+**Última Actualización:** 24 de Mayo, 2026 (CDMX)
+
+## 📝 Bitácora de Ajustes Recientes
+*   **Sincronización de Tiempo:** Ajuste de calendario a Mayo 2026.
+*   **Reorganización del Dashboard:** Inversión de posiciones entre Muestras y Proyectos.
+*   **Actualización de Identidad Visual:** 'Proyectos' ahora usa Terracota y 'Muestras' usa Verde Lumentrack.
+*   **Renombramiento UI:** Cambio de etiqueta "Producción" a "Proyectos" en el Dashboard.
 
 ## ✅ Implementado
 - **Servicios Base:** `UsersService`, `MaterialService`, `OrdersService`, `SamplesService`, `ImagesService` (Cloudinary).

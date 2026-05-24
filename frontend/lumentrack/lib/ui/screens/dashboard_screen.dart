@@ -58,13 +58,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildSummaryCard(
-                      "Muestras",
-                      "${data.sampleCount}",
+                      "Proyectos",
+                      "${data.ordersCount}",
                       const Color(0xFF934B3D),
                     ),
                     _buildSummaryCard(
-                      "Producción",
-                      "${data.ordersCount}",
+                      "Muestras",
+                      "${data.sampleCount}",
                       const Color(0xFF3E5B42),
                     ),
                     _buildSummaryCard(
@@ -84,15 +84,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     PieChartData(
                       sections: [
                         PieChartSectionData(
-                          value: data.sampleCount.toDouble(),
+                          value: data.ordersCount.toDouble(),
                           color: const Color(0xFF934B3D),
-                          title: '${data.sampleCount}',
+                          title: '${data.ordersCount}',
                           radius: 50,
                         ),
                         PieChartSectionData(
-                          value: data.ordersCount.toDouble(),
+                          value: data.sampleCount.toDouble(),
                           color: const Color(0xFF3E5B42),
-                          title: '${data.ordersCount}',
+                          title: '${data.sampleCount}',
                           radius: 50,
                         ),
                         PieChartSectionData(
@@ -111,19 +111,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Listas Colapsables
                 _buildCollapsibleList(
+                  "Proyectos",
+                  data.ordersList,
+                  Icons.inventory_2_outlined,
+                  const Color(0xFF934B3D),
+                ),
+                _buildCollapsibleList(
                   "Muestras",
                   data.samplesList,
                   Icons.lightbulb_outline,
-                ),
-                _buildCollapsibleList(
-                  "Producción",
-                  data.ordersList,
-                  Icons.inventory_2_outlined,
+                  const Color(0xFF3E5B42),
                 ),
                 _buildCollapsibleList(
                   "Tareas",
                   data.tasksList,
                   Icons.grid_view_rounded,
+                  const Color(0xFFD9B44A),
                 ),
               ],
             ),
@@ -165,9 +168,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String title,
     List<String> items,
     IconData icon,
+    Color color,
   ) {
     return ExpansionTile(
-      leading: Icon(icon, color: const Color(0xFF934B3D)),
+      leading: Icon(icon, color: color),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       children: items.isEmpty
           ? [const ListTile(title: Text("Sin elementos pendientes"))]
