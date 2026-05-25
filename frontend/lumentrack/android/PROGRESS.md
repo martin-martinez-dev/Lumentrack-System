@@ -2,12 +2,7 @@
 
 **Progreso Actual:** 80%
 **Última Actualización:** 24 de Mayo, 2026 (CDMX)
-
-## 📝 Bitácora de Ajustes Recientes
-*   **Sincronización de Tiempo:** Ajuste de calendario a Mayo 2026.
-*   **Reorganización del Dashboard:** Inversión de posiciones entre Muestras y Proyectos.
-*   **Actualización de Identidad Visual:** 'Proyectos' ahora usa Terracota y 'Muestras' usa Verde Lumentrack.
-*   **Renombramiento UI:** Cambio de etiqueta "Producción" a "Proyectos" en el Dashboard.
+*   **AppBar Dinámico en MainWrapper:** El color del título y fondo de "Lumentrack" ahora cambia reactivamente según la pestaña seleccionada (Terracota para Proyectos, Verde para Muestras, Verde Pastel para Admin).
 
 ## ✅ Implementado
 - **Servicios Base:** `UsersService`, `MaterialService`, `OrdersService`, `SamplesService`, `ImagesService` (Cloudinary).
@@ -28,5 +23,8 @@
 ## 📌 Notas de Arquitectura
 - La comunicación con el backend (Spring Boot) está segmentada por puertos (8081, 8082, 8083).
 - Terminología: Se actualizó el término "Modelos" por "Muestras" en el menú principal para mayor claridad con el cliente final.
+*   **Inversión Visual:** Los AppBar ahora usan fondo de color sólido con texto e iconos en blanco para mayor legibilidad.
+*   **Nueva Identidad de Administración:** Se implementó el color verde pastel (0xFFA8BCB1) como estándar para todo el módulo de Clientes y Usuarios.
+*   **Sincronización Total de Acciones:** Se actualizaron todos los FloatingActionButtons y botones de guardado para que coincidan con el color de su respectivo módulo.
 - Se prioriza la integridad de datos relacionales al editar órdenes, asegurando que `sampleList` no se pierda en los PUT/POST.
 - **Hito Alpha:** Pruebas de función con el cliente final superadas con éxito.

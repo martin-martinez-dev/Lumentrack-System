@@ -199,14 +199,18 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       appBar: AppBar(
         title: const Text(
           "Lumentrack",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: const Color(0xFF3E5B42),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (!_isNew)
             IconButton(
-              icon: Icon(_isEditing ? Icons.cancel : Icons.edit),
+              icon: Icon(
+                _isEditing ? Icons.cancel : Icons.edit,
+                color: Colors.white,
+              ),
               onPressed: () {
                 setState(() {
                   _isEditing = !_isEditing;
@@ -399,7 +403,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                       ElevatedButton(
                         onPressed: _processData,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF934B3D), // Terracota
+                          backgroundColor: const Color(0xFF3E5B42),
                           minimumSize: const Size(double.infinity, 55),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

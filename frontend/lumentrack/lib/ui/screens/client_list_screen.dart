@@ -51,14 +51,15 @@ class _ClientListScreenState extends State<ClientListScreen> {
       appBar: AppBar(
         title: const Text(
           "Administración de Clientes",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF3E5B42),
+        backgroundColor: const Color(0xFFA8BCB1),
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3E5B42)),
+              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
             )
           : RefreshIndicator(
               onRefresh: _loadClients,
@@ -78,10 +79,10 @@ class _ClientListScreenState extends State<ClientListScreen> {
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF934B3D).withOpacity(0.1),
+                          color: const Color(0xFFA8BCB1).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: const Color(0xFF934B3D),
+                            color: const Color(0xFFA8BCB1),
                             width: 2,
                           ),
                         ),
@@ -89,7 +90,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
                           child: Text(
                             _getInitials(client.clientName),
                             style: const TextStyle(
-                              color: Color(0xFF934B3D),
+                              color: Color(0xFFA8BCB1),
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
@@ -103,7 +104,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
                       subtitle: Text(client.companyName),
                       trailing: const Icon(
                         Icons.edit_note,
-                        color: Color(0xFF3E5B42),
+                        color: Color(0xFFA8BCB1),
                       ),
                       onTap: () async {
                         final result = await Navigator.push(
@@ -121,7 +122,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               ),
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF934B3D),
+        backgroundColor: const Color(0xFFA8BCB1),
         onPressed: () async {
           final result = await Navigator.push(
             context,

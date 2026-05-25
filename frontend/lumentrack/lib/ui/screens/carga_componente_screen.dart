@@ -22,7 +22,14 @@ class _CargaComponenteScreenState extends State<CargaComponenteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Carga de Componentes")),
+      appBar: AppBar(
+        title: const Text(
+          "Carga de Componentes",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFFD9B44A),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -47,6 +54,14 @@ class _CargaComponenteScreenState extends State<CargaComponenteScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD9B44A),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: const Text("Guardar Componente"),
             ),
           ],

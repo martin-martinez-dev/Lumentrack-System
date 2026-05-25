@@ -110,14 +110,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           _isNew
               ? "Nuevo Proyecto"
               : (_isEditing ? "Editar Proyecto" : _nameController.text),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF3E5B42),
+        backgroundColor: const Color(0xFF934B3D),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (!_isNew)
             IconButton(
-              icon: Icon(_isEditing ? Icons.cancel_outlined : Icons.edit),
+              icon: Icon(
+                _isEditing ? Icons.cancel_outlined : Icons.edit,
+                color: Colors.white,
+              ),
               onPressed: () {
                 setState(() {
                   _isEditing = !_isEditing;

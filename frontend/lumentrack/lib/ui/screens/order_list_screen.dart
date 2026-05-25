@@ -48,10 +48,11 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
       appBar: AppBar(
         title: const Text(
           "Proyectos",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF3E5B42), // Verde Oliva Lumentrack
+        backgroundColor: const Color(0xFF934B3D),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder<List<Order>>(
         future: _futureOrders,
@@ -164,9 +165,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
       // 🟢 EL NUEVO BOTÓN SOLICITADO PARA CREAR REGISTROS
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(
-          0xFF3E5B42,
-        ), // Verde corporativo Lumentrack
+        backgroundColor: const Color(0xFF934B3D),
         tooltip: "Añadir Proyecto",
         onPressed: () =>
             _navegarAProyecto(), // 🟢 Se invoca sin ID para que entre como "Alta Nueva"

@@ -94,12 +94,19 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? "Modificar Usuario" : "Nuevo Usuario"),
-        backgroundColor: const Color(0xFF3E5B42),
+        title: Text(
+          isEdit ? "Modificar Usuario" : "Nuevo Usuario",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFFA8BCB1),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isSaving
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3E5B42)),
+              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
             )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -140,7 +147,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                         labelText: "Rol/Responsabilidades",
                         prefixIcon: const Icon(
                           Icons.admin_panel_settings,
-                          color: Color(0xFF3E5B42),
+                          color: Color(0xFFA8BCB1),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -162,7 +169,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                     ElevatedButton(
                       onPressed: _saveForm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF934B3D),
+                        backgroundColor: const Color(0xFFA8BCB1),
                         minimumSize: const Size(double.infinity, 55),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -204,7 +211,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF3E5B42)),
+        prefixIcon: Icon(icon, color: const Color(0xFFA8BCB1)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
       validator: (v) => (v == null || v.isEmpty) ? "Campo requerido" : null,

@@ -48,14 +48,15 @@ class _UserListScreenState extends State<UserListScreen> {
       appBar: AppBar(
         title: const Text(
           "Administración de Usuarios",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF3E5B42),
+        backgroundColor: const Color(0xFFA8BCB1),
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3E5B42)),
+              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
             )
           : RefreshIndicator(
               onRefresh: _loadUsers,
@@ -72,7 +73,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     ),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: const Color(0xFF934B3D),
+                        backgroundColor: const Color(0xFFA8BCB1),
                         child: Text(
                           _getInitials(user),
                           style: const TextStyle(
@@ -88,7 +89,7 @@ class _UserListScreenState extends State<UserListScreen> {
                       subtitle: Text("${user.userRole} • ${user.userMail}"),
                       trailing: const Icon(
                         Icons.manage_accounts,
-                        color: Color(0xFF3E5B42),
+                        color: Color(0xFFA8BCB1),
                       ),
                       onTap: () async {
                         final result = await Navigator.push(
@@ -105,7 +106,7 @@ class _UserListScreenState extends State<UserListScreen> {
               ),
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF934B3D),
+        backgroundColor: const Color(0xFFA8BCB1),
         onPressed: () async {
           final result = await Navigator.push(
             context,

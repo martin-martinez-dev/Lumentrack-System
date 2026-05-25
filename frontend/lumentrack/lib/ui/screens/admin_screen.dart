@@ -11,10 +11,11 @@ class AdminScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           "Administración",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF3E5B42),
+        backgroundColor: const Color(0xFFA8BCB1),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
@@ -26,7 +27,7 @@ class AdminScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF3E5B42),
+                color: Color(0xFFA8BCB1),
               ),
               textAlign: TextAlign.center,
             ),
@@ -73,7 +74,7 @@ class AdminScreen extends StatelessWidget {
         ),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF934B3D),
+        backgroundColor: const Color(0xFFA8BCB1),
         padding: const EdgeInsets.symmetric(vertical: 20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 4,

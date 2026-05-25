@@ -21,19 +21,38 @@ class _MainWrapperState extends State<MainWrapper> {
     const AdminScreen(),
   ];
 
+  Color _getAppBarColor() {
+    switch (_selectedIndex) {
+      case 0: // Inicio / Dashboard
+        return const Color(0xFF934B3D); // Terracota por defecto
+      case 1: // Proyectos
+        return const Color(0xFF934B3D); // Terracota
+      case 2: // Muestras
+        return const Color(0xFF3E5B42); // Verde
+      case 3: // Admin
+        return const Color(0xFFA8BCB1); // Verde Pastel Administración
+      default:
+        return const Color(0xFF934B3D);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Aquí combinamos la leyenda fija con el título dinámico
-        title: Text("Lumentrack"),
+        title: const Text(
+          "Lumentrack",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: _getAppBarColor(),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF934B3D), // Terracota
+        selectedItemColor: _getAppBarColor(),
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
         elevation: 8,

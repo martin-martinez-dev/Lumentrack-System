@@ -52,13 +52,14 @@ class _MuestrasListScreenState extends State<MuestrasListScreen> {
       appBar: AppBar(
         title: const Text(
           "Listado de Muestras",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: const Color(0xFF3E5B42),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF934B3D),
+        backgroundColor: const Color(0xFF3E5B42),
         tooltip: 'Registrar Nueva Muestra',
         onPressed: _nuevaMuestra,
         child: const Icon(Icons.add, color: Colors.white, size: 28),

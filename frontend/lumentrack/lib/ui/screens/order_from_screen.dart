@@ -86,14 +86,18 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       appBar: AppBar(
         title: const Text(
           "Lumentrack",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF3E5B42),
+        backgroundColor: const Color(0xFF934B3D),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (!_isNew) // Si es un proyecto existente, mostramos el botón de Editar/Cancelar
             IconButton(
-              icon: Icon(_isEditing ? Icons.cancel : Icons.edit),
+              icon: Icon(
+                _isEditing ? Icons.cancel : Icons.edit,
+                color: Colors.white,
+              ),
               onPressed: () {
                 setState(() {
                   _isEditing = !_isEditing;

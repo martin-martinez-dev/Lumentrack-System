@@ -238,12 +238,20 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
       appBar: AppBar(
         title: Text(
           _isNew ? "Agregar Componente / Insumo" : "Detalle de Insumo",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFD9B44A),
+          ),
         ),
-        backgroundColor: const Color(0xFF3E5B42),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Color(0xFFD9B44A)),
         actions: [
           if (!_isNew)
             IconButton(
-              icon: Icon(_isEditing ? Icons.cancel : Icons.edit),
+              icon: Icon(
+                _isEditing ? Icons.cancel : Icons.edit,
+                color: const Color(0xFFD9B44A),
+              ),
               onPressed: () {
                 setState(() {
                   _isEditing = !_isEditing;
@@ -449,7 +457,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
                       ElevatedButton(
                         onPressed: _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF934B3D),
+                          backgroundColor: const Color(0xFFD9B44A),
                           minimumSize: const Size(double.infinity, 55),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -543,7 +551,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
               padding: const EdgeInsets.all(12.0),
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: const Color(0xFF3E5B42),
+                backgroundColor: const Color(0xFFD9B44A),
                 onPressed: _takePicture,
                 child: const Icon(Icons.camera_alt, color: Colors.white),
               ),

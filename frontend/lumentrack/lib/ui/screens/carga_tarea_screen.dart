@@ -37,7 +37,14 @@ class _CargaTareaScreenState extends State<CargaTareaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Carga de Tareas")),
+      appBar: AppBar(
+        title: const Text(
+          "Carga de Tareas",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFFD9B44A),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -77,7 +84,14 @@ class _CargaTareaScreenState extends State<CargaTareaScreen> {
                   onPressed: () => Navigator.pop(context),
                   child: const Text("Cancelar"),
                 ),
-                ElevatedButton(onPressed: _save, child: const Text("Guardar")),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD9B44A),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("Guardar"),
+                ),
               ],
             ),
           ],
