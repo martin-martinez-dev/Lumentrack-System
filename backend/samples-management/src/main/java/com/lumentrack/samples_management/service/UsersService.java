@@ -35,7 +35,7 @@ public class UsersService {
 
 		return Users.builder().userId(user.getUserId()).userName(user.getUserName())
 				.userLastName(user.getUserLastName()).userMail(user.getUserMail())
-				.userPhoneNumber(user.getUserPhoneNumber()).userRole(user.getUserRole()).build();
+				.userPhoneNumber(user.getUserPhoneNumber()).userRoleId(user.getUserRoleId()).build();
 	}
 
 	public List<Users> getAllUsers() {
@@ -52,7 +52,7 @@ public class UsersService {
 			users.setUserLastName(userUpdated.getUserLastName());
 			users.setUserMail(userUpdated.getUserMail());
 			users.setUserPhoneNumber(userUpdated.getUserPhoneNumber());
-			users.setUserRole(userUpdated.getUserRole());
+			users.setUserRoleId(userUpdated.getUserRoleId());
 			return users;
 		}).orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 

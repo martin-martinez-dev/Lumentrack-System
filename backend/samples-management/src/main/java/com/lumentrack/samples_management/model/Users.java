@@ -36,6 +36,6 @@ public class Users {
 	private String userPhoneNumber;
 	
 	@Column( nullable = false )
-	private String userRole;
+	private Integer userRoleId;
 	
 }
