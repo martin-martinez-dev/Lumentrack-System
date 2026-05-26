@@ -5,7 +5,9 @@ class UserItem {
   final String userLastName;
   final String userMail;
   final String? userPhoneNumber; // Nullable según tu anotación nullable = true
-  final String userRole;
+  final int userRoleId;
+  final String?
+  roleDisplayName; // Campo informativo proveniente del @Transient en Java
 
   UserItem({
     this.userId,
@@ -13,7 +15,8 @@ class UserItem {
     required this.userLastName,
     required this.userMail,
     this.userPhoneNumber,
-    required this.userRole,
+    required this.userRoleId,
+    this.roleDisplayName,
   });
 
   /// Getter de conveniencia para mostrar el nombre completo en los Dropdowns de la UI
@@ -27,7 +30,8 @@ class UserItem {
       userLastName: (json['userLastName'] as String?) ?? '',
       userMail: (json['userMail'] as String?) ?? '',
       userPhoneNumber: json['userPhoneNumber'] as String?,
-      userRole: (json['userRole'] as String?) ?? '',
+      userRoleId: json['userRoleId'] as int? ?? 0,
+      roleDisplayName: json['roleDisplayName'] as String?,
     );
   }
 
@@ -38,7 +42,8 @@ class UserItem {
     String? userLastName,
     String? userMail,
     String? userPhoneNumber,
-    String? userRole,
+    int? userRoleId,
+    String? roleDisplayName,
   }) {
     return UserItem(
       userId: userId ?? this.userId,
@@ -46,7 +51,8 @@ class UserItem {
       userLastName: userLastName ?? this.userLastName,
       userMail: userMail ?? this.userMail,
       userPhoneNumber: userPhoneNumber ?? this.userPhoneNumber,
-      userRole: userRole ?? this.userRole,
+      userRoleId: userRoleId ?? this.userRoleId,
+      roleDisplayName: roleDisplayName ?? this.roleDisplayName,
     );
   }
 
@@ -57,6 +63,7 @@ class UserItem {
     'userLastName': userLastName,
     'userMail': userMail,
     'userPhoneNumber': userPhoneNumber,
-    'userRole': userRole,
+    'userRoleId': userRoleId,
+    'roleDisplayName': roleDisplayName,
   };
 }

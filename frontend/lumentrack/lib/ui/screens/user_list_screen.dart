@@ -23,7 +23,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
   Future<void> _loadUsers() async {
     try {
-      final data = await _usersService.retrieveUsers();
+      final data = await _usersService.retrieveUsersDetails();
       setState(() {
         _users = data;
         _isLoading = false;
@@ -86,7 +86,9 @@ class _UserListScreenState extends State<UserListScreen> {
                         "${user.userName} ${user.userLastName}",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      subtitle: Text("${user.userRole} • ${user.userMail}"),
+                      subtitle: Text(
+                        "${user.roleDisplayName ?? 'Sin Rol'} • ${user.userMail}",
+                      ),
                       trailing: const Icon(
                         Icons.manage_accounts,
                         color: Color(0xFFA8BCB1),

@@ -1,12 +1,13 @@
 # Lumentrack - Estado del Desarrollo (Fase Alpha)
 
-**Progreso Actual:** 80%
-**Última Actualización:** 24 de Mayo, 2026 (CDMX)
+**Progreso Actual:** 85%
+**Última Actualización:** 26 de Mayo, 2026 (CDMX)
 *   **AppBar Dinámico en MainWrapper:** El color del título y fondo de "Lumentrack" ahora cambia reactivamente según la pestaña seleccionada (Terracota para Proyectos, Verde para Muestras, Verde Pastel para Admin).
+*   **Gestión de Roles Robusta:** Implementado catálogo de roles con validaciones técnicas estrictas (Mayúsculas/Guiones bajos) y sincronización dinámica con el formulario de usuarios.
 
 ## ✅ Implementado
 - **Servicios Base:** `UsersService`, `MaterialService`, `OrdersService`, `SamplesService`, `ImagesService` (Cloudinary).
-- **Modelos:** Estructura completa de `Client`, `Order`, `UserItem`, `Sample` y `Material`.
+- **Modelos:** Estructura completa de `Client`, `Order`, `UserItem`, `Sample`, `Material` y `RoleItem`.
 - **UI de Órdenes:** 
     - `OrderFormScreen`: Creación y edición preservando listas de muestras.
     - `OrderDetailScreen`: Vista detallada con selector de clientes (ComboBox) y lista de luminarias.
@@ -14,6 +15,7 @@
 - **Flexibilidad de Datos:** Migración exitosa de `orderNumber` de `int` a `String` para soportar folios alfanuméricos.
 
 ## 🛠️ En Proceso (El 20% Restante)
+- [x] **Módulo de Administración:** Gestión de Clientes, Usuarios y Roles finalizada. Sincronización de IDs relacionales activa.
 - [x] **Módulo de Administración:** Gestión de Clientes y Usuarios finalizada. Sincronización de "Representante de Ula" con catálogo de usuarios activa.
 - [ ] **Manejo de Errores Global:** Implementar interceptores HTTP para gestionar sesiones y errores de red de forma uniforme.
 - [ ] **Gestión de Estado:** Migrar de `setState` a un patrón más robusto (Provider/Riverpod) para escalabilidad.

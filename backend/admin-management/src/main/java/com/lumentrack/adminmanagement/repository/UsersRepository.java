@@ -1,10 +1,10 @@
-package com.lumentrack.samples_management.repository;
+package com.lumentrack.adminmanagement.repository;
 
+import com.lumentrack.adminmanagement.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.lumentrack.samples_management.model.Users;
-
 @Repository
 public interface UsersRepository extends JpaRepository<Users, Integer> {
+
 }

@@ -131,4 +131,26 @@ class UsersService {
       rethrow;
     }
   }
+
+  /// 6. Listar usuarios con detalles enriquecidos (GET /users/listUserDetails)
+  /// 🟢 REQUERIMIENTO: Trae el objeto UserItem incluyendo campos @Transient como roleDisplayName
+  Future<List<UserItem>> retrieveUsersDetails() async {
+    final url = Uri.parse('${ApiConfig.users}/listUserDetails');
+
+    try {
+      final response = await http.get(url, headers: _headers);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(utf8.decode(response.bodyBytes));
+        return list.map((json) => UserItem.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          "Error al listar detalles de usuarios: Código ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      debugPrint("Error en retrieveUsersDetails: $e");
+      rethrow;
+    }
+  }
 }

@@ -5,14 +5,20 @@ class ApiConfig {
       "http://192.168.1.149"; // IP en Ula
   //"http://192.168.100.16"; // IP en casa de Mex
 
+  // Dashboard Screen Endpoints
   static const String dashboard = "$baseUrl:8081/lumentrack/dashboard/getData";
-  static const String samples = "$baseUrl:8082/lumentrack/samples/samples";
+
+  // Samples Screens Endpoints
   static const String images = "$baseUrl:8082/lumentrack/samples/images";
+  static const String samples = "$baseUrl:8082/lumentrack/samples/samples";
   static const String orders = "$baseUrl:8082/lumentrack/samples/orders";
   static const String components =
       "$baseUrl:8082/lumentrack/samples/components";
-  static const String clients = "$baseUrl:8082/lumentrack/samples/clients";
   static const String tasks = "$baseUrl:8082/lumentrack/samples/tasks";
-  static const String users = "$baseUrl:8082/lumentrack/samples/users";
-  static const String materials = "$baseUrl:8082/lumentrack/samples/materials";
+
+  // Admin Screens Endpoints
+  static const String clients = "$baseUrl:8083/lumentrack/admin/clients";
+  static const String users = "$baseUrl:8083/lumentrack/admin/users";
+  static const String materials = "$baseUrl:8083/lumentrack/admin/materials";
+  static const String roles = "$baseUrl:8083/lumentrack/admin/roles";
 }

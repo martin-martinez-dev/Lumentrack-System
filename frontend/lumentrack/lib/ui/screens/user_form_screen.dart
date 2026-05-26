@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/users_model.dart';
 import '../../services/users_service.dart';
+import '../../models/roles_model.dart';
+import '../../services/roles_service.dart';
 
 class UserFormScreen extends StatefulWidget {
   final UserItem? user;
@@ -14,20 +16,17 @@ class UserFormScreen extends StatefulWidget {
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final UsersService _usersService = UsersService();
+  final RolesService _rolesService = RolesService();
   bool _isSaving = false;
+  bool _isLoadingRoles = true;
 
   late TextEditingController _nameController;
   late TextEditingController _lastNameController;
   late TextEditingController _mailController;
   late TextEditingController _phoneController;
-  String? _selectedRole;
+  int? _selectedRoleId;
 
-  final List<String> _roles = [
-    "Administrador",
-    "Diseñador",
-    "Producción",
-    "Ventas",
-  ];
+  List<RoleItem> _rolesList = [];
 
   @override
   void initState() {
@@ -41,9 +40,20 @@ class _UserFormScreenState extends State<UserFormScreen> {
       text: widget.user?.userPhoneNumber ?? '',
     );
 
-    // Si el rol que viene de DB no está en la lista (por ser anterior), lo manejamos
-    if (widget.user != null && _roles.contains(widget.user!.userRole)) {
-      _selectedRole = widget.user!.userRole;
+    _selectedRoleId = widget.user?.userRoleId;
+    _loadRoles();
+  }
+
+  Future<void> _loadRoles() async {
+    try {
+      final roles = await _rolesService.retrieveRoles();
+      setState(() {
+        _rolesList = roles;
+        _isLoadingRoles = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingRoles = false);
+      debugPrint("Error al cargar catálogo de roles: $e");
     }
   }
 
@@ -67,7 +77,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
       userLastName: _lastNameController.text,
       userMail: _mailController.text,
       userPhoneNumber: _phoneController.text,
-      userRole: _selectedRole ?? "Producción", // Valor por defecto
+      userRoleId: _selectedRoleId ?? 0,
     );
 
     try {
@@ -104,7 +114,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
         backgroundColor: const Color(0xFFA8BCB1),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isSaving
+      body: (_isSaving || _isLoadingRoles)
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
             )
@@ -141,8 +151,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
                     ),
                     const SizedBox(height: 15),
 
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
+                    DropdownButtonFormField<int>(
+                      value: _selectedRoleId,
                       decoration: InputDecoration(
                         labelText: "Rol/Responsabilidades",
                         prefixIcon: const Icon(
@@ -153,15 +163,15 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      items: _roles
+                      items: _rolesList
                           .map(
-                            (role) => DropdownMenuItem(
-                              value: role,
-                              child: Text(role),
+                            (role) => DropdownMenuItem<int>(
+                              value: role.roleId,
+                              child: Text(role.roleDisplayName),
                             ),
                           )
                           .toList(),
-                      onChanged: (val) => setState(() => _selectedRole = val),
+                      onChanged: (val) => setState(() => _selectedRoleId = val),
                       validator: (v) => v == null ? "Seleccione un rol" : null,
                     ),
 

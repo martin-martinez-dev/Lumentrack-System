@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'client_list_screen.dart';
 import 'user_list_screen.dart';
+import 'role_list_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -44,6 +45,13 @@ class AdminScreen extends StatelessWidget {
               label: "Usuarios",
               icon: Icons.manage_accounts_outlined,
               destination: const UserListScreen(),
+            ),
+            const SizedBox(height: 20),
+            _buildMenuButton(
+              context,
+              label: "Roles y Permisos",
+              icon: Icons.security_outlined,
+              destination: const RoleListScreen(),
             ),
           ],
         ),
