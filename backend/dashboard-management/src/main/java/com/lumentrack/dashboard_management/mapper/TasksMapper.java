@@ -3,13 +3,18 @@ package com.lumentrack.dashboard_management.mapper;
 import java.util.List;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping; // Nueva importación
 
-import com.lumentrack.commons.model.Tasks; // Actualizado: Usar la entidad Tasks de commons
+import com.lumentrack.commons.model.Tasks; // Usar la entidad Tasks de commons
 import com.lumentrack.dashboard_management.model.TasksRecord;
-import com.lumentrack.dashboard_management.model.ComponentsRecord; // Nueva importación, para el record
+// import com.lumentrack.dashboard_management.model.ComponentsRecord; // Eliminado: Ya no se necesita ComponentsRecord completo
 
-@Mapper(componentModel = "spring", uses = {ComponentsMapper.class}) // Añadido: uses = {ComponentsMapper.class}
+@Mapper(componentModel = "spring") // Modificado: Eliminado ComponentsMapper de 'uses'
 public interface TasksMapper {
-	TasksRecord toRecord(Tasks task);
-	List<TasksRecord> toRecordList(List<Tasks> tasks);
+
+    @Mapping(source = "component.componentId", target = "componentId") // Mapear el ID del Component
+    @Mapping(source = "component.componentName", target = "componentName") // Mapear el nombre del Component
+    TasksRecord toRecord(Tasks task);
+
+    List<TasksRecord> toRecordList(List<Tasks> tasks);
 }

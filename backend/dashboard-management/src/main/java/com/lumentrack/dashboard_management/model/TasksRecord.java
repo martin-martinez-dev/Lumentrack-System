@@ -11,6 +11,7 @@ public record TasksRecord (
 	LocalDate taskEstimatedDate,
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	LocalDate taskRealDateTime,
-	// Integer componentId, // Reemplazado por la referencia a ComponentsRecord
-	ComponentsRecord component // Referencia al Component padre (puede ser un DTO simplificado si es necesario)
+	// Eliminado: ComponentsRecord component // Reemplazado por componentId y componentName
+	Integer componentId, // Añadido: ID del Component padre
+	String componentName // Añadido: Nombre del Component padre
 ) { }

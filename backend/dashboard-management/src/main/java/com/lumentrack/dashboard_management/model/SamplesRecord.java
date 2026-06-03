@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public record SamplesRecord (
 	Integer sampleId,
-	// Integer orderId, // Reemplazado por la referencia a OrdersRecord
-	OrdersRecord order, // Referencia al Order padre (puede ser un DTO simplificado si es necesario)
+	// Eliminado: OrdersRecord order, // Reemplazado por orderId y orderName
+	Integer orderId, // Añadido: ID del Order padre
+	String orderName, // Añadido: Nombre del Order padre
 	String sampleName,
 	String samplePhotoUrl,
 	String samplePhotoId,
