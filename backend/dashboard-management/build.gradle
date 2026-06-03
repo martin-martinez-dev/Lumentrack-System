@@ -27,13 +27,17 @@ configurations {
 
 repositories {
 	mavenCentral()
+	mavenLocal() // Añadido: Para encontrar lumentrack-commons
 }
 
 dependencies {
+	// Dependencia a la librería común
+	implementation 'com.lumentrack:lumentrack-commons:0.0.1-SNAPSHOT'
+
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+	// Eliminado: compileOnly 'org.projectlombok:lombok' (ahora en commons)
+	// Eliminado: annotationProcessor 'org.projectlombok:lombok' (ahora en commons)
 	
 	//Para el uso de MapStruct
     implementation 'org.mapstruct:mapstruct:1.6.3'

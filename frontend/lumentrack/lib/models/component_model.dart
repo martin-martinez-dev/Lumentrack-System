@@ -20,7 +20,7 @@ class Component {
   // 2. Campos informativos (@Transient en Spring Boot)
   final String sampleName;
   final String materialName;
-  final List<Task> taskList;
+  final List<Task> tasks;
 
   Component({
     this.componentId,
@@ -37,21 +37,24 @@ class Component {
     this.materialName = 'Sin Material',
     this.statusResume,
     required this.ulaLightEmployee,
-    this.taskList = const [],
+    this.tasks = const [],
   });
 
   /// 3. Mapeo seguro contra nulos desde Spring Boot (Mesa de Entrada)
   factory Component.fromJson(Map<String, dynamic> json) {
     // Parseo de la jerarquía modular de tareas de forma segura
-    var list = json['taskList'] as List?;
-    List<Task> tasks = list != null
+    var list = json['tasks'] as List?;
+    List<Task> taskList = list != null
         ? list.map((i) => Task.fromJson(i)).toList()
         : [];
 
+    // Extraer datos del objeto relacional 'sample'
+    final sampleMap = json['sample'] as Map<String, dynamic>?;
+
     return Component(
       componentId: json['componentId'] as int?,
-      sampleId: json['sampleId'] ?? 0,
-      sampleName: json['sampleName'] ?? '',
+      sampleId: sampleMap != null ? (sampleMap['sampleId'] ?? 0) : 0,
+      sampleName: sampleMap != null ? (sampleMap['sampleName'] ?? '') : '',
       componentName: json['componentName'] ?? '',
       componentType: json['componentType'] ?? '',
       componentDescription: json['componentDescription'] ?? '',
@@ -63,14 +66,14 @@ class Component {
       materialName: json['materialName'] ?? 'Sin Material',
       statusResume: json['statusResume'],
       ulaLightEmployee: json['ulaLightEmployee'] ?? '',
-      taskList: tasks,
+      tasks: taskList,
     );
   }
 
   /// 4. Conversión a JSON para enviar a los endpoints POST / PUT en Spring Boot (Mesa de Salida)
   Map<String, dynamic> toJson() => {
     'componentId': componentId,
-    'sampleId': sampleId,
+    'sample': {'sampleId': sampleId},
     'componentName': componentName,
     'componentType': componentType,
     'componentDescription': componentDescription,
@@ -85,7 +88,7 @@ class Component {
     'statusResume': statusResume,
     'ulaLightEmployee': ulaLightEmployee,
     // Opcional por si el backend requiere persistencia en cascada de subtareas:
-    'taskList': taskList.map((e) => e.toJson()).toList(),
+    'tasks': tasks.map((e) => e.toJson()).toList(),
   };
 
   // =========================================================================

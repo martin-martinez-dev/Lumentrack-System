@@ -72,7 +72,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       _uploadedPhotoId = widget.sample?.samplePhotoId;
 
       // 1. Carga inicial instantánea con lo que hereda de la vista anterior (UX veloz)
-      _associatedComponents = widget.sample?.componentList ?? [];
+      _associatedComponents = widget.sample?.components ?? [];
 
       // 2. 🟢 CONEXIÓN ASÍNCRONA: Vamos al backend por los datos reales y unificados en segundo plano
       _inicializarComponentesGenuinos();
@@ -97,7 +97,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         widget.sample!.sampleId!,
       );
       setState(() {
-        _associatedComponents = sampleCompleta.componentList;
+        _associatedComponents = sampleCompleta.components;
       });
     } catch (e) {
       debugPrint(
@@ -591,7 +591,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         widget.sample!.sampleId!,
       );
       setState(() {
-        _associatedComponents = sampleActualizada.componentList;
+        _associatedComponents = sampleActualizada.components;
       });
     } catch (e) {
       debugPrint("Error al sincronizar componentes de la muestra: $e");
@@ -702,7 +702,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         realDeliveryDate: _realDateController.text.isNotEmpty
             ? (Sample.formatToServer(_realDateController.text) ?? '')
             : 'Sin fecha',
-        componentList:
+        components:
             _associatedComponents, // Preservamos el estado reactivo actual
       );
 

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lumentrack.samples_management.model.Orders;
+import com.lumentrack.commons.model.Orders;
 import com.lumentrack.samples_management.service.OrderService;
 
 @RestController
@@ -40,6 +40,13 @@ public class OrderController {
 	public List<Orders> retrieveProjects() {
 		logger.info("Getting the list of projects");
 		return service.getAllProjects();
+	}
+
+	// Nuevo endpoint para listar órdenes por userId
+	@GetMapping("/list/user/{userId}")
+	public List<Orders> retrieveOrdersByUserId(@PathVariable("userId") Integer userId) {
+		logger.info("Listing orders for userId: " + userId);
+		return service.getOrdersByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")

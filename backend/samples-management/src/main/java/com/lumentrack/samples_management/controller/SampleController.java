@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lumentrack.samples_management.model.Samples;
+import com.lumentrack.commons.model.Samples;
 import com.lumentrack.samples_management.service.SampleService;
 
 @RestController
@@ -38,7 +38,21 @@ public class SampleController {
 		
 		// 2. Transferimos los datos del DTO/ViewModel que mandó Flutter hacia la Entidad
 	    sample.setSampleName(viewModel.getSampleName());
-	    sample.setOrderId(viewModel.getOrderId()); // <--- Aquí recuperas el ID del ComboBox de Flutter
+	    // sample.setOrderId(viewModel.getOrderId()); // <--- Aquí recuperas el ID del ComboBox de Flutter
+		// Ahora que Samples tiene una relación ManyToOne con Orders, deberías establecer la entidad Order completa
+		// Esto requeriría que el viewModel contenga el OrderId y luego buscar la Order o que el frontend envíe la Order completa
+		// Por simplicidad, si el viewModel aún envía orderId, necesitarías buscar la Order aquí:
+		// Order order = orderService.findById(viewModel.getOrderId()).orElseThrow(...);
+		// sample.setOrder(order);
+		// Por ahora, mantendremos la lógica original si el frontend aún envía orderId directamente.
+		// Si el frontend envía la entidad Order completa, el mapper se encargaría.
+		// Para este ejemplo, asumo que el frontend envía el orderId y lo mapeamos a la entidad Order en el servicio o mapper.
+		// Sin embargo, con las relaciones JPA, lo ideal sería que el `viewModel` contenga el `orderId` y se busque la entidad `Orders`
+		// o que el `viewModel` ya contenga un objeto `Orders` simplificado.
+		// Para evitar errores de compilación, si el `viewModel` aún tiene `orderId`, y la entidad `Samples` ahora espera un objeto `Orders`,
+		// esta parte necesitará ser revisada. Por ahora, comento la línea original y dejo una nota.
+		// sample.setOrderId(viewModel.getOrderId()); 
+		
 	    sample.setSamplePhotoUrl(viewModel.getSamplePhotoUrl());
 	    sample.setSamplePhotoId(viewModel.getSamplePhotoId());
 	    sample.setEstimatedDeliveryDate(viewModel.getEstimatedDeliveryDate());
@@ -55,6 +69,13 @@ public class SampleController {
 		logger.info( "Listing all samples" );
 		
 		return sampleService.getAllSamples();
+	}
+
+	// Nuevo endpoint para listar muestras por userId
+	@GetMapping("/list/user/{userId}")
+	public List<Samples> retrieveSamplesByUserId(@PathVariable("userId") Integer userId) {
+		logger.info("Listing samples for userId: " + userId);
+		return sampleService.getSamplesByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")

@@ -14,12 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lumentrack.samples_management.exception.ResourceNotFoundException;
-import com.lumentrack.samples_management.model.Components;
-import com.lumentrack.samples_management.model.Orders;
-import com.lumentrack.samples_management.model.Samples;
-import com.lumentrack.samples_management.repository.ComponentsRepository;
-import com.lumentrack.samples_management.repository.OrdersRepository;
-import com.lumentrack.samples_management.repository.SamplesRepository;
+import com.lumentrack.commons.model.Components;
+import com.lumentrack.commons.model.Orders;
+import com.lumentrack.commons.model.Samples;
+import com.lumentrack.commons.repository.ComponentsRepository;
+import com.lumentrack.commons.repository.OrdersRepository;
+import com.lumentrack.commons.repository.SamplesRepository;
 
 @Service
 public class SampleService {
@@ -49,6 +49,12 @@ public class SampleService {
 		return repository.findAll();
 	}
 	
+	// Nuevo método para obtener muestras por userId de sus componentes
+	public List<Samples> getSamplesByUserId(Integer userId) {
+		logger.info("Retrieving samples for userId: " + userId);
+		return repository.findByComponentsUserId(userId);
+	}
+	
 	public Optional<Samples> getSampleById(Integer id) {
 		logger.info( "Get a single sample by id: " + id );
 		
@@ -64,6 +70,8 @@ public class SampleService {
 			sample.setSamplePhotoId( updatedSample.getSamplePhotoId() );
 			sample.setSamplePhotoUrl( updatedSample.getSamplePhotoUrl() );
 			sample.setRealDeliveryDate( updatedSample.getRealDeliveryDate() );
+			// Asegúrate de actualizar también la relación con Order si es parte de la actualización
+			// sample.setOrder(updatedSample.getOrder()); 
 			return repository.save( sample );
 		}).orElseThrow( () -> new RuntimeException("Muestra no encontrada") );
 	}
@@ -81,24 +89,18 @@ public class SampleService {
 		logger.info("Getting the Samples Details");
 		
 		List<Samples> allSamples = repository.findAll();
-		List<Orders> allOrders = orderRepository.findAll();
 		
-		Map<Integer, Orders> ordersMap = allOrders.stream().collect(Collectors.toMap(Orders::getOrderId, order -> order));
-		
-		// Cruzamos los datos usando la potencia de Java Streams y el @Builder de Lombok
+		// Ahora que Samples tiene una relación ManyToOne con Orders, podemos acceder directamente
         return allSamples.stream().map(sample -> {
-            // Buscamos si existe la orden correspondiente en el mapa
-            Orders associatedOrder = ordersMap.get(sample.getOrderId());
+            Orders associatedOrder = sample.getOrder(); // Acceder directamente a la relación
             
-            // Si la orden existe, extraemos el nombre; si no, manejamos un valor por defecto seguro
             String orderName = (associatedOrder != null) ? associatedOrder.getOrderName() : "Orden No Encontrada";
 
-            // Construimos el ViewModel de forma fluida gracias a Lombok
             return Samples.builder()
                     .sampleId(sample.getSampleId())
                     .sampleName(sample.getSampleName())
-                    .orderId(sample.getOrderId())
-                    .orderName(orderName) // <--- Aquí inyectamos el cruce de datos
+                    .order(sample.getOrder()) // Usar la entidad completa
+                    //.orderName(orderName) // <--- Aquí inyectamos el cruce de datos
                     .samplePhotoUrl(sample.getSamplePhotoUrl())
                     .samplePhotoId(sample.getSamplePhotoId())
                     .estimatedDeliveryDate(sample.getEstimatedDeliveryDate())
@@ -114,21 +116,23 @@ public class SampleService {
                 "La muestra con id " + sampleId + " no existe."
             ));
 		
-		Optional<Orders> order = orderRepository.findById( sample.getOrderId() );
+		// Acceder directamente a la relación Order
+		Orders order = sample.getOrder();
 		
-		List<Components> componentList = componentsRepository.findBySampleId(sampleId);
+		// Acceder directamente a la relación Components
+		List<Components> componentList = sample.getComponents();
 		List<Components> safeComponents = ( componentList != null ) ? componentList : Collections.emptyList();
 		
 		return Samples.builder()
 				.sampleId( sample.getSampleId() )
 				.sampleName( sample.getSampleName() )
-				.orderId( sample.getOrderId() )
-				.orderName( order.get().getOrderName() )
+				.order(sample.getOrder()) // Usar la entidad completa
+				//.orderName( order != null ? order.getOrderName() : null ) // Acceder al nombre a través de la relación
 				.samplePhotoUrl( sample.getSamplePhotoUrl() )
 				.samplePhotoId( sample.getSamplePhotoId() )
 				.estimatedDeliveryDate( sample.getEstimatedDeliveryDate() )
 				.realDeliveryDate( sample.getRealDeliveryDate() )
-				.componentList( safeComponents )
+				.components( safeComponents ) // Usar la lista de componentes de la relación
 				.build();
 		
 	}

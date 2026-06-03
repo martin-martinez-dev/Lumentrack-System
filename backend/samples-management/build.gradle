@@ -25,21 +25,27 @@ configurations {
 
 repositories {
 	mavenCentral()
+	mavenLocal() // Añadido: Para encontrar lumentrack-commons
 }
 
 dependencies {
+	// Dependencia a la librería común
+	implementation 'com.lumentrack:lumentrack-commons:0.0.1-SNAPSHOT'
+
 	implementation 'com.cloudinary:cloudinary-http5:2.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Re-añadidas: Dependencias necesarias para la aplicación principal
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    runtimeOnly 'com.mysql:mysql-connector-j' // Use com.mysql:mysql-connector-j for modern projects
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// ELIMINADO: implementation 'org.springframework.boot:spring-boot-autoconfigure:4.0.5'
 }
 
 tasks.named('test') {

@@ -132,7 +132,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
         final detailedComponent = await _componentsService.getComponentDetails(
           widget.component!.componentId!,
         );
-        _componentTasks = detailedComponent.taskList;
+        _componentTasks = detailedComponent.tasks;
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -157,7 +157,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
         widget.component!.componentId!,
       );
       setState(() {
-        _componentTasks = detailedComponent.taskList;
+        _componentTasks = detailedComponent.tasks;
       });
     } catch (e) {
       debugPrint("Error al sincronizar tareas del componente: $e");
@@ -696,7 +696,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
             : 'Sin fecha', // 🟢 Guardado correcto
         statusResume:
             _selectedStatus!, // 🟢 Atributo asignado desde el ComboBox hardcodeado
-        taskList: _componentTasks,
+        tasks: _componentTasks,
       );
 
       if (_isNew) {

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lumentrack.samples_management.model.Tasks;
+import com.lumentrack.commons.model.Tasks;
 import com.lumentrack.samples_management.service.TaskService;
 
 @RestController
@@ -40,6 +40,13 @@ public class TaskController {
 	public List<Tasks> retrieveAllTasks() {
 		logger.info("Getting information of all tasks");
 		return service.getAllTasks();
+	}
+
+	// Nuevo endpoint para listar tareas por userId
+	@GetMapping("/list/user/{userId}")
+	public List<Tasks> retrieveTasksByUserId(@PathVariable("userId") Integer userId) {
+		logger.info("Listing tasks for userId: " + userId);
+		return service.getTasksByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")

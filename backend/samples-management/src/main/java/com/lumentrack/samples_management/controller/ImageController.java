@@ -1,6 +1,6 @@
 package com.lumentrack.samples_management.controller;
 
-import com.lumentrack.samples_management.model.CloudinaryResponse;
+import com.lumentrack.commons.model.CloudinaryResponse;
 import com.lumentrack.samples_management.service.CloudinaryService;
 
 import org.slf4j.Logger;

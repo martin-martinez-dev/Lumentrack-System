@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lumentrack.samples_management.model.Clients;
-import com.lumentrack.samples_management.repository.ClientsRepository;
+import com.lumentrack.commons.model.Clients;
+import com.lumentrack.commons.repository.ClientsRepository;
 
 @Service
 public class ClientsService {

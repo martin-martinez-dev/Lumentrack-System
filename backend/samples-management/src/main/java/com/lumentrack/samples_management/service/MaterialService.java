@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lumentrack.samples_management.model.Materials;
-import com.lumentrack.samples_management.repository.MaterialsRepository;
+import com.lumentrack.commons.model.Materials;
+import com.lumentrack.commons.repository.MaterialsRepository;
 
 @Service
 public class MaterialService {

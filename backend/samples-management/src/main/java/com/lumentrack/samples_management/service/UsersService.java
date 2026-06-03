@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lumentrack.samples_management.exception.ResourceNotFoundException;
-import com.lumentrack.samples_management.model.Users;
-import com.lumentrack.samples_management.repository.UsersRepository;
+import com.lumentrack.commons.model.Users;
+import com.lumentrack.commons.repository.UsersRepository;
 
 @Service
 public class UsersService {

@@ -247,7 +247,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _currentOrder == null || _currentOrder!.sampleList.isEmpty
+                _currentOrder == null || _currentOrder!.samples.isEmpty
                     ? Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
@@ -264,9 +264,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     : ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _currentOrder!.sampleList.length,
+                        itemCount: _currentOrder!.samples.length,
                         itemBuilder: (context, index) {
-                          final sample = _currentOrder!.sampleList[index];
+                          final sample = _currentOrder!.samples[index];
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 6),
                             child: ListTile(

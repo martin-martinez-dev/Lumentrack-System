@@ -14,7 +14,7 @@ class Sample {
 
   // 2. Campos informativos (@Transient en Spring Boot)
   final String orderName;
-  final List<Component> componentList; // 🟢 Integración de la jerarquía modular
+  final List<Component> components; // 🟢 Integración de la jerarquía modular
 
   Sample({
     this.sampleId,
@@ -25,34 +25,39 @@ class Sample {
     required this.estimatedDeliveryDate,
     required this.realDeliveryDate,
     this.orderName = 'Sin Orden',
-    this.componentList = const [],
+    this.components = const [],
   });
 
   /// 3. Mapeo seguro contra nulos desde Spring Boot
   factory Sample.fromJson(Map<String, dynamic> json) {
     // Parseo de la lista de componentes de forma segura
-    var list = json['componentList'] as List?;
-    List<Component> components = list != null
+    var list = json['components'] as List?;
+    List<Component> componentList = list != null
         ? list.map((i) => Component.fromJson(i)).toList()
         : [];
 
+    // Extraer datos del objeto relacional 'order' que viene del backend
+    final orderMap = json['order'] as Map<String, dynamic>?;
+
     return Sample(
       sampleId: json['sampleId'] as int?,
-      orderId: json['orderId'] ?? 0,
+      orderId: orderMap != null ? (orderMap['orderId'] ?? 0) : 0,
       sampleName: json['sampleName'] ?? '',
       samplePhotoUrl: json['samplePhotoUrl'] ?? '',
       samplePhotoId: json['samplePhotoId'] ?? '',
       estimatedDeliveryDate: json['estimatedDeliveryDate']?.toString() ?? '',
       realDeliveryDate: json['realDeliveryDate']?.toString() ?? '',
-      orderName: json['orderName'] ?? 'Sin Orden',
-      componentList: components,
+      orderName: orderMap != null
+          ? (orderMap['orderName'] ?? 'Sin Orden')
+          : 'Sin Orden',
+      components: componentList,
     );
   }
 
   /// 4. Conversión a JSON para enviar a los endpoints POST / PUT en Spring Boot
   Map<String, dynamic> toJson() => {
     'sampleId': sampleId,
-    'orderId': orderId,
+    'order': {'orderId': orderId},
     'sampleName': sampleName,
     'samplePhotoUrl': samplePhotoUrl,
     'samplePhotoId': samplePhotoId,
@@ -69,7 +74,7 @@ class Sample {
         : Sample.formatToServer(realDeliveryDate),
     // Nota: 'orderName' y 'componentList' no se envían al guardar si el backend mapea crudo,
     // pero si usas cascada en Spring Boot puedes descomentar la siguiente línea:
-    // 'componentList': componentList.map((e) => e.toJson()).toList(),
+    // 'components': components.map((e) => e.toJson()).toList(),
   };
 
   // =========================================================================

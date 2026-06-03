@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lumentrack.samples_management.exception.ResourceNotFoundException;
-import com.lumentrack.samples_management.model.Components;
-import com.lumentrack.samples_management.model.Tasks;
-import com.lumentrack.samples_management.repository.ComponentsRepository;
-import com.lumentrack.samples_management.repository.TasksRepository;
+import com.lumentrack.commons.model.Components;
+import com.lumentrack.commons.model.Tasks;
+import com.lumentrack.commons.repository.ComponentsRepository;
+import com.lumentrack.commons.repository.TasksRepository;
 
 @Service
 public class TaskService {
@@ -24,7 +24,7 @@ public class TaskService {
 	private TasksRepository repository;
 	
 	@Autowired
-	private ComponentsRepository componentRepository;
+	private ComponentsRepository componentRepository; // Se mantiene por si hay otros usos, aunque getTaskDetails ya no lo usará directamente.
 	
 	public Tasks saveTask(Tasks task) {
 		logger.info("Saving for task: " + task.getTaskName() );
@@ -34,6 +34,12 @@ public class TaskService {
 	public List<Tasks> getAllTasks() {
 		logger.info("Getting all tasks");
 		return repository.findAll();
+	}
+
+	// Nuevo método para obtener tareas por userId de sus componentes
+	public List<Tasks> getTasksByUserId(Integer userId) {
+		logger.info("Retrieving tasks for userId: " + userId);
+		return repository.findByComponentsUserId(userId);
 	}
 	
 	public Optional<Tasks> getTaskById(Integer id) {
@@ -48,6 +54,8 @@ public class TaskService {
 		return repository.findById( task.getTaskId() ).map(tasks -> {
 			tasks.setTaskDescription( task.getTaskDescription() );
 			tasks.setTaskRealDateTime( tasks.getTaskRealDateTime() );
+			// Asegúrate de actualizar también la relación con Component si es parte de la actualización
+			// tasks.setComponent(task.getComponent());
 			return tasks;
 		}).orElseThrow( () -> new RuntimeException("Tarea no encontrada") );
 	}
@@ -69,14 +77,16 @@ public class TaskService {
                 "La tarea con id " + id + " no existe."
             ));
 		
-		Optional<Components> component = componentRepository.findById( task.getComponentId() );
+		// Acceder directamente a la relación Component
+		Components component = task.getComponent();
 		
 		return Tasks.builder()
 				.taskId( task.getTaskId() )
 				.taskName( task.getTaskName())
 				.taskDescription( task.getTaskDescription() )
-				.componentId( task.getComponentId() )
-				.componentName( component.get().getComponentName() )
+				// .componentId( task.getComponentId() ) // Ya no es necesario si usas la relación 'component'
+				.component(component) // Usar la entidad completa
+				//.componentName( component != null ? component.getComponentName() : null ) // Acceder al nombre a través de la relación
 				.taskPhotoUrl( task.getTaskPhotoUrl() )
 				.taskPhotoId( task.getTaskPhotoId() )
 				.taskEstimatedDate( task.getTaskEstimatedDate() )

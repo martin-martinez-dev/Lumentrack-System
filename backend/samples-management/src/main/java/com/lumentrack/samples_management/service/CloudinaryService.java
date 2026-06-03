@@ -3,9 +3,9 @@ package com.lumentrack.samples_management.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
-import com.lumentrack.samples_management.model.CloudinaryResponse;
-import com.lumentrack.samples_management.model.SavedImageLog;
-import com.lumentrack.samples_management.repository.SavedImageLogRepository;
+import com.lumentrack.commons.model.CloudinaryResponse;
+import com.lumentrack.commons.model.SavedImageLog;
+import com.lumentrack.commons.repository.SavedImageLogRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

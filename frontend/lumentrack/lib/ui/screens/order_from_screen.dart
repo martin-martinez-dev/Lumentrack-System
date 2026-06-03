@@ -155,7 +155,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
               ),
               const SizedBox(height: 40),
 
-              // 🟢 NOTA DE AISLAMIENTO: Las muestras ("sampleList") no se dibujan aquí.
+              // 🟢 NOTA DE AISLAMIENTO: Las muestras ("samples") no se dibujan aquí.
               // Quedan intactas en el objeto pero ocultas al usuario en esta vista.
               if (_isEditing)
                 ElevatedButton(
@@ -233,8 +233,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
         estimatedDeliveryDate: _estimatedDateController.text,
         realDeliveryDate:
             widget.order?.realDeliveryDate, // Se mantiene el valor actual
-        sampleList:
-            widget.order?.sampleList ??
+        samples:
+            widget.order?.samples ??
             [], // 🟢 ¡Aquí se cuida y preserva el listado!
       );
 

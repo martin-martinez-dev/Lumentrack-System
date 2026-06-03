@@ -26,12 +26,18 @@ class Task {
 
   /// Factory para deserealizar el JSON proveniente de Spring Boot
   factory Task.fromJson(Map<String, dynamic> json) {
+    final componentMap = json['component'] as Map<String, dynamic>?;
+
     return Task(
       taskId: json['taskId'] as int?,
       taskName: json['taskName'] ?? '',
       taskDescription: json['taskDescription'] ?? '',
-      componentId: json['componentId'] ?? 0,
-      componentName: json['componentName'] ?? '',
+      componentId: componentMap != null
+          ? (componentMap['componentId'] ?? 0)
+          : 0,
+      componentName: componentMap != null
+          ? (componentMap['componentName'] ?? '')
+          : '',
       taskPhotoUrl: json['taskPhotoUrl'] ?? '',
       taskPhotoId: json['taskPhotoId'] ?? '',
       taskEstimatedDate: json['taskEstimatedDate']?.toString() ?? '',
@@ -44,7 +50,7 @@ class Task {
     'taskId': taskId,
     'taskName': taskName,
     'taskDescription': taskDescription,
-    'componentId': componentId,
+    'component': {'componentId': componentId},
     'taskPhotoUrl': taskPhotoUrl,
     'taskPhotoId': taskPhotoId,
     // Mapeo seguro de fechas para evitar enviar cadenas vacías al backend

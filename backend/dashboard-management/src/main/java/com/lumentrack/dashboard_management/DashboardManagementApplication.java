@@ -4,8 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories; // Nueva importación
 
 @SpringBootApplication
+@EntityScan("com.lumentrack.commons.model") // Añadido: Escanear entidades en el paquete commons
+@EnableJpaRepositories("com.lumentrack.commons.repository") // Añadido: Habilitar repositorios JPA en el paquete commons
 public class DashboardManagementApplication {
 
 	public static final Logger logger = LoggerFactory.getLogger(DashboardManagementApplication.class);

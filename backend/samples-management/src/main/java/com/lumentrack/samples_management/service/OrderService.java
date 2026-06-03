@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lumentrack.samples_management.exception.ResourceNotFoundException;
-import com.lumentrack.samples_management.model.Orders;
-import com.lumentrack.samples_management.model.Samples;
-import com.lumentrack.samples_management.repository.OrdersRepository;
-import com.lumentrack.samples_management.repository.SamplesRepository;
+import com.lumentrack.commons.model.Orders;
+import com.lumentrack.commons.model.Samples;
+import com.lumentrack.commons.repository.OrdersRepository;
+import com.lumentrack.commons.repository.SamplesRepository;
 
 @Service
 public class OrderService {
@@ -25,7 +25,7 @@ public class OrderService {
 	private OrdersRepository repository;
 	
 	@Autowired
-	private SamplesRepository sampleRepository;
+	private SamplesRepository sampleRepository; // Aunque ya no se usará directamente para findByOrderId, se mantiene por si hay otros usos.
 	
 	public Orders saveProject(Orders project) {
 		logger.info( "Saving project: " + project.getOrderName() );
@@ -35,6 +35,12 @@ public class OrderService {
 	public List<Orders> getAllProjects() {
 		logger.info("Retrieving all the Projects");
 		return repository.findAll();
+	}
+
+	// Nuevo método para obtener órdenes por userId de sus componentes
+	public List<Orders> getOrdersByUserId(Integer userId) {
+		logger.info("Retrieving orders for userId: " + userId);
+		return repository.findByComponentsUserId(userId);
 	}
 	
 	public Optional<Orders> getProjectById(Integer id) {
@@ -51,6 +57,8 @@ public class OrderService {
 			projects.setRealDeliveryDate( updatedProject.getRealDeliveryDate() );
 			projects.setOrderNumber( updatedProject.getOrderNumber() );
 			projects.setClientId( updatedProject.getClientId() );
+			// Asegúrate de actualizar también la relación con Samples si es parte de la actualización
+			// projects.setSamples(updatedProject.getSamples());
 			return repository.save(projects);
 		}).orElseThrow( () -> new RuntimeException("Proyecto no encontrado") );
 	}
@@ -72,8 +80,8 @@ public class OrderService {
 	                "El proyecto con ID " + orderId + " no existe."
 	            ));
 	    
-	    // 2. Buscamos las muestras relacionadas de forma segura
-	    List<Samples> orderSamples = sampleRepository.findByOrderId(orderId);
+	    // 2. Acceder directamente a la relación Samples
+	    List<Samples> orderSamples = order.getSamples();
 	    List<Samples> safeSamples = (orderSamples != null) ? orderSamples : Collections.emptyList();
 
 	    // 3. Construimos el ViewModel con la certeza de que el objeto existe
@@ -84,7 +92,7 @@ public class OrderService {
 	            .clientId(order.getClientId())
 	            .estimatedDeliveryDate(order.getEstimatedDeliveryDate())
 	            .realDeliveryDate(order.getRealDeliveryDate())
-	            .sampleList(safeSamples)
+	            .samples(safeSamples) // Usar la lista de muestras de la relación
 	            .build();
 	}
 	
