@@ -16,16 +16,20 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal() // Añadido: Para encontrar lumentrack-commons
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Dependencia a la librería común
+    implementation 'com.lumentrack:lumentrack-commons:0.0.1-SNAPSHOT'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Mantenido
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    compileOnly 'org.projectlombok:lombok'
+    // Eliminado: compileOnly 'org.projectlombok:lombok' (ahora en commons)
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j' // Mantenido
+    // Eliminado: annotationProcessor 'org.projectlombok:lombok' (ahora en commons)
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'

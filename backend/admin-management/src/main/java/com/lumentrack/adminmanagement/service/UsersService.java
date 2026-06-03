@@ -1,10 +1,10 @@
 package com.lumentrack.adminmanagement.service;
 
 import com.lumentrack.adminmanagement.exception.ResourceNotFoundException;
-import com.lumentrack.adminmanagement.model.Roles;
-import com.lumentrack.adminmanagement.model.Users;
-import com.lumentrack.adminmanagement.repository.RolesRepository;
-import com.lumentrack.adminmanagement.repository.UsersRepository;
+import com.lumentrack.commons.model.Roles;
+import com.lumentrack.commons.model.Users;
+import com.lumentrack.commons.repository.RolesRepository;
+import com.lumentrack.commons.repository.UsersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

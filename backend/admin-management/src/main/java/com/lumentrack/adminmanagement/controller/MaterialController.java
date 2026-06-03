@@ -1,6 +1,6 @@
 package com.lumentrack.adminmanagement.controller;
 
-import com.lumentrack.adminmanagement.model.Materials;
+import com.lumentrack.commons.model.Materials;
 import com.lumentrack.adminmanagement.service.MaterialService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

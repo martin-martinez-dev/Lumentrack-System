@@ -1,7 +1,7 @@
 package com.lumentrack.adminmanagement.service;
 
-import com.lumentrack.adminmanagement.model.Roles;
-import com.lumentrack.adminmanagement.repository.RolesRepository;
+import com.lumentrack.commons.model.Roles;
+import com.lumentrack.commons.repository.RolesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.lumentrack.adminmanagement.controller;
 
-import com.lumentrack.adminmanagement.model.Users;
+import com.lumentrack.commons.model.Users;
 import com.lumentrack.adminmanagement.service.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

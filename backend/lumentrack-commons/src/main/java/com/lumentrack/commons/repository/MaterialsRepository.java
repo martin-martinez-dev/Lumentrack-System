@@ -1,6 +1,6 @@
-package com.lumentrack.adminmanagement.repository;
+package com.lumentrack.commons.repository;
 
-import com.lumentrack.adminmanagement.model.Materials;
+import com.lumentrack.commons.model.Materials; // Paquete actualizado
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

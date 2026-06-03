@@ -1,7 +1,7 @@
 package com.lumentrack.adminmanagement.service;
 
-import com.lumentrack.adminmanagement.model.Clients;
-import com.lumentrack.adminmanagement.repository.ClientsRepository;
+import com.lumentrack.commons.model.Clients;
+import com.lumentrack.commons.repository.ClientsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

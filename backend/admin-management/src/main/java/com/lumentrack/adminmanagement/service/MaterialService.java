@@ -1,7 +1,7 @@
 package com.lumentrack.adminmanagement.service;
 
-import com.lumentrack.adminmanagement.model.Materials;
-import com.lumentrack.adminmanagement.repository.MaterialsRepository;
+import com.lumentrack.commons.model.Materials;
+import com.lumentrack.commons.repository.MaterialsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

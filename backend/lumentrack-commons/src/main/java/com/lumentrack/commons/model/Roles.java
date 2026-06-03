@@ -1,4 +1,4 @@
-package com.lumentrack.adminmanagement.model;
+package com.lumentrack.commons.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
