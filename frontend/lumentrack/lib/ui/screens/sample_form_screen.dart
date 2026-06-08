@@ -9,12 +9,14 @@ import '../../models/cloudinary_response_model.dart';
 import '../../services/samples_service.dart';
 import '../../services/orders_service.dart';
 import '../../services/images_service.dart';
+import '../../core/date_formatter.dart';
 import 'component_form_screen.dart'; // Importación integrada
 
 class SampleFormScreen extends StatefulWidget {
   final Sample? sample;
+  final int? orderId; // 🟢 Nuevo parámetro para pre-vincular una orden
 
-  const SampleFormScreen({super.key, this.sample});
+  const SampleFormScreen({super.key, this.sample, this.orderId});
 
   @override
   State<SampleFormScreen> createState() => _SampleFormScreenState();
@@ -57,14 +59,11 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       text: widget.sample?.sampleName ?? '',
     );
     _estimatedDateController = TextEditingController(
-      text: widget.sample?.estimatedDeliveryDate ?? '',
+      text: widget.sample?.formattedEstimatedDeliveryDate ?? '',
     );
-
-    String inicialRealDate = widget.sample?.realDeliveryDate ?? '';
-    if (inicialRealDate.toLowerCase().contains('sin fecha')) {
-      inicialRealDate = '';
-    }
-    _realDateController = TextEditingController(text: inicialRealDate);
+    _realDateController = TextEditingController(
+      text: widget.sample?.formattedRealDeliveryDate ?? '',
+    );
 
     if (!_isNew) {
       _selectedOrderId = widget.sample?.orderId;
@@ -76,6 +75,9 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
 
       // 2. 🟢 CONEXIÓN ASÍNCRONA: Vamos al backend por los datos reales y unificados en segundo plano
       _inicializarComponentesGenuinos();
+    } else {
+      // Si es una muestra nueva, intentamos pre-seleccionar el orderId si fue proporcionado
+      _selectedOrderId = widget.orderId;
     }
 
     _loadOrdersCatalog();
@@ -368,7 +370,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                               if (date != null) {
                                 setState(() {
                                   _estimatedDateController.text = DateFormat(
-                                    'yyyy-MM-dd',
+                                    DateFormatter.uiFormat,
                                   ).format(date);
                                 });
                               }
@@ -390,7 +392,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                               if (date != null) {
                                 setState(() {
                                   _realDateController.text = DateFormat(
-                                    'yyyy-MM-dd',
+                                    DateFormatter.uiFormat,
                                   ).format(date);
                                 });
                               }
@@ -697,11 +699,8 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         orderName: selectedOrderObj.orderName,
         samplePhotoUrl: _uploadedPhotoUrl ?? '',
         samplePhotoId: _uploadedPhotoId ?? '',
-        estimatedDeliveryDate:
-            Sample.formatToServer(_estimatedDateController.text) ?? '',
-        realDeliveryDate: _realDateController.text.isNotEmpty
-            ? (Sample.formatToServer(_realDateController.text) ?? '')
-            : 'Sin fecha',
+        estimatedDeliveryDate: _estimatedDateController.text,
+        realDeliveryDate: _realDateController.text,
         components:
             _associatedComponents, // Preservamos el estado reactivo actual
       );

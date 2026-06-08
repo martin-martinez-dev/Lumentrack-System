@@ -4,6 +4,7 @@
 **Última Actualización:** 26 de Mayo, 2026 (CDMX)
 *   **AppBar Dinámico en MainWrapper:** El color del título y fondo de "Lumentrack" ahora cambia reactivamente según la pestaña seleccionada (Terracota para Proyectos, Verde para Muestras, Verde Pastel para Admin).
 *   **Gestión de Roles Robusta:** Implementado catálogo de roles con validaciones técnicas estrictas (Mayúsculas/Guiones bajos) y sincronización dinámica con el formulario de usuarios.
+*   **Auto-registro de Usuarios:** Implementada pantalla de registro con creación de contraseña y asignación automática silenciosa del rol `ROLE_NONE` (ID: 6) para nuevos usuarios.
 
 ## ✅ Implementado
 - **Servicios Base:** `UsersService`, `MaterialService`, `OrdersService`, `SamplesService`, `ImagesService` (Cloudinary).
@@ -13,6 +14,7 @@
     - `OrderDetailScreen`: Vista detallada con selector de clientes (ComboBox) y lista de luminarias.
 - **Core:** Configuración centralizada de API (`ApiConfig`).
 - **Flexibilidad de Datos:** Migración exitosa de `orderNumber` de `int` a `String` para soportar folios alfanuméricos.
+- **Módulo de Registro:** Pantalla de alta autónoma funcional con validación de campos y soporte para contraseñas en el modelo `UserItem`.
 
 ## 🛠️ En Proceso (El 20% Restante)
 - [x] **Módulo de Administración:** Gestión de Clientes, Usuarios y Roles finalizada. Sincronización de IDs relacionales activa.

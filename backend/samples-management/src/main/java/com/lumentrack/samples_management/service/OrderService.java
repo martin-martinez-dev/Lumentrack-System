@@ -3,6 +3,7 @@ package com.lumentrack.samples_management.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,9 @@ import com.lumentrack.commons.model.Orders;
 import com.lumentrack.commons.model.Samples;
 import com.lumentrack.commons.repository.OrdersRepository;
 import com.lumentrack.commons.repository.SamplesRepository;
+import com.lumentrack.samples_management.requestors.OrderRequest;
+import com.lumentrack.samples_management.requestors.OrderDetailsResponse;
+import com.lumentrack.samples_management.requestors.SampleDetailsResponse;
 
 @Service
 public class OrderService {
@@ -25,74 +29,106 @@ public class OrderService {
 	private OrdersRepository repository;
 	
 	@Autowired
-	private SamplesRepository sampleRepository; // Aunque ya no se usará directamente para findByOrderId, se mantiene por si hay otros usos.
+	private SamplesRepository sampleRepository;
+
+	@Autowired
+	private SampleService sampleService;
 	
-	public Orders saveProject(Orders project) {
-		logger.info( "Saving project: " + project.getOrderName() );
-		return repository.save(project);
+	@Transactional
+	public Orders saveOrder(OrderRequest orderRequest) {
+		logger.info( "Saving order: " + orderRequest.getOrderName() );
+
+		Orders order = Orders.builder()
+				.orderNumber(orderRequest.getOrderNumber())
+				.orderName(orderRequest.getOrderName())
+				.clientId(orderRequest.getClientId())
+				.estimatedDeliveryDate(orderRequest.getEstimatedDeliveryDate())
+				.realDeliveryDate(orderRequest.getRealDeliveryDate())
+				.build();
+		
+		return repository.save(order);
 	}
 	
-	public List<Orders> getAllProjects() {
-		logger.info("Retrieving all the Projects");
-		return repository.findAll();
+	public List<OrderDetailsResponse> getAllOrders() {
+		logger.info("Retrieving all the Orders with Samples (eagerly fetched)");
+		List<Orders> allOrders = repository.findAllWithSamples(); // Usar el nuevo método con JOIN FETCH
+		
+		// Mapear cada Order a un OrderDetailsResponse usando el nuevo método privado
+		return allOrders.stream()
+				.map(this::mapOrderToOrderDetailsResponse)
+				.collect(Collectors.toList());
 	}
 
-	// Nuevo método para obtener órdenes por userId de sus componentes
+	// Revertido a su estado original
 	public List<Orders> getOrdersByUserId(Integer userId) {
 		logger.info("Retrieving orders for userId: " + userId);
 		return repository.findByComponentsUserId(userId);
 	}
+
+	// NUEVO: Método para obtener órdenes por userId con todos los detalles (DTOs)
+	public List<OrderDetailsResponse> getOrdersDetailsByUserId(Integer userId) {
+		logger.info("Retrieving orders for userId: " + userId + " with all details (eagerly fetched)");
+		List<Orders> orders = repository.findByComponentsUserIdWithDetails(userId); // Usar el nuevo método con JOIN FETCH
+		
+		return orders.stream()
+				.map(this::mapOrderToOrderDetailsResponse) // Mapear a DTOs
+				.collect(Collectors.toList());
+	}
 	
-	public Optional<Orders> getProjectById(Integer id) {
+	public Optional<Orders> getOrderById(Integer id) {
 		logger.info("Retrieving information for id: " + id);
 		return repository.findById(id);
 	}
 	
 	@Transactional
-	public Orders updateProject(Orders updatedProject) {
-		logger.info("Updating information for project: " + updatedProject.getOrderName());
-		return repository.findById( updatedProject.getOrderId() ).map(projects -> {
-			projects.setOrderName( updatedProject.getOrderName() );
-			projects.setEstimatedDeliveryDate( updatedProject.getEstimatedDeliveryDate() );
-			projects.setRealDeliveryDate( updatedProject.getRealDeliveryDate() );
-			projects.setOrderNumber( updatedProject.getOrderNumber() );
-			projects.setClientId( updatedProject.getClientId() );
-			// Asegúrate de actualizar también la relación con Samples si es parte de la actualización
-			// projects.setSamples(updatedProject.getSamples());
-			return repository.save(projects);
-		}).orElseThrow( () -> new RuntimeException("Proyecto no encontrado") );
+	public Orders updateOrder(OrderRequest orderRequest) {
+		logger.info("Updating information for order: " + orderRequest.getOrderName());
+		return repository.findById( orderRequest.getOrderId() ).map(order -> {
+			order.setOrderName( orderRequest.getOrderName() );
+			order.setEstimatedDeliveryDate( orderRequest.getEstimatedDeliveryDate() );
+			order.setRealDeliveryDate( orderRequest.getRealDeliveryDate() );
+			order.setOrderNumber( orderRequest.getOrderNumber() );
+			order.setClientId( orderRequest.getClientId() );
+			return repository.save(order);
+		}).orElseThrow( () -> new ResourceNotFoundException("Orden no encontrada con id: " + orderRequest.getOrderId()) );
 	}
 	
-	public void deleteProjectById(Integer id) {
-		//Verifying that the project exists
-		Orders project = repository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Proyecto no encontrado con id: " + id));
+	public void deleteOrderById(Integer id) {
+		Orders order = repository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con id: " + id));
 		
-		logger.info( "Project with id: " + id + " has been found!" );
-		logger.info( "Deleting information for project: " + project.getOrderName() );
+		logger.info( "Order with id: " + id + " has been found!" );
+		logger.info( "Deleting information for order: " + order.getOrderName() );
 		repository.deleteById(id);
 	}
 	
-	public Orders getOrderDetails(Integer orderId) {
-	    // 1. Buscamos la orden y lanzamos nuestra excepción personalizada de negocio
+	// Renombrado y modificado para obtener el DTO de una orden por su ID
+	public OrderDetailsResponse getOrderDetailResponseById(Integer orderId) {
 	    Orders order = repository.findById(orderId)
 	            .orElseThrow(() -> new ResourceNotFoundException(
-	                "El proyecto con ID " + orderId + " no existe."
+	                "La orden con ID " + orderId + " no existe."
 	            ));
-	    
-	    // 2. Acceder directamente a la relación Samples
-	    List<Samples> orderSamples = order.getSamples();
-	    List<Samples> safeSamples = (orderSamples != null) ? orderSamples : Collections.emptyList();
+	    return mapOrderToOrderDetailsResponse(order);
+	}
 
-	    // 3. Construimos el ViewModel con la certeza de que el objeto existe
-	    return Orders.builder()
+	// Nuevo método privado para mapear una entidad Orders a OrderDetailsResponse
+	private OrderDetailsResponse mapOrderToOrderDetailsResponse(Orders order) {
+	    List<Samples> orderSamples = order.getSamples();
+	    
+	    List<SampleDetailsResponse> safeSamples = (orderSamples != null) ?
+	            orderSamples.stream()
+	                    .map(sampleService::mapSampleToSampleDetailsResponse) // Usar el método de mapeo de SampleService
+	                    .collect(Collectors.toList()) :
+	            Collections.emptyList();
+
+	    return OrderDetailsResponse.builder()
 	            .orderId(order.getOrderId())
 	            .orderNumber(order.getOrderNumber())
 	            .orderName(order.getOrderName())
 	            .clientId(order.getClientId())
 	            .estimatedDeliveryDate(order.getEstimatedDeliveryDate())
 	            .realDeliveryDate(order.getRealDeliveryDate())
-	            .samples(safeSamples) // Usar la lista de muestras de la relación
+	            .samples(safeSamples)
 	            .build();
 	}
 	

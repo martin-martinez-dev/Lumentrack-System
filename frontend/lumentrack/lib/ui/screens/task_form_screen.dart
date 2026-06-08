@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../models/task_model.dart';
 import '../../models/cloudinary_response_model.dart';
 import '../../services/tasks_service.dart';
+import '../../core/date_formatter.dart';
 import '../../services/images_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -47,16 +48,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       text: widget.task?.taskDescription ?? '',
     );
     _estimatedDateController = TextEditingController(
-      text: widget.task?.taskEstimatedDate ?? '',
+      text: widget.task?.formattedEstimatedDate ?? '',
     );
-
-    // Limpieza de fecha real para evitar el texto "Sin fecha" en el controlador
-    String initialRealDate = widget.task?.taskRealDateTime ?? '';
-    if (initialRealDate.toLowerCase().contains('sin') ||
-        initialRealDate.toLowerCase().contains('pendiente')) {
-      initialRealDate = '';
-    }
-    _realDateController = TextEditingController(text: initialRealDate);
+    _realDateController = TextEditingController(
+      text: widget.task?.formattedRealDateTime ?? '',
+    );
 
     if (!_isNew) {
       _uploadedPhotoUrl = widget.task?.taskPhotoUrl;
@@ -266,7 +262,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         if (date != null) {
                           setState(() {
                             _estimatedDateController.text = DateFormat(
-                              'yyyy-MM-dd',
+                              DateFormatter.uiFormat,
                             ).format(date);
                           });
                         }
@@ -289,7 +285,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         if (date != null) {
                           setState(() {
                             _realDateController.text = DateFormat(
-                              'yyyy-MM-dd',
+                              DateFormatter.uiFormat,
                             ).format(date);
                           });
                         }
@@ -421,11 +417,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         componentId: widget.task?.componentId ?? widget.componentId ?? 0,
         taskPhotoUrl: _uploadedPhotoUrl ?? '',
         taskPhotoId: _uploadedPhotoId ?? '',
-        taskEstimatedDate:
-            Task.formatToServer(_estimatedDateController.text) ?? '',
-        taskRealDateTime: _realDateController.text.isNotEmpty
-            ? (Task.formatToServer(_realDateController.text) ?? '')
-            : '',
+        taskEstimatedDate: _estimatedDateController.text,
+        taskRealDateTime: _realDateController.text,
       );
 
       if (_isNew) {

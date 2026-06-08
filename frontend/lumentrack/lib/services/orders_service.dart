@@ -16,9 +16,14 @@ class OrdersService {
   /// 1. Mapea a: getAllProjects() -> GET /api/orders/list
   Future<List<Order>> fetchOrders() async {
     try {
+      print("DEBUG: [Request] GET a Proyectos: $_baseUrl/list");
       final response = await http.get(
         Uri.parse("$_baseUrl/list"),
         headers: _headers,
+      );
+
+      print(
+        "DEBUG: [Response] Proyectos [Status ${response.statusCode}]: ${response.body}",
       );
 
       if (response.statusCode == 200) {
@@ -38,9 +43,16 @@ class OrdersService {
   /// Devuelve la orden enriquecida con su 'sampleList' usando el OrdersViewModel
   Future<Order> fetchOrderDetails(int orderId) async {
     try {
+      print(
+        "DEBUG: [Request] GET Detalle Proyecto: $_baseUrl/getOrderDetails/$orderId",
+      );
       final response = await http.get(
         Uri.parse("$_baseUrl/getOrderDetails/$orderId"),
         headers: _headers,
+      );
+
+      print(
+        "DEBUG: [Response] Detalle Proyecto [Status ${response.statusCode}]: ${response.body}",
       );
 
       if (response.statusCode == 200) {
@@ -63,10 +75,19 @@ class OrdersService {
   /// 3. Mapea a: saveProject(Orders project) -> POST /api/orders/save (o tu ruta de creación)
   Future<Order> createOrder(Order order) async {
     try {
+      final url = "$_baseUrl/save";
+      final requestBody = jsonEncode(order.toJson());
+      print(
+        "DEBUG: [Request] POST Crear Proyecto a $url con body: $requestBody",
+      );
+
       final response = await http.post(
-        Uri.parse("$_baseUrl/save"),
+        Uri.parse(url),
         headers: _headers,
-        body: jsonEncode(order.toJson()),
+        body: requestBody,
+      );
+      print(
+        "DEBUG: [Response] Crear Proyecto [Status ${response.statusCode}]: ${response.body}",
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -85,10 +106,19 @@ class OrdersService {
   /// 4. Mapea a: updateProject(Orders updatedProject) -> PUT /api/orders/update
   Future<Order> updateOrder(Order order) async {
     try {
+      final url = "$_baseUrl/update";
+      final requestBody = jsonEncode(order.toJson());
+      print(
+        "DEBUG: [Request] POST Actualizar Proyecto a $url con body: $requestBody",
+      );
+
       final response = await http.post(
-        Uri.parse("$_baseUrl/update"),
+        Uri.parse(url),
         headers: _headers,
-        body: jsonEncode(order.toJson()),
+        body: requestBody,
+      );
+      print(
+        "DEBUG: [Response] Actualizar Proyecto [Status ${response.statusCode}]: ${response.body}",
       );
 
       if (response.statusCode == 200) {
@@ -107,9 +137,14 @@ class OrdersService {
   /// 5. Mapea a: deleteProjectById(Integer id) -> DELETE /api/orders/delete/{id}
   Future<void> deleteOrder(int orderId) async {
     try {
+      print("DEBUG: [Request] DELETE Proyecto: $_baseUrl/delete/$orderId");
       final response = await http.delete(
         Uri.parse("$_baseUrl/delete/$orderId"),
         headers: _headers,
+      );
+
+      print(
+        "DEBUG: [Response] Borrar Proyecto [Status ${response.statusCode}]",
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {

@@ -223,19 +223,14 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     );
 
     try {
-      // 🟢 CLAVE DE PROTECCIÓN: Construimos el objeto preservando las muestras originales
-      // para que al actualizar la Orden en el backend no se rompa la relación.
+      // Construimos el objeto alineado al OrderRequest del Backend (Spring Boot)
       final orderData = Order(
         orderId: widget.order?.orderId,
         orderName: _nameController.text,
         orderNumber: _numberController.text,
         clientId: int.parse(_clientController.text),
         estimatedDeliveryDate: _estimatedDateController.text,
-        realDeliveryDate:
-            widget.order?.realDeliveryDate, // Se mantiene el valor actual
-        samples:
-            widget.order?.samples ??
-            [], // 🟢 ¡Aquí se cuida y preserva el listado!
+        realDeliveryDate: widget.order?.realDeliveryDate,
       );
 
       if (_isNew) {

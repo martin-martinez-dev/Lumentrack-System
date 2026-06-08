@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lumentrack.commons.model.Samples;
 import com.lumentrack.samples_management.service.SampleService;
+import com.lumentrack.samples_management.requestors.SampleRequest;
+import com.lumentrack.samples_management.requestors.SampleDetailsResponse;
 
 @RestController
 @RequestMapping("/samples")
@@ -31,35 +33,10 @@ public class SampleController {
 	private SampleService sampleService;
 	
 	@PostMapping("/save")
-	public ResponseEntity<Samples> saveSample( @RequestBody Samples viewModel ) {
-		logger.info( "Start saving for sample: " + viewModel.getSampleName() );
+	public ResponseEntity<Samples> saveSample( @RequestBody SampleRequest sampleRequest ) {
+		logger.info( "Start saving for sample: " + sampleRequest.getSampleName() );
 		
-		Samples sample = new Samples();
-		
-		// 2. Transferimos los datos del DTO/ViewModel que mandó Flutter hacia la Entidad
-	    sample.setSampleName(viewModel.getSampleName());
-	    // sample.setOrderId(viewModel.getOrderId()); // <--- Aquí recuperas el ID del ComboBox de Flutter
-		// Ahora que Samples tiene una relación ManyToOne con Orders, deberías establecer la entidad Order completa
-		// Esto requeriría que el viewModel contenga el OrderId y luego buscar la Order o que el frontend envíe la Order completa
-		// Por simplicidad, si el viewModel aún envía orderId, necesitarías buscar la Order aquí:
-		// Order order = orderService.findById(viewModel.getOrderId()).orElseThrow(...);
-		// sample.setOrder(order);
-		// Por ahora, mantendremos la lógica original si el frontend aún envía orderId directamente.
-		// Si el frontend envía la entidad Order completa, el mapper se encargaría.
-		// Para este ejemplo, asumo que el frontend envía el orderId y lo mapeamos a la entidad Order en el servicio o mapper.
-		// Sin embargo, con las relaciones JPA, lo ideal sería que el `viewModel` contenga el `orderId` y se busque la entidad `Orders`
-		// o que el `viewModel` ya contenga un objeto `Orders` simplificado.
-		// Para evitar errores de compilación, si el `viewModel` aún tiene `orderId`, y la entidad `Samples` ahora espera un objeto `Orders`,
-		// esta parte necesitará ser revisada. Por ahora, comento la línea original y dejo una nota.
-		// sample.setOrderId(viewModel.getOrderId()); 
-		
-	    sample.setSamplePhotoUrl(viewModel.getSamplePhotoUrl());
-	    sample.setSamplePhotoId(viewModel.getSamplePhotoId());
-	    sample.setEstimatedDeliveryDate(viewModel.getEstimatedDeliveryDate());
-	    sample.setRealDeliveryDate(viewModel.getRealDeliveryDate());
-	    
-	    // 3. Guardamos la entidad real mediante tu servicio
-	    Samples savedSample = sampleService.saveSample(sample);
+	    Samples savedSample = sampleService.saveSample(sampleRequest);
 		
 	    return new ResponseEntity<>(savedSample, HttpStatus.CREATED);
 	}
@@ -71,11 +48,17 @@ public class SampleController {
 		return sampleService.getAllSamples();
 	}
 
-	// Nuevo endpoint para listar muestras por userId
 	@GetMapping("/list/user/{userId}")
 	public List<Samples> retrieveSamplesByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing samples for userId: " + userId);
 		return sampleService.getSamplesByUserId(userId);
+	}
+
+	// NUEVO: Endpoint para listar detalles de muestras por userId
+	@GetMapping("/list/details/user/{userId}")
+	public List<SampleDetailsResponse> retrieveSampleDetailsByUserId(@PathVariable("userId") Integer userId) {
+		logger.info("Listing sample details for userId: " + userId);
+		return sampleService.getSampleDetailsByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")
@@ -88,12 +71,12 @@ public class SampleController {
 	}
 	
 	@PostMapping("/update")
-	public Samples updateSample(@RequestBody Samples sample) {
-		logger.info( "Update for sample: " + sample.getSampleName() );
+	public Samples updateSample(@RequestBody SampleRequest sampleRequest) {
+		logger.info( "Update for sample: " + sampleRequest.getSampleName() );
 		
-		logger.info("Executing for object: " + sample.toString() );
+		logger.info("Executing for object: " + sampleRequest.toString() );
 		
-		return sampleService.updateSampleDeliveryDate(sample);
+		return sampleService.updateSample(sampleRequest);
 	}
 	
 	@DeleteMapping("/delete/{id}")
@@ -105,17 +88,16 @@ public class SampleController {
 	}
 	
 	@GetMapping("/getSamplesDetailsList")
-	public List<Samples> getSamplesDetailsList() {
+	public List<SampleDetailsResponse> getSamplesDetailsList() {
 		logger.info("Getting the Samples Details for the Samples View");
 		
-		return sampleService.getSampleDetailsList();
+		return sampleService.getAllSampleDetails(); // Usar el nuevo método optimizado
 	}
 	
 	@GetMapping("/getSampleDetails/{id}")
-	public Samples getSampleDetails( @PathVariable("id") Integer id ) {
+	public SampleDetailsResponse getSampleDetails( @PathVariable("id") Integer id ) {
 		logger.info("Getting the Details of the Sample with id: " + id);
-		
-		return sampleService.getSampleDetails(id);
+		return sampleService.getSampleDetailsById(id); // Usar el nuevo método optimizado
 	}
 	
 }

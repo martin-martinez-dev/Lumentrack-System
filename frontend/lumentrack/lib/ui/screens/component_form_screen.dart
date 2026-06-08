@@ -11,6 +11,7 @@ import '../../services/components_service.dart';
 import '../../services/material_service.dart';
 import '../../services/users_service.dart';
 import '../../services/images_service.dart';
+import '../../core/date_formatter.dart';
 import 'task_form_screen.dart';
 
 class ComponentFormScreen extends StatefulWidget {
@@ -77,11 +78,9 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
     );
 
     // Inicializar fecha de entrega. Si viene del backend "Sin fecha", lo dejamos vacío para obligar la captura
-    String initialDeliveryDate = widget.component?.deliveryDate ?? '';
-    if (initialDeliveryDate.toLowerCase().contains('sin fecha')) {
-      initialDeliveryDate = '';
-    }
-    _deliveryDateController = TextEditingController(text: initialDeliveryDate);
+    _deliveryDateController = TextEditingController(
+      text: widget.component?.formattedDeliveryDate ?? '',
+    );
 
     if (!_isNew) {
       _uploadedPhotoUrl = widget.component?.componentPhotoUrl;
@@ -359,7 +358,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
                               if (date != null) {
                                 setState(() {
                                   _deliveryDateController.text = DateFormat(
-                                    'yyyy-MM-dd',
+                                    DateFormatter.uiFormat,
                                   ).format(date);
                                 });
                               }
@@ -690,10 +689,8 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
         ulaLightEmployee: _selectedEmployeeName!,
         componentPhotoUrl: _uploadedPhotoUrl ?? '',
         componentPhotoId: _uploadedPhotoId ?? '',
-        deliveryDate: _deliveryDateController.text.isNotEmpty
-            ? Component.formatToServer(_deliveryDateController.text) ??
-                  'Sin fecha'
-            : 'Sin fecha', // 🟢 Guardado correcto
+        deliveryDate: _deliveryDateController
+            .text, // El modelo usará DateFormatter.toServer() en toJson
         statusResume:
             _selectedStatus!, // 🟢 Atributo asignado desde el ComboBox hardcodeado
         tasks: _componentTasks,

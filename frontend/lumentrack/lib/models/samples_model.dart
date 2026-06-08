@@ -1,5 +1,5 @@
-import 'package:intl/intl.dart';
 import 'component_model.dart'; // 🟢 Importamos el modelo de componentes que creamos previamente
+import '../core/date_formatter.dart';
 
 class Sample {
   // 1. Campos base de la tabla MySQL
@@ -41,15 +41,19 @@ class Sample {
 
     return Sample(
       sampleId: json['sampleId'] as int?,
-      orderId: orderMap != null ? (orderMap['orderId'] ?? 0) : 0,
+      orderId:
+          json['orderId'] ??
+          (orderMap != null ? (orderMap['orderId'] ?? 0) : 0),
       sampleName: json['sampleName'] ?? '',
       samplePhotoUrl: json['samplePhotoUrl'] ?? '',
       samplePhotoId: json['samplePhotoId'] ?? '',
       estimatedDeliveryDate: json['estimatedDeliveryDate']?.toString() ?? '',
       realDeliveryDate: json['realDeliveryDate']?.toString() ?? '',
-      orderName: orderMap != null
-          ? (orderMap['orderName'] ?? 'Sin Orden')
-          : 'Sin Orden',
+      orderName:
+          json['orderName'] ??
+          (orderMap != null
+              ? (orderMap['orderName'] ?? 'Sin Orden')
+              : 'Sin Orden'),
       components: componentList,
     );
   }
@@ -57,24 +61,12 @@ class Sample {
   /// 4. Conversión a JSON para enviar a los endpoints POST / PUT en Spring Boot
   Map<String, dynamic> toJson() => {
     'sampleId': sampleId,
-    'order': {'orderId': orderId},
+    'orderId': orderId, // 🟢 Alineado con SampleRequest.orderId
     'sampleName': sampleName,
     'samplePhotoUrl': samplePhotoUrl,
     'samplePhotoId': samplePhotoId,
-    // Formateo correcto para nulos nativos si están vacíos
-    'estimatedDeliveryDate':
-        (estimatedDeliveryDate.isEmpty || estimatedDeliveryDate == "Sin fecha")
-        ? null
-        : Sample.formatToServer(estimatedDeliveryDate),
-    'realDeliveryDate':
-        (realDeliveryDate.isEmpty ||
-            realDeliveryDate == "Sin fecha" ||
-            realDeliveryDate == "Sin entrega")
-        ? null
-        : Sample.formatToServer(realDeliveryDate),
-    // Nota: 'orderName' y 'componentList' no se envían al guardar si el backend mapea crudo,
-    // pero si usas cascada en Spring Boot puedes descomentar la siguiente línea:
-    // 'components': components.map((e) => e.toJson()).toList(),
+    'estimatedDeliveryDate': DateFormatter.toServer(estimatedDeliveryDate),
+    'realDeliveryDate': DateFormatter.toServer(realDeliveryDate),
   };
 
   // =========================================================================
@@ -86,8 +78,7 @@ class Sample {
       return "Sin fecha";
     }
     try {
-      DateTime parsedDate = DateTime.parse(estimatedDeliveryDate);
-      return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate);
+      return DateFormatter.toUi(estimatedDeliveryDate, includeTime: true);
     } catch (e) {
       return estimatedDeliveryDate;
     }
@@ -100,48 +91,9 @@ class Sample {
       return "Sin entrega";
     }
     try {
-      DateTime parsedDate = DateTime.parse(realDeliveryDate);
-      return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate);
+      return DateFormatter.toUi(realDeliveryDate, includeTime: true);
     } catch (e) {
       return realDeliveryDate;
-    }
-  }
-
-  /// Convierte la fecha al formato simple yyyy-MM-dd para LocalDate en el Backend
-  static String? formatToServer(String uiDate) {
-    if (uiDate.isEmpty || uiDate == "Sin fecha" || uiDate == "Sin entrega") {
-      return null;
-    }
-
-    try {
-      DateTime parsedDate;
-
-      // 1. Intentar parsear como yyyy-MM-dd HH:mm:ss
-      if (uiDate.length == 19 && uiDate.contains('-') && uiDate.contains(' ')) {
-        return uiDate;
-      }
-      // 2. Intentar parsear como ISO 8601
-      else if (uiDate.contains('T')) {
-        parsedDate = DateTime.parse(uiDate);
-      }
-      // 3. Intentar parsear como yyyy-MM-dd
-      else if (uiDate.length == 10 && uiDate.contains('-')) {
-        parsedDate = DateFormat('yyyy-MM-dd').parse(uiDate);
-      }
-      // 4. Intentar parsear formatos con barra (UI)
-      else if (uiDate.contains('/')) {
-        String pattern = uiDate.contains(' ')
-            ? 'dd/MM/yyyy HH:mm'
-            : 'dd/MM/yyyy';
-        parsedDate = DateFormat(pattern).parse(uiDate);
-      } else {
-        parsedDate = DateTime.parse(uiDate);
-      }
-
-      // Retornamos solo la fecha para coincidir con LocalDate
-      return DateFormat('yyyy-MM-dd').format(parsedDate);
-    } catch (e) {
-      return null;
     }
   }
 }

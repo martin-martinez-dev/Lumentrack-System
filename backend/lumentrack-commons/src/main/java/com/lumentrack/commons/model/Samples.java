@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+// import com.fasterxml.jackson.annotation.JsonIgnore; // Eliminado
 
 import jakarta.persistence.CascadeType; // Nueva importación
 import jakarta.persistence.Column;
@@ -58,6 +59,7 @@ public class Samples {
 	private LocalDate realDeliveryDate;
 	
 	// Relación OneToMany con Components
+	// @JsonIgnore // ELIMINADO
 	@OneToMany(mappedBy = "sample", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Components> components; // Renombrado de componentList a components
 }

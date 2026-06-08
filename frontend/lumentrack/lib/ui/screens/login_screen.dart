@@ -93,6 +93,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
+              const SizedBox(height: 15),
+
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/register'),
+                child: Text(
+                  '¿No tienes cuenta? Regístrate aquí',
+                  style: TextStyle(
+                    color: theme.colorScheme.secondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 80),
 
               const Text(

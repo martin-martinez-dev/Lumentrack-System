@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+// import com.fasterxml.jackson.annotation.JsonIgnore; // Eliminado
 
 import jakarta.persistence.CascadeType; // Nueva importación
 import jakarta.persistence.Column;
@@ -77,6 +78,7 @@ public class Components {
 	private Integer userId;
 
 	// Relación OneToMany con Tasks
+	// @JsonIgnore // ELIMINADO
 	@OneToMany(mappedBy = "component", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Tasks> tasks; // Renombrado de taskList a tasks
 

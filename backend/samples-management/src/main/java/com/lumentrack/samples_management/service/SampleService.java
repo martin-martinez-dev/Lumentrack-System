@@ -1,9 +1,7 @@
 package com.lumentrack.samples_management.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,11 +18,12 @@ import com.lumentrack.commons.model.Samples;
 import com.lumentrack.commons.repository.ComponentsRepository;
 import com.lumentrack.commons.repository.OrdersRepository;
 import com.lumentrack.commons.repository.SamplesRepository;
+import com.lumentrack.samples_management.requestors.SampleRequest;
+import com.lumentrack.samples_management.requestors.SampleDetailsResponse;
+import com.lumentrack.samples_management.requestors.ComponentDetailsResponse;
 
 @Service
 public class SampleService {
-	
-	// La clase Service es la que se debe de encargar de la lógica del negocio
 	
 	private final static Logger logger = LoggerFactory.getLogger(SampleService.class);
 	
@@ -36,9 +35,25 @@ public class SampleService {
 	
 	@Autowired
 	private ComponentsRepository componentsRepository;
+
+	@Autowired
+	private ComponentService componentService;
 	
-	public Samples saveSample( Samples sample ) {
-		logger.info( "Saving sample on service: " + sample.getSampleName() );
+	@Transactional
+	public Samples saveSample( SampleRequest sampleRequest ) {
+		logger.info( "Saving sample on service: " + sampleRequest.getSampleName() );
+		
+		Orders order = orderRepository.findById(sampleRequest.getOrderId())
+				.orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con id: " + sampleRequest.getOrderId()));
+		
+		Samples sample = Samples.builder()
+				.sampleName(sampleRequest.getSampleName())
+				.order(order)
+				.samplePhotoUrl(sampleRequest.getSamplePhotoUrl())
+				.samplePhotoId(sampleRequest.getSamplePhotoId())
+				.estimatedDeliveryDate(sampleRequest.getEstimatedDeliveryDate())
+				.realDeliveryDate(sampleRequest.getRealDeliveryDate())
+				.build();
 		
 		return repository.save(sample);
 	}
@@ -49,7 +64,6 @@ public class SampleService {
 		return repository.findAll();
 	}
 	
-	// Nuevo método para obtener muestras por userId de sus componentes
 	public List<Samples> getSamplesByUserId(Integer userId) {
 		logger.info("Retrieving samples for userId: " + userId);
 		return repository.findByComponentsUserId(userId);
@@ -62,79 +76,84 @@ public class SampleService {
 	}
 	
 	@Transactional
-	public Samples updateSampleDeliveryDate(Samples updatedSample) {
-		logger.info( "Updating information for the sample: " + updatedSample.getSampleName() );
+	public Samples updateSample(SampleRequest sampleRequest) {
+		logger.info( "Updating information for the sample: " + sampleRequest.getSampleName() );
 		
-		return repository.findById(updatedSample.getSampleId()).map(sample -> {
-			sample.setSampleName( updatedSample.getSampleName() );
-			sample.setSamplePhotoId( updatedSample.getSamplePhotoId() );
-			sample.setSamplePhotoUrl( updatedSample.getSamplePhotoUrl() );
-			sample.setRealDeliveryDate( updatedSample.getRealDeliveryDate() );
-			// Asegúrate de actualizar también la relación con Order si es parte de la actualización
-			// sample.setOrder(updatedSample.getOrder()); 
+		return repository.findById(sampleRequest.getSampleId()).map(sample -> {
+			sample.setSampleName( sampleRequest.getSampleName() );
+			sample.setSamplePhotoId( sampleRequest.getSamplePhotoId() );
+			sample.setSamplePhotoUrl( sampleRequest.getSamplePhotoUrl() );
+			sample.setEstimatedDeliveryDate(sampleRequest.getEstimatedDeliveryDate());
+			sample.setRealDeliveryDate( sampleRequest.getRealDeliveryDate() );
+			
+			if (!sample.getOrder().getOrderId().equals(sampleRequest.getOrderId())) {
+				Orders newOrder = orderRepository.findById(sampleRequest.getOrderId())
+						.orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con id: " + sampleRequest.getOrderId()));
+				sample.setOrder(newOrder);
+			}
+			
 			return repository.save( sample );
-		}).orElseThrow( () -> new RuntimeException("Muestra no encontrada") );
+		}).orElseThrow( () -> new ResourceNotFoundException("Muestra no encontrada con id: " + sampleRequest.getSampleId()) );
 	}
 	
 	public void deleteSample( Integer id ) {
-		// Verifying that the Sample exists
-		Samples sample = repository.findById(id).orElseThrow(() -> new RuntimeException("Muestra no encontrada con id: " + id));
+		Samples sample = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Muestra no encontrada con id: " + id));
 		
 		logger.info( "Sample with id: " + id + " has been found!" );
 		logger.info( "Deleting information for sample: " + sample.getSampleName() );
 		repository.deleteById( sample.getSampleId() );
 	}
 	
-	public List<Samples> getSampleDetailsList() {
-		logger.info("Getting the Samples Details");
-		
-		List<Samples> allSamples = repository.findAll();
-		
-		// Ahora que Samples tiene una relación ManyToOne con Orders, podemos acceder directamente
-        return allSamples.stream().map(sample -> {
-            Orders associatedOrder = sample.getOrder(); // Acceder directamente a la relación
-            
-            String orderName = (associatedOrder != null) ? associatedOrder.getOrderName() : "Orden No Encontrada";
-
-            return Samples.builder()
-                    .sampleId(sample.getSampleId())
-                    .sampleName(sample.getSampleName())
-                    .order(sample.getOrder()) // Usar la entidad completa
-                    //.orderName(orderName) // <--- Aquí inyectamos el cruce de datos
-                    .samplePhotoUrl(sample.getSamplePhotoUrl())
-                    .samplePhotoId(sample.getSamplePhotoId())
-                    .estimatedDeliveryDate(sample.getEstimatedDeliveryDate())
-                    .realDeliveryDate(sample.getRealDeliveryDate())
-                    .build();
-        }).collect(Collectors.toList());
-		
+	// NUEVO: Método para obtener todas las muestras con detalles (eagerly fetched)
+	public List<SampleDetailsResponse> getAllSampleDetails() {
+		logger.info("Getting all Samples Details (eagerly fetched)");
+		List<Samples> allSamples = repository.findAllWithOrderAndComponents();
+        return allSamples.stream()
+				.map(this::mapSampleToSampleDetailsResponse)
+				.collect(Collectors.toList());
 	}
 	
-	public Samples getSampleDetails( Integer sampleId ) {
-		logger.info("Starting the service for the extraction of the Sample Details");
-		Samples sample = repository.findById(sampleId).orElseThrow(() -> new ResourceNotFoundException(
+	// NUEVO: Método para obtener los detalles de una muestra por ID (eagerly fetched)
+	public SampleDetailsResponse getSampleDetailsById( Integer sampleId ) {
+		logger.info("Starting the service for the extraction of the Sample Details by ID (eagerly fetched)");
+		Samples sample = repository.findByIdWithOrderAndComponents(sampleId)
+				.orElseThrow(() -> new ResourceNotFoundException(
                 "La muestra con id " + sampleId + " no existe."
             ));
-		
-		// Acceder directamente a la relación Order
-		Orders order = sample.getOrder();
-		
-		// Acceder directamente a la relación Components
-		List<Components> componentList = sample.getComponents();
-		List<Components> safeComponents = ( componentList != null ) ? componentList : Collections.emptyList();
-		
-		return Samples.builder()
-				.sampleId( sample.getSampleId() )
-				.sampleName( sample.getSampleName() )
-				.order(sample.getOrder()) // Usar la entidad completa
-				//.orderName( order != null ? order.getOrderName() : null ) // Acceder al nombre a través de la relación
-				.samplePhotoUrl( sample.getSamplePhotoUrl() )
-				.samplePhotoId( sample.getSamplePhotoId() )
-				.estimatedDeliveryDate( sample.getEstimatedDeliveryDate() )
-				.realDeliveryDate( sample.getRealDeliveryDate() )
-				.components( safeComponents ) // Usar la lista de componentes de la relación
+		return mapSampleToSampleDetailsResponse(sample);
+	}
+
+	// NUEVO: Método para obtener los detalles de muestras filtradas por userId (eagerly fetched)
+	public List<SampleDetailsResponse> getSampleDetailsByUserId(Integer userId) {
+		logger.info("Retrieving Samples Details for userId: " + userId + " (eagerly fetched)");
+		List<Samples> samples = repository.findByComponentsUserIdWithOrderAndComponents(userId);
+		return samples.stream()
+				.map(this::mapSampleToSampleDetailsResponse)
+				.collect(Collectors.toList());
+	}
+
+	// Cambiado de private a public para que OrderService pueda acceder a él
+	public SampleDetailsResponse mapSampleToSampleDetailsResponse(Samples sample) {
+		Orders associatedOrder = sample.getOrder();
+		List<Components> sampleComponents = sample.getComponents();
+
+		List<ComponentDetailsResponse> safeComponents = (sampleComponents != null) ?
+				sampleComponents.stream()
+						.map(componentService::mapComponentToComponentDetailsResponse) // Delegar el mapeo de Componentes
+						.collect(Collectors.toList()) :
+				Collections.emptyList();
+
+		return SampleDetailsResponse.builder()
+				.sampleId(sample.getSampleId())
+				.sampleName(sample.getSampleName())
+				.orderId(associatedOrder != null ? associatedOrder.getOrderId() : null)
+				.orderName(associatedOrder != null ? associatedOrder.getOrderName() : null)
+				.samplePhotoUrl(sample.getSamplePhotoUrl())
+				.samplePhotoId(sample.getSamplePhotoId())
+				.estimatedDeliveryDate(sample.getEstimatedDeliveryDate())
+				.realDeliveryDate(sample.getRealDeliveryDate())
+				.components(safeComponents)
 				.build();
-		
 	}
 	
 }

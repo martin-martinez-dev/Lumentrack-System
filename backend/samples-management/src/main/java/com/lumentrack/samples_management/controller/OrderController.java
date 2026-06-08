@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lumentrack.commons.model.Orders;
 import com.lumentrack.samples_management.service.OrderService;
+import com.lumentrack.samples_management.requestors.OrderRequest;
+import com.lumentrack.samples_management.requestors.OrderDetailsResponse;
 
 @RestController
 @RequestMapping("/orders")
@@ -31,49 +33,55 @@ public class OrderController {
 	OrderService service;
 	
 	@PostMapping("/save")
-	public ResponseEntity<Orders> saveProject(@RequestBody Orders project) {
-		logger.info("Saving info for project: " + project.getOrderName());
-		return new ResponseEntity<Orders>(service.saveProject(project), HttpStatus.CREATED);
+	public ResponseEntity<Orders> saveOrder(@RequestBody OrderRequest orderRequest) {
+		logger.info("Saving info for order: " + orderRequest.getOrderName());
+		return new ResponseEntity<>(service.saveOrder(orderRequest), HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/list")
-	public List<Orders> retrieveProjects() {
-		logger.info("Getting the list of projects");
-		return service.getAllProjects();
+	public List<OrderDetailsResponse> retrieveOrders() {
+		logger.info("Getting the list of orders");
+		return service.getAllOrders();
 	}
 
-	// Nuevo endpoint para listar órdenes por userId
 	@GetMapping("/list/user/{userId}")
 	public List<Orders> retrieveOrdersByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing orders for userId: " + userId);
 		return service.getOrdersByUserId(userId);
 	}
+
+	// NUEVO: Endpoint para listar órdenes con detalles por userId
+	@GetMapping("/list/details/user/{userId}")
+	public List<OrderDetailsResponse> retrieveOrdersDetailsByUserId(@PathVariable("userId") Integer userId) {
+		logger.info("Listing order details for userId: " + userId);
+		return service.getOrdersDetailsByUserId(userId);
+	}
 	
 	@GetMapping("/search/{id}")
-	public ResponseEntity<Orders> getProjectById(@PathVariable("id") Integer id){
-		logger.info("Getting project information for id: " + id);
-		return service.getProjectById(id)
+	public ResponseEntity<Orders> getOrderById(@PathVariable("id") Integer id){
+		logger.info("Getting order information for id: " + id);
+		return service.getOrderById(id)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
 	
 	@PostMapping("/update")
-	public Orders updateProject(@RequestBody Orders project) {
-		logger.info("Updating information for project: " + project.getOrderName());
-		return service.updateProject(project);
+	public Orders updateOrder(@RequestBody OrderRequest orderRequest) {
+		logger.info("Updating information for order: " + orderRequest.getOrderName());
+		return service.updateOrder(orderRequest);
 	}
 	
 	@DeleteMapping("/delete/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteProject(@PathVariable("id") Integer id) {
+	public void deleteOrderById(@PathVariable("id") Integer id) {
 		logger.info("Deleting info for id: " + id);
-		service.deleteProjectById(id);
+		service.deleteOrderById(id);
 	}
 	
 	@GetMapping("/getOrderDetails/{id}")
-	public Orders getOrderDetails( @PathVariable("id") Integer id ) {
+	public OrderDetailsResponse getOrderDetails( @PathVariable("id") Integer id ) {
 		logger.info("Retrieving the details for the order with Id: " + id);
-		return service.getOrderDetails(id);
+		return service.getOrderDetailResponseById(id);
 	}
 	
 }

@@ -45,7 +45,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-	// ELIMINADO: implementation 'org.springframework.boot:spring-boot-autoconfigure:4.0.5'
+	// NUEVO: Añadir Lombok de nuevo al proyecto samples-management
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

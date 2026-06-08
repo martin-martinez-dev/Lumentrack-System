@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lumentrack.commons.model.Tasks;
 import com.lumentrack.samples_management.service.TaskService;
+import com.lumentrack.samples_management.requestors.TaskRequest; // Nueva importación
+import com.lumentrack.samples_management.requestors.TaskDetailsResponse; // Nueva importación
 
 @RestController
 @RequestMapping("/tasks")
@@ -31,9 +33,9 @@ public class TaskController {
 	private TaskService service;
 	
 	@PostMapping("/save")
-	public ResponseEntity<Tasks> saveTask(@RequestBody Tasks task) {
-		logger.info("Saving info for task: " + task.getTaskName());
-		return new ResponseEntity<Tasks>(service.saveTask(task), HttpStatus.CREATED);
+	public ResponseEntity<Tasks> saveTask(@RequestBody TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
+		logger.info("Saving info for task: " + taskRequest.getTaskName());
+		return new ResponseEntity<>(service.saveTask(taskRequest), HttpStatus.CREATED); // Pasar el request al servicio
 	}
 	
 	@GetMapping("/list")
@@ -58,9 +60,9 @@ public class TaskController {
 	}
 	
 	@PostMapping("/update")
-	public Tasks updateTask(@RequestBody Tasks task) {
-		logger.info("Updating info for task: " + task.getTaskName());
-		return service.updateTaks(task);
+	public Tasks updateTask(@RequestBody TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
+		logger.info("Updating info for task: " + taskRequest.getTaskName());
+		return service.updateTaks(taskRequest); // Pasar el request al servicio
 	}
 	
 	@DeleteMapping("/delete/{id}")
@@ -71,7 +73,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("/getTasksDetails/{id}")
-	public Tasks getTasksDetails( @PathVariable("id") Integer id ) {
+	public TaskDetailsResponse getTasksDetails( @PathVariable("id") Integer id ) { // Modificado para devolver TaskDetailsResponse
 		logger.info("Getting task details for id " + id);
 		return service.getTaskDetails(id);
 	}

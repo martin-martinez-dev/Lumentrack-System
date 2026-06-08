@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/samples_model.dart'; // Importa el modelo de arriba
 import '../core/api_config.dart';
@@ -40,10 +41,12 @@ class SamplesService {
   // 3. GUARDAR NUEVO MODELO (POST /samples/save)
   // Envía el DTO (SampleView) que el @RequestBody SampleViewModel de Java espera
   Future<void> createSample(Sample sample) async {
+    final body = json.encode(sample.toJson());
+    debugPrint("DEBUG: Enviando POST a /samples/save con cuerpo: $body");
     final response = await http.post(
       Uri.parse("$_baseUrl/save"),
       headers: _headers,
-      body: json.encode(sample.toJson()),
+      body: body,
     );
     if (response.statusCode != 201 && response.statusCode != 200) {
       throw Exception('Fallo al registrar Sample en la base de datos');
@@ -54,10 +57,12 @@ class SamplesService {
   // 🟢 CORREGIDO: Tu controlador recibe un '@RequestBody Samples sample'.
   // Debemos mandar la estructura original 'Sample', no el DTO parcial de la UI.
   Future<void> updateSample(Sample sample) async {
+    final body = json.encode(sample.toJson());
+    debugPrint("DEBUG: Enviando POST a /samples/update con cuerpo: $body");
     final response = await http.post(
       Uri.parse("$_baseUrl/update"),
       headers: _headers,
-      body: json.encode(sample.toJson()), // Usamos la entidad pura
+      body: body, // Usamos la entidad pura
     );
     if (response.statusCode != 200) {
       throw Exception('Fallo al actualizar Sample');

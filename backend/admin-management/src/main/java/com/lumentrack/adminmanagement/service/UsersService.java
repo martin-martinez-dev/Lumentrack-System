@@ -8,6 +8,7 @@ import com.lumentrack.commons.repository.UsersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder; // Importar PasswordEncoder
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +28,13 @@ public class UsersService {
 	@Autowired
 	private RolesRepository roleRepository;
 
+	@Autowired
+	private PasswordEncoder passwordEncoder; // Inyectar PasswordEncoder
+
 	public Users saveUser(Users user) {
 		logger.info("Saving information for user " + user.getUserName());
+		// Hashear la contraseña antes de guardarla
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		return repository.save(user);
 	}
 
@@ -96,6 +102,10 @@ public class UsersService {
 			users.setUserMail(userUpdated.getUserMail());
 			users.setUserPhoneNumber(userUpdated.getUserPhoneNumber());
 			users.setUserRoleId(userUpdated.getUserRoleId());
+			// Solo actualiza y hashea la contraseña si se proporciona una nueva
+			if (userUpdated.getPassword() != null && !userUpdated.getPassword().isEmpty()) {
+				users.setPassword(passwordEncoder.encode(userUpdated.getPassword()));
+			}
 			return users;
 		}).orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 

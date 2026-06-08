@@ -8,7 +8,12 @@ class DashboardService {
   final String baseUrl = ApiConfig.dashboard;
 
   Future<DashboardData> fetchDashboardData() async {
+    print("DEBUG: Enviando petición GET al Dashboard: $baseUrl");
     final response = await http.get(Uri.parse(baseUrl));
+
+    print(
+      "DEBUG: Respuesta del Dashboard [Status ${response.statusCode}]: ${response.body}",
+    );
 
     if (response.statusCode == 200) {
       return DashboardData.fromJson(json.decode(response.body));

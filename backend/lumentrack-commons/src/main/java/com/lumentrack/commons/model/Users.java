@@ -36,4 +36,7 @@ public class Users {
 	@Transient
 	private String roleDisplayName;
 
+	@Column( nullable = false )
+	private String password;
+
 }

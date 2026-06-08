@@ -238,13 +238,37 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                 )
               else ...[
-                const Text(
-                  "Muestras de Luminarias Asignadas",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF3E5B42),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Muestras de Luminarias Asignadas",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3E5B42),
+                      ),
+                    ),
+                    // 🟢 BOTÓN AGREGADO: Permite añadir una muestra directamente a este proyecto
+                    IconButton(
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: Color(0xFF934B3D), // Terracota para contraste
+                        size: 28,
+                      ),
+                      onPressed: () async {
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SampleFormScreen(
+                              orderId: _currentOrder?.orderId,
+                            ),
+                          ),
+                        );
+                        if (result == true) _inicializarPantalla();
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 _currentOrder == null || _currentOrder!.samples.isEmpty

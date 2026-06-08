@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+// import com.fasterxml.jackson.annotation.JsonIgnore; // Eliminado
 
 import jakarta.persistence.CascadeType; // Nueva importación
 import jakarta.persistence.Column;
@@ -52,6 +53,7 @@ public class Orders {
 	private LocalDate realDeliveryDate;
 	
 	// Relación OneToMany con Samples
+	// @JsonIgnore // ELIMINADO
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Samples> samples; // Renombrado de sampleList a samples
 	

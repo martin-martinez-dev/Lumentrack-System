@@ -1,4 +1,5 @@
 import 'samples_model.dart';
+import '../core/date_formatter.dart';
 
 class Order {
   final int? orderId;
@@ -47,10 +48,7 @@ class Order {
     'orderName': orderName,
     'clientId':
         clientId, // 🟢 Este es el ID relacional real que Hibernate usará para mapear
-    'clientName': clientName,
-    'estimatedDeliveryDate': estimatedDeliveryDate,
-    'realDeliveryDate': realDeliveryDate,
-    // 🟢 Agregamos la serialización de muestras para soporte de cascada en el backend
-    if (samples.isNotEmpty) 'samples': samples.map((e) => e.toJson()).toList(),
+    'estimatedDeliveryDate': DateFormatter.toServer(estimatedDeliveryDate),
+    'realDeliveryDate': DateFormatter.toServer(realDeliveryDate),
   };
 }

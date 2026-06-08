@@ -8,6 +8,7 @@ class UserItem {
   final int userRoleId;
   final String?
   roleDisplayName; // Campo informativo proveniente del @Transient en Java
+  final String? password;
 
   UserItem({
     this.userId,
@@ -17,6 +18,7 @@ class UserItem {
     this.userPhoneNumber,
     required this.userRoleId,
     this.roleDisplayName,
+    this.password,
   });
 
   /// Getter de conveniencia para mostrar el nombre completo en los Dropdowns de la UI
@@ -32,6 +34,7 @@ class UserItem {
       userPhoneNumber: json['userPhoneNumber'] as String?,
       userRoleId: json['userRoleId'] as int? ?? 0,
       roleDisplayName: json['roleDisplayName'] as String?,
+      password: json['password'] as String?,
     );
   }
 
@@ -44,6 +47,7 @@ class UserItem {
     String? userPhoneNumber,
     int? userRoleId,
     String? roleDisplayName,
+    String? password,
   }) {
     return UserItem(
       userId: userId ?? this.userId,
@@ -53,6 +57,7 @@ class UserItem {
       userPhoneNumber: userPhoneNumber ?? this.userPhoneNumber,
       userRoleId: userRoleId ?? this.userRoleId,
       roleDisplayName: roleDisplayName ?? this.roleDisplayName,
+      password: password ?? this.password,
     );
   }
 
@@ -65,5 +70,6 @@ class UserItem {
     'userPhoneNumber': userPhoneNumber,
     'userRoleId': userRoleId,
     'roleDisplayName': roleDisplayName,
+    'password': password,
   };
 }

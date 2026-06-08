@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public record OrdersRecord (
 	Integer orderId,
-	Integer orderNumber,
+	String orderNumber,
 	String orderName,
 	Integer clientId,
 	@JsonFormat(pattern = "yyyy-MM-dd")
