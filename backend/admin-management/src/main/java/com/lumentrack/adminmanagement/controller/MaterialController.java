@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,18 +27,21 @@ public class MaterialController {
     }
 	
 	@PostMapping("/save")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Materials> saveMaterial(@RequestBody Materials material) {
 		logger.info("Save info for material: " + material.getMaterialName());
 		return new ResponseEntity<Materials>(service.saveMaterial(material), HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/list")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public List<Materials> retrieveMaterials(){
 		logger.info("Getting the info for all the materials");
 		return service.getAllMaterials();
 	}
 	
 	@GetMapping("/search/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Materials> searchMaterialById(@PathVariable("id") Integer id){
 		logger.info("Search material by id: " + id);
 		
@@ -47,12 +51,14 @@ public class MaterialController {
 	}
 	
 	@PostMapping("/update")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public Materials updateMaterial(@RequestBody Materials material) {
 		logger.info("Updating info for material: " + material.getMaterialName());
 		return service.updateMaterialInformation(material);
 	}
 	
 	@DeleteMapping("/delete/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteMaterial(@PathVariable("id") Integer id) {
 		logger.info("Deleting information for material id: " + id);

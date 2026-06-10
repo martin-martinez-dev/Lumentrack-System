@@ -2,6 +2,12 @@ server:
   port: 8082 #Puerto para Samples Management
   servlet:
     context-path: /lumentrack/samples
+
+# CONFIGURACIÓN PERSONALIZADA PARA JWT (A la misma altura que server y spring)
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000} # 1 hora por defecto
+
 spring:
   application:
     name: samples-management

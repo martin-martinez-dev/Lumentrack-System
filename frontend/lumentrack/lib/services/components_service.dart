@@ -85,6 +85,25 @@ class ComponentsService {
     }
   }
 
+  /// 4. Listar componentes asignados a un usuario específico (GET /components/list/user/{userId})
+  Future<List<Component>> retrieveByUserId(int userId) async {
+    final url = Uri.parse('${ApiConfig.components}/list/user/$userId');
+    try {
+      final response = await http.get(url, headers: _headers);
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(utf8.decode(response.bodyBytes));
+        return list.map((json) => Component.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          "Error al listar componentes por usuario: Código ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      debugPrint("Error en retrieveByUserId: $e");
+      rethrow;
+    }
+  }
+
   /// 4. Actualizar información de un componente existente (POST /components/update)
   Future<Component> updateComponent(Component component) async {
     final url = Uri.parse('${ApiConfig.components}/update');
@@ -152,6 +171,48 @@ class ComponentsService {
       }
     } catch (e) {
       debugPrint("Error en getComponentDetails: $e");
+      rethrow;
+    }
+  }
+
+  /// 7. Obtener todos los componentes con sus detalles y jerarquías (GET /components/list/details)
+  Future<List<Component>> retrieveAllComponentDetails() async {
+    final url = Uri.parse('${ApiConfig.components}/list/details');
+    try {
+      final response = await http.get(url, headers: _headers);
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(utf8.decode(response.bodyBytes));
+        return list.map((json) => Component.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          "Error al listar detalles maestros de componentes: Código ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      debugPrint("Error en retrieveAllComponentDetails: $e");
+      rethrow;
+    }
+  }
+
+  /// 8. Buscar un componente específico con su detalle enriquecido (GET /components/search/details/{id})
+  Future<Component?> searchComponentDetailsById(int id) async {
+    final url = Uri.parse('${ApiConfig.components}/search/details/$id');
+    try {
+      final response = await http.get(url, headers: _headers);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
+        return Component.fromJson(data);
+      } else if (response.statusCode == 404) {
+        return null;
+      } else {
+        throw Exception(
+          "Error al buscar detalle del componente id $id: Código ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      debugPrint("Error en searchComponentDetailsById: $e");
       rethrow;
     }
   }

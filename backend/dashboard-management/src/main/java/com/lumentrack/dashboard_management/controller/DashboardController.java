@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public class DashboardController {
     }
 	
 	@GetMapping("/getData")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Dashboard> getDashboardData() {
 		logger.info("Retrieving the Dashboard information");
 		return ResponseEntity.ok(dashboardService.getDashboardData());
@@ -44,6 +46,7 @@ public class DashboardController {
      * @return Un objeto Dashboard con los datos filtrados para el usuario.
      */
     @GetMapping("/getData/user/{userId}")
+    @PreAuthorize("hasAnyRole('DESIGN')")
     public ResponseEntity<Dashboard> getDashboardDataForUser(@PathVariable Integer userId) {
         logger.info("Retrieving Dashboard information for user with ID: {}", userId);
         return ResponseEntity.ok(dashboardUserFilteredService.getDashboardDataForUser(userId));

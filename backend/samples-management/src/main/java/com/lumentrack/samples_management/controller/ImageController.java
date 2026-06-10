@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,7 @@ public class ImageController {
 //		}
 //    }
 	@PostMapping("/upload")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile multipartFile,
     		@RequestParam(value = "folder", defaultValue = "general") String folder) {
 		
@@ -55,6 +57,7 @@ public class ImageController {
     }
 	
 	@DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> delete(@PathVariable("id") String publicId) {
         try {
         	logger.info("Deleting image " + publicId);

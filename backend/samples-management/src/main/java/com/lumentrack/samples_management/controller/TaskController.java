@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,12 +38,14 @@ public class TaskController {
     }
 	
 	@PostMapping("/save")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ResponseEntity<Tasks> saveTask(@RequestBody TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
 		logger.info("Saving info for task: " + taskRequest.getTaskName());
 		return new ResponseEntity<>(service.saveTask(taskRequest), HttpStatus.CREATED); // Pasar el request al servicio
 	}
 	
 	@GetMapping("/list")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public List<Tasks> retrieveAllTasks() {
 		logger.info("Getting information of all tasks");
 		return service.getAllTasks();
@@ -50,12 +53,14 @@ public class TaskController {
 
 	// Nuevo endpoint para listar tareas por userId
 	@GetMapping("/list/user/{userId}")
+	@PreAuthorize("hasAnyRole('DESIGN')")
 	public List<Tasks> retrieveTasksByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing tasks for userId: " + userId);
 		return service.getTasksByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ResponseEntity<Tasks> searchTaskById(@PathVariable("id") Integer id) {
 		logger.info("Getting info for id: " + id);
 		return service.getTaskById(id)
@@ -64,12 +69,14 @@ public class TaskController {
 	}
 	
 	@PostMapping("/update")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public TaskDetailsResponse updateTask(@RequestBody TaskRequest taskRequest) { // CAMBIADO: Tipo de retorno a TaskDetailsResponse
 		logger.info("Updating info for task: " + taskRequest.getTaskName());
 		return service.updateTaks(taskRequest); // Pasar el request al servicio
 	}
 	
 	@DeleteMapping("/delete/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteTask(@PathVariable("id") Integer id) {
 		logger.info("Deleting info for id: " + id);
@@ -77,6 +84,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("/getTasksDetails/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public TaskDetailsResponse getTasksDetails( @PathVariable("id") Integer id ) { // Modificado para devolver TaskDetailsResponse
 		logger.info("Getting task details for id " + id);
 		return service.getTaskDetails(id);

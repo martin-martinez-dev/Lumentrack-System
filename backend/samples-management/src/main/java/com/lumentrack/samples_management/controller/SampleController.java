@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class SampleController {
     }
 	
 	@PostMapping("/save")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Samples> saveSample( @RequestBody SampleRequest sampleRequest ) {
 		logger.info( "Start saving for sample: " + sampleRequest.getSampleName() );
 		
@@ -46,6 +48,7 @@ public class SampleController {
 	}
 	
 	@GetMapping("/list")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'PRODUCTION')")
 	public List<Samples> retrieveAllSamples() {
 		logger.info( "Listing all samples" );
 		
@@ -53,6 +56,7 @@ public class SampleController {
 	}
 
 	@GetMapping("/list/user/{userId}")
+	@PreAuthorize("hasAnyRole('DESIGN')")
 	public List<Samples> retrieveSamplesByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing samples for userId: " + userId);
 		return sampleService.getSamplesByUserId(userId);
@@ -60,12 +64,14 @@ public class SampleController {
 
 	// NUEVO: Endpoint para listar detalles de muestras por userId
 	@GetMapping("/list/details/user/{userId}")
+	@PreAuthorize("hasAnyRole('DESIGN')")
 	public List<SampleDetailsResponse> retrieveSampleDetailsByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing sample details for userId: " + userId);
 		return sampleService.getSampleDetailsByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ResponseEntity<Samples> searchSampleById(@PathVariable("id") Integer id) {
 		logger.info( "Search sample by id: " + id );
 		
@@ -75,6 +81,7 @@ public class SampleController {
 	}
 	
 	@PostMapping("/update")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public SampleDetailsResponse updateSample(@RequestBody SampleRequest sampleRequest) { // CAMBIADO: Tipo de retorno a SampleDetailsResponse
 		logger.info( "Update for sample: " + sampleRequest.getSampleName() );
 		
@@ -84,6 +91,7 @@ public class SampleController {
 	}
 	
 	@DeleteMapping("/delete/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteSample(@PathVariable("id") Integer id) {
 		logger.info( "Delete sample for id: " + id );
@@ -92,6 +100,7 @@ public class SampleController {
 	}
 	
 	@GetMapping("/getSamplesDetailsList")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'PRODUCTION')")
 	public List<SampleDetailsResponse> getSamplesDetailsList() {
 		logger.info("Getting the Samples Details for the Samples View");
 		
@@ -99,6 +108,7 @@ public class SampleController {
 	}
 	
 	@GetMapping("/getSampleDetails/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'PRODUCTION')")
 	public SampleDetailsResponse getSampleDetails( @PathVariable("id") Integer id ) {
 		logger.info("Getting the Details of the Sample with id: " + id);
 		return sampleService.getSampleDetailsById(id); // Usar el nuevo método optimizado

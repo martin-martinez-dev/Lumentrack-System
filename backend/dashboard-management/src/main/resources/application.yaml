@@ -2,6 +2,12 @@ server:
   port: 8081 #Puerto para Dashboard Management
   servlet:
     context-path: /lumentrack/dashboard
+
+# CONFIGURACIÓN PERSONALIZADA PARA JWT (A la misma altura que server y spring)
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000} # 1 hora por defecto
+
 spring:
   application:
     name: dashboard-management

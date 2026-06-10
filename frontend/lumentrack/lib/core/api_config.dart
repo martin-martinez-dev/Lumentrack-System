@@ -6,6 +6,8 @@ class ApiConfig {
 
   // Dashboard Screen Endpoints
   static const String dashboard = "$baseUrl:8081/lumentrack/dashboard/getData";
+  static const String dashboardUserFiltered =
+      "$baseUrl:8081/lumentrack/dashboard/getData/user";
 
   // Samples Screens Endpoints
   static const String images = "$baseUrl:8082/lumentrack/samples/images";
@@ -14,8 +16,6 @@ class ApiConfig {
   static const String components =
       "$baseUrl:8082/lumentrack/samples/components";
   static const String tasks = "$baseUrl:8082/lumentrack/samples/tasks";
-  static const String userFilteredData =
-      "$baseUrl:8082/lumentrack/samples/user-filtered-data";
 
   // Admin Screens Endpoints
   static const String clients = "$baseUrl:8083/lumentrack/admin/clients";

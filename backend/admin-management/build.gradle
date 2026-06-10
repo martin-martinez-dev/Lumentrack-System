@@ -16,26 +16,38 @@ java {
 
 repositories {
     mavenCentral()
-    mavenLocal() // Añadido: Para encontrar lumentrack-commons
+    mavenLocal() // Para encontrar lumentrack-commons
 }
 
 dependencies {
-    // Dependencia a la librería común
+    // Módulo común de Lumentrack
     implementation 'com.lumentrack:lumentrack-commons:0.0.1-SNAPSHOT'
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Mantenido
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    // Eliminado: compileOnly 'org.projectlombok:lombok' (ahora en commons)
-    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-    runtimeOnly 'com.mysql:mysql-connector-j' // Mantenido
-    // Eliminado: annotationProcessor 'org.projectlombok:lombok' (ahora en commons)
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testCompileOnly 'org.projectlombok:lombok'
+    // Spring Boot Starters esenciales para un microservicio web y Resource Server
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc' // Incluye funcionalidades web
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Para persistencia con JPA
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // Para validación de datos
+    implementation 'org.springframework.boot:spring-boot-starter-security' // **ESENCIAL para Resource Server**
+    implementation 'org.springframework.boot:spring-boot-starter-actuator' // Para monitoreo y gestión
+
+    // JWT (JSON Web Token) para la validación local del token
+    implementation platform('io.jsonwebtoken:jjwt-root:0.12.6') // Alinea todas las dependencias JJWT a la versión 0.12.6
+    implementation 'io.jsonwebtoken:jjwt-api'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl' // Implementación de JJWT
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson' // Para el procesamiento de JSON en JWT
+
+    // Base de datos y utilidades
+    runtimeOnly 'com.mysql:mysql-connector-j' // Driver de MySQL
+
+    // Lombok para reducir el código repetitivo (boilerplate)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Dependencias de testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-test' // Para pruebas de seguridad
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test' // Para pruebas de la capa web
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

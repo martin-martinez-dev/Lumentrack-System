@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,18 +27,21 @@ public class ClientController {
     }
 	
 	@PostMapping("/save")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Clients> saveClient(@RequestBody Clients client) {
 		logger.info("Start saving process for " + client.getClientName());
 		return new ResponseEntity<Clients>(service.saveClient(client), HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/list")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public List<Clients> retrieveAllClients() {
 		logger.info("Retrieving the client list");
 		return service.getAllClients();
 	}
 	
 	@GetMapping("/search/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Clients> searchClientById(@PathVariable("id") Integer id) {
 		logger.info("Search Client by Id: " + id);
 		return service.getClientById(id)
@@ -46,12 +50,14 @@ public class ClientController {
 	}
 	
 	@PostMapping("/update")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	public Clients updateClient(@RequestBody Clients client) {
 		logger.info("Update for Client:" + client.getClientName());
 		return service.updateClient(client);
 	}
 	
 	@DeleteMapping("/delete/{id}")
+	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteClient(@PathVariable("id") Integer id) {
 		logger.info("Delete client for id: " + id);
