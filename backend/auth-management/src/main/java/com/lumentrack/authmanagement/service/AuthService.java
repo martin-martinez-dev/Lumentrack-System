@@ -57,13 +57,19 @@ public class AuthService {
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUserMail());
-        final String jwt = jwtUtil.generateToken(userDetails);
-
+        
         Users user = usersRepository.findByUserMail(loginRequest.getUserMail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found after authentication. This should not happen."));
 
         Roles role = rolesRepository.findById(user.getUserRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found for user: " + user.getUserMail()));
+
+        final String jwt = jwtUtil.generateToken(userDetails,
+                                                 role.getRoleName(),
+                                                 role.getRoleDisplayName(),
+                                                 user.getUserId(),
+                                                 user.getUserName(),
+                                                 user.getUserLastName());
 
         logger.info("User {} authenticated successfully. Role: {}", user.getUserMail(), role.getRoleDisplayName());
 

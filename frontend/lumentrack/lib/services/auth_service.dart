@@ -1,0 +1,34 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../core/api_config.dart';
+import '../models/auth_models.dart';
+
+class AuthService {
+  final Map<String, String> _headers = {
+    'Content-Type': 'application/json; charset=UTF-8',
+    'Accept': 'application/json',
+  };
+
+  /// Consumo del endpoint /auth/login en el puerto 8084
+  Future<AuthResponse> login(String email, String password) async {
+    final url = Uri.parse("${ApiConfig.auth}/login");
+    final body = jsonEncode(
+      LoginRequest(userMail: email, password: password).toJson(),
+    );
+
+    try {
+      final response = await http.post(url, headers: _headers, body: body);
+
+      if (response.statusCode == 200) {
+        return AuthResponse.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)),
+        );
+      } else {
+        // Cualquier otro código (como el 403 Forbidden) lanza una excepción
+        throw Exception("Error de autenticación: ${response.statusCode}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+}

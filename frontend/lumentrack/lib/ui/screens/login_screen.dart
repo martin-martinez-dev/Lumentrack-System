@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
+import '../../core/session_manager.dart';
+import '../../models/auth_models.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,11 +14,64 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // --- ESTE ES EL MÉTODO QUE FALTABA ---
-  void _handleLogin() {
-    // Por ahora, navegamos directo al Dashboard sin validar con el Backend
-    // Esto te permite probar la app aunque no tengas el servicio de Auth listo
-    Navigator.pushReplacementNamed(context, '/dashboard');
+  final AuthService _authService = AuthService();
+
+  Future<void> _handleLogin() async {
+    final email = _userController.text.trim();
+    final pass = _passwordController.text.trim();
+
+    if (email.isEmpty || pass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Por favor, ingrese sus credenciales")),
+      );
+      return;
+    }
+
+    try {
+      final response = await _authService.login(email, pass);
+
+      if (mounted) {
+        // Almacenamos los datos en el singleton SessionManager
+        SessionManager().saveSession(response);
+
+        // Validación de Rol ROLE_NONE: Si el usuario no tiene permisos, lo mandamos a la pantalla de aviso
+        if (response.roleName == "ROLE_NONE") {
+          Navigator.pushReplacementNamed(context, '/no-role');
+          return;
+        }
+
+        // Diálogo de bienvenida personalizado
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text("¡Bienvenido!"),
+            content: Text(
+              "Hola, ${response.userName} ${response.userLastName}",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Cerrar diálogo
+                  Navigator.pushReplacementNamed(context, '/dashboard');
+                },
+                child: const Text("Aceptar"),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        // Si ocurre un 403 o error de red, mostramos SnackBar y nos quedamos aquí
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No se pudo autenticar al usuario"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

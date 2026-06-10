@@ -54,8 +54,19 @@ public class JwtUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public String generateToken(UserDetails userDetails) {
+    // Método generateToken modificado para aceptar claims personalizados
+    public String generateToken(UserDetails userDetails,
+                                String roleName,
+                                String roleDisplayName,
+                                Integer userId,
+                                String userName,
+                                String userLastName) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", roleName);
+        claims.put("roleDisplayName", roleDisplayName);
+        claims.put("userId", userId);
+        claims.put("userName", userName);
+        claims.put("userLastName", userLastName);
         return createToken(claims, userDetails.getUsername());
     }
 

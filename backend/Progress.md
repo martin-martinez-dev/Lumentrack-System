@@ -41,3 +41,20 @@
     *   **Objetivo:** Restringir el acceso a endpoints específicos en los módulos `samples-management`, `admin-management` y `dashboard-management` basándose en el `ROLE_NAME` del usuario autenticado.
     *   **Método:** Se utilizarán anotaciones de Spring Security como `@PreAuthorize("hasRole('ROLE_ADMIN')")` o `@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")` en los métodos de los controladores o servicios.
     *   **Contexto:** Se hará uso del `ROLE_NAME` que se obtiene durante la autenticación y se incluye en el JWT, y que Spring Security ya maneja a través de `UserDetailsServiceImpl`.
+
+---
+
+## Fecha: 2026-06-09
+
+### Resumen del Trabajo Realizado Hoy:
+
+1.  **Configuración de `auth-management`:**
+    *   Se corrigió el error `UnsatisfiedDependencyException` en `AuthManagementApplication` añadiendo `scanBasePackages`, `EnableJpaRepositories` y `EntityScan` para escanear el módulo `lumentrack-commons`.
+    *   Se modificó `JwtUtil.java` para incluir claims personalizados (roleName, roleDisplayName, userId, userName, userLastName) en el JWT generado.
+    *   Se actualizó `AuthService.java` para pasar los datos del usuario y el rol a `JwtUtil` al generar el token.
+    *   Se eliminó el endpoint `/generate-token` redundante en `AuthController.java`.
+
+2.  **Preparación de `samples-management` como Resource Server:**
+    *   Se actualizó `build.gradle` en `samples-management` para incluir las dependencias necesarias para Spring Security y JWT (versión 0.12.6), y la dependencia a `lumentrack-commons`.
+    *   Se implementó `JwtAuthenticationFilter.java` para interceptar solicitudes, extraer y validar el JWT, y autenticar al usuario. Se configuró para extraer el claim "role", limpiar el prefijo "ROLE_" y mapearlo a `SimpleGrantedAuthority`.
+    *   Se implementó `SecurityConfig.java` con `@EnableMethodSecurity`, deshabilitación de CSRF, política de sesión `STATELESS`, integración de `JwtAuthenticationFilter`, y reglas de autorización detalladas por URL y método HTTP para los roles `SUPER_ADMIN`, `ADMIN`, `DESIGN`, `PRODUCTION`, `SALES` y `NONE`.

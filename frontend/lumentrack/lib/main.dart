@@ -4,6 +4,7 @@ import 'ui/screens/login_screen.dart';
 import 'ui/screens/carga_tarea_screen.dart';
 import 'ui/screens/register_screen.dart';
 import 'ui/screens/carga_componente_screen.dart';
+import 'ui/screens/no_role_screen.dart';
 import 'main_wrapper.dart'; // Asegúrate de crearlo
 
 void main() => runApp(const LumenTrackApp());
@@ -40,6 +41,7 @@ class LumenTrackApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/carga-tarea': (context) => const CargaTareaScreen(),
         '/carga-componente': (context) => const CargaComponenteScreen(),
+        '/no-role': (context) => const NoRoleScreen(),
       },
     );
   }
