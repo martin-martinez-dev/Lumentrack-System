@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor // Genera el constructor vacío obligatorio para Jackson
 @AllArgsConstructor // Genera el constructor con todos los campos
-@Builder // Te permite mapear y construir este objeto de forma fluida
+@Builder(toBuilder = true) // Te permite mapear y construir este objeto de forma fluida
 @Table(name="components")
 public class Components {
 

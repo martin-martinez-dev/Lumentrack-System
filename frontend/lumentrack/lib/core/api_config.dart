@@ -2,8 +2,7 @@ class ApiConfig {
   static const String baseUrl =
       //"http://10.0.2.2:8080"; // IP de emulador
       "http://192.168.100.15"; // IP en casa
-  //"http://192.168.1.149"; // IP en Ula
-  //"http://192.168.100.16"; // IP en casa de Mex
+  //"http://192.168.1.133"; // IP en Ula
 
   // Dashboard Screen Endpoints
   static const String dashboard = "$baseUrl:8081/lumentrack/dashboard/getData";
@@ -15,6 +14,8 @@ class ApiConfig {
   static const String components =
       "$baseUrl:8082/lumentrack/samples/components";
   static const String tasks = "$baseUrl:8082/lumentrack/samples/tasks";
+  static const String userFilteredData =
+      "$baseUrl:8082/lumentrack/samples/user-filtered-data";
 
   // Admin Screens Endpoints
   static const String clients = "$baseUrl:8083/lumentrack/admin/clients";
@@ -23,5 +24,5 @@ class ApiConfig {
   static const String roles = "$baseUrl:8083/lumentrack/admin/roles";
 
   // Auth Endpoints
-  static const String auth = "$baseUrl:8084/lumentrack/auth/ASD";
+  static const String auth = "$baseUrl:8084/lumentrack/auth/auth";
 }

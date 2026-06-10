@@ -27,23 +27,27 @@ public class DashboardService {
 
 	private final static Logger logger = LoggerFactory.getLogger(DashboardService.class);
 	
-	@Autowired
-	SamplesRepository samplesRepository;
-	
-	@Autowired
-	OrdersRepository ordersRepository;
-	
-	@Autowired
-	TasksRepository tasksRepository;
-	
-	@Autowired
-	OrdersMapper orderMapper;
-	
-	@Autowired
-	SamplesMapper samplesMapper;
-	
-	@Autowired
-	TasksMapper tasksMapper;
+	private final SamplesRepository samplesRepository; // Hacerlo final
+	private final OrdersRepository ordersRepository; // Hacerlo final
+	private final TasksRepository tasksRepository; // Hacerlo final
+	private final OrdersMapper orderMapper; // Hacerlo final
+	private final SamplesMapper samplesMapper; // Hacerlo final
+	private final TasksMapper tasksMapper; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public DashboardService(SamplesRepository samplesRepository,
+                            OrdersRepository ordersRepository,
+                            TasksRepository tasksRepository,
+                            OrdersMapper orderMapper,
+                            SamplesMapper samplesMapper,
+                            TasksMapper tasksMapper) {
+        this.samplesRepository = samplesRepository;
+        this.ordersRepository = ordersRepository;
+        this.tasksRepository = tasksRepository;
+        this.orderMapper = orderMapper;
+        this.samplesMapper = samplesMapper;
+        this.tasksMapper = tasksMapper;
+    }
 	
 	public Dashboard getDashboardData() {
 		

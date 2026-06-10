@@ -16,8 +16,12 @@ public class ClientsService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ClientsService.class);
 	
-	@Autowired
-	private ClientsRepository repository;
+	private final ClientsRepository repository; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public ClientsService(ClientsRepository repository) {
+        this.repository = repository;
+    }
 	
 	public Clients saveClient ( Clients client ) {
 		logger.info( "Saving client on service: " + client.getClientName() );

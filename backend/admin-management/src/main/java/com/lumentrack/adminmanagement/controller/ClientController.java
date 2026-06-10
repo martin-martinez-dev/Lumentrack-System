@@ -18,8 +18,12 @@ public class ClientController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ClientController.class);
 	
-	@Autowired
-	private ClientsService service;
+	private final ClientsService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public ClientController(ClientsService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Clients> saveClient(@RequestBody Clients client) {

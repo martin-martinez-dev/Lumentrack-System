@@ -18,8 +18,12 @@ public class UserController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(UserController.class);
 	
-	@Autowired
-	private UsersService service;
+	private final UsersService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public UserController(UsersService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Users> saveUser( @RequestBody Users user ) {

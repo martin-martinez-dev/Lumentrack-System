@@ -15,7 +15,7 @@ class _CargaComponenteScreenState extends State<CargaComponenteScreen> {
 
   void _save() {
     // Al usar ApiConfig y las variables, los warnings 1, 2 y 3 desaparecen
-    final url = "${ApiConfig.components}save";
+    final url = "${ApiConfig.components}/save";
     print("Enviando a $url: $_material, $_employee, $_isExternal");
   }
 

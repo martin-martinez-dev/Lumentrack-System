@@ -18,8 +18,12 @@ public class RolesController {
 
     private final static Logger logger = LoggerFactory.getLogger(RolesController.class);
 
-    @Autowired
-    private RolesService service;
+    private final RolesService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public RolesController(RolesService service) {
+        this.service = service;
+    }
 
     @PostMapping("/save")
     public ResponseEntity<Roles> saveRole( @RequestBody Roles role ) {

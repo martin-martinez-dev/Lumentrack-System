@@ -17,8 +17,12 @@ public class ClientsService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ClientsService.class);
 	
-	@Autowired
-	private ClientsRepository repository;
+	private final ClientsRepository repository; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public ClientsService(ClientsRepository repository) {
+        this.repository = repository;
+    }
 	
 	public Clients saveClient ( Clients client ) {
 		logger.info( "Saving client on service: " + client.getClientName() );
@@ -39,9 +43,9 @@ public class ClientsService {
 	}
 	
 	@Transactional
-	public Clients updateClient(Clients updatedClient) {
+	public Clients updateClient(Clients updatedClient) { // El tipo de retorno sigue siendo Clients, pero devolveremos un DTO-like
 		logger.info( "Updating information for the client: " + updatedClient.getClientName() );
-		return repository.findById( updatedClient.getClientId() ).map( clients -> {
+		Clients clientEntity = repository.findById( updatedClient.getClientId() ).map( clients -> {
 			clients.setClientName( updatedClient.getClientName() );
 			clients.setCompanyName( updatedClient.getCompanyName() );
 			clients.setClientContactName( updatedClient.getClientContactName() );
@@ -50,6 +54,17 @@ public class ClientsService {
 			clients.setUlaLightEmployee( updatedClient.getUlaLightEmployee() );
 			return repository.save(clients);
 		}).orElseThrow( () -> new RuntimeException("Cliente no encontrado") );
+
+		// Devolver un objeto Clients "DTO-like" para evitar problemas de serialización
+		return Clients.builder()
+				.clientId(clientEntity.getClientId())
+				.clientName(clientEntity.getClientName())
+				.companyName(clientEntity.getCompanyName())
+				.clientContactName(clientEntity.getClientContactName())
+				.clientPhoneNumber(clientEntity.getClientPhoneNumber())
+				.clientMail(clientEntity.getClientMail())
+				.ulaLightEmployee(clientEntity.getUlaLightEmployee())
+				.build();
 	}
 	
 	public void deleteClient(Integer id) {

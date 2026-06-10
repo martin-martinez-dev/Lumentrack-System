@@ -30,12 +30,12 @@ public class CloudinaryService {
 	
 	private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "webp");
 	
-	@Autowired
-	SavedImageLogRepository imageRepository;
-	
+	private final SavedImageLogRepository imageRepository; // Hacerlo final
 	private final Cloudinary cloudinary;
 	
-    public CloudinaryService(Cloudinary cloudinary) {
+    @Autowired // Inyección por constructor
+    public CloudinaryService(SavedImageLogRepository imageRepository, Cloudinary cloudinary) {
+        this.imageRepository = imageRepository;
         this.cloudinary = cloudinary;
     }
     

@@ -18,8 +18,12 @@ public class MaterialController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(MaterialController.class);
 	
-	@Autowired
-	MaterialService service;
+	private final MaterialService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public MaterialController(MaterialService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Materials> saveMaterial(@RequestBody Materials material) {

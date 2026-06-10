@@ -27,17 +27,21 @@ public class SampleService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(SampleService.class);
 	
-	@Autowired
-	private SamplesRepository repository;
-	
-	@Autowired
-	private OrdersRepository orderRepository;
-	
-	@Autowired
-	private ComponentsRepository componentsRepository;
+	private final SamplesRepository repository; // Hacerlo final
+	private final OrdersRepository orderRepository; // Hacerlo final
+	private final ComponentsRepository componentsRepository; // Hacerlo final
+	private final ComponentService componentService; // Hacerlo final
 
-	@Autowired
-	private ComponentService componentService;
+    @Autowired // Inyección por constructor
+    public SampleService(SamplesRepository repository,
+                         OrdersRepository orderRepository,
+                         ComponentsRepository componentsRepository,
+                         ComponentService componentService) {
+        this.repository = repository;
+        this.orderRepository = orderRepository;
+        this.componentsRepository = componentsRepository;
+        this.componentService = componentService;
+    }
 	
 	@Transactional
 	public Samples saveSample( SampleRequest sampleRequest ) {
@@ -76,10 +80,10 @@ public class SampleService {
 	}
 	
 	@Transactional
-	public Samples updateSample(SampleRequest sampleRequest) {
+	public SampleDetailsResponse updateSample(SampleRequest sampleRequest) { // Modificado para devolver SampleDetailsResponse
 		logger.info( "Updating information for the sample: " + sampleRequest.getSampleName() );
 		
-		return repository.findById(sampleRequest.getSampleId()).map(sample -> {
+		Samples updatedSample = repository.findById(sampleRequest.getSampleId()).map(sample -> {
 			sample.setSampleName( sampleRequest.getSampleName() );
 			sample.setSamplePhotoId( sampleRequest.getSamplePhotoId() );
 			sample.setSamplePhotoUrl( sampleRequest.getSamplePhotoUrl() );
@@ -94,6 +98,9 @@ public class SampleService {
 			
 			return repository.save( sample );
 		}).orElseThrow( () -> new ResourceNotFoundException("Muestra no encontrada con id: " + sampleRequest.getSampleId()) );
+
+		// Mapear la entidad actualizada a un DTO de respuesta
+		return mapSampleToSampleDetailsResponse(updatedSample);
 	}
 	
 	public void deleteSample( Integer id ) {

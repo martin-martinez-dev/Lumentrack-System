@@ -16,8 +16,12 @@ public class MaterialService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(MaterialService.class);
 	
-	@Autowired
-	private MaterialsRepository repository;
+	private final MaterialsRepository repository; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public MaterialService(MaterialsRepository repository) {
+        this.repository = repository;
+    }
 	
 	public Materials saveMaterial(Materials material) {
 		logger.info("Saving information for Material: " + material.getMaterialName());

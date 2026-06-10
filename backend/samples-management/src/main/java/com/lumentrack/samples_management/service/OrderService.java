@@ -25,14 +25,16 @@ public class OrderService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(OrderService.class);
 	
-	@Autowired
-	private OrdersRepository repository;
-	
-	@Autowired
-	private SamplesRepository sampleRepository;
+	private final OrdersRepository repository; // Hacerlo final
+	private final SamplesRepository sampleRepository; // Hacerlo final
+	private final SampleService sampleService; // Hacerlo final
 
-	@Autowired
-	private SampleService sampleService;
+    @Autowired // Inyección por constructor
+    public OrderService(OrdersRepository repository, SamplesRepository sampleRepository, SampleService sampleService) {
+        this.repository = repository;
+        this.sampleRepository = sampleRepository;
+        this.sampleService = sampleService;
+    }
 	
 	@Transactional
 	public Orders saveOrder(OrderRequest orderRequest) {
@@ -81,9 +83,9 @@ public class OrderService {
 	}
 	
 	@Transactional
-	public Orders updateOrder(OrderRequest orderRequest) {
+	public OrderDetailsResponse updateOrder(OrderRequest orderRequest) { // Modificado para devolver OrderDetailsResponse
 		logger.info("Updating information for order: " + orderRequest.getOrderName());
-		return repository.findById( orderRequest.getOrderId() ).map(order -> {
+		Orders updatedOrder = repository.findById( orderRequest.getOrderId() ).map(order -> {
 			order.setOrderName( orderRequest.getOrderName() );
 			order.setEstimatedDeliveryDate( orderRequest.getEstimatedDeliveryDate() );
 			order.setRealDeliveryDate( orderRequest.getRealDeliveryDate() );
@@ -91,6 +93,9 @@ public class OrderService {
 			order.setClientId( orderRequest.getClientId() );
 			return repository.save(order);
 		}).orElseThrow( () -> new ResourceNotFoundException("Orden no encontrada con id: " + orderRequest.getOrderId()) );
+
+		// Mapear la entidad actualizada a un DTO de respuesta
+		return mapOrderToOrderDetailsResponse(updatedOrder);
 	}
 	
 	public void deleteOrderById(Integer id) {

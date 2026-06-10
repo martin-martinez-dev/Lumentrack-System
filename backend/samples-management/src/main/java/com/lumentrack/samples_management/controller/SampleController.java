@@ -29,8 +29,12 @@ public class SampleController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(SampleController.class);
 	
-	@Autowired
-	private SampleService sampleService;
+	private final SampleService sampleService; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public SampleController(SampleService sampleService) {
+        this.sampleService = sampleService;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Samples> saveSample( @RequestBody SampleRequest sampleRequest ) {
@@ -71,7 +75,7 @@ public class SampleController {
 	}
 	
 	@PostMapping("/update")
-	public Samples updateSample(@RequestBody SampleRequest sampleRequest) {
+	public SampleDetailsResponse updateSample(@RequestBody SampleRequest sampleRequest) { // CAMBIADO: Tipo de retorno a SampleDetailsResponse
 		logger.info( "Update for sample: " + sampleRequest.getSampleName() );
 		
 		logger.info("Executing for object: " + sampleRequest.toString() );

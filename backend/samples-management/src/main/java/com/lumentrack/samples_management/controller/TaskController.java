@@ -29,8 +29,12 @@ public class TaskController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(TaskController.class);
 	
-	@Autowired
-	private TaskService service;
+	private final TaskService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public TaskController(TaskService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Tasks> saveTask(@RequestBody TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
@@ -60,7 +64,7 @@ public class TaskController {
 	}
 	
 	@PostMapping("/update")
-	public Tasks updateTask(@RequestBody TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
+	public TaskDetailsResponse updateTask(@RequestBody TaskRequest taskRequest) { // CAMBIADO: Tipo de retorno a TaskDetailsResponse
 		logger.info("Updating info for task: " + taskRequest.getTaskName());
 		return service.updateTaks(taskRequest); // Pasar el request al servicio
 	}

@@ -16,7 +16,9 @@ class DashboardService {
     );
 
     if (response.statusCode == 200) {
-      return DashboardData.fromJson(json.decode(response.body));
+      return DashboardData.fromJson(
+        jsonDecode(utf8.decode(response.bodyBytes)),
+      );
     } else {
       throw Exception('Fallo al cargar el dashboard');
     }

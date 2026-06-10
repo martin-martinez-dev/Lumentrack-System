@@ -22,14 +22,16 @@ public class UsersService {
 
 	private final static Logger logger = LoggerFactory.getLogger(UsersService.class);
 
-	@Autowired
-	private UsersRepository repository;
+	private final UsersRepository repository; // Hacerlo final
+	private final RolesRepository roleRepository; // Hacerlo final
+	private final PasswordEncoder passwordEncoder; // Hacerlo final
 
-	@Autowired
-	private RolesRepository roleRepository;
-
-	@Autowired
-	private PasswordEncoder passwordEncoder; // Inyectar PasswordEncoder
+	@Autowired // Inyección por constructor
+	public UsersService(UsersRepository repository, RolesRepository roleRepository, PasswordEncoder passwordEncoder) {
+		this.repository = repository;
+		this.roleRepository = roleRepository;
+		this.passwordEncoder = passwordEncoder;
+	}
 
 	public Users saveUser(Users user) {
 		logger.info("Saving information for user " + user.getUserName());

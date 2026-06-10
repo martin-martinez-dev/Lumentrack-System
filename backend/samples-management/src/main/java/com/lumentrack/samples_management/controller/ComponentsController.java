@@ -30,8 +30,12 @@ public class ComponentsController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ComponentsController.class);
 	
-	@Autowired
-	private ComponentService service;
+	private final ComponentService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public ComponentsController(ComponentService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Components> saveComponent(@RequestBody ComponentRequest componentRequest) {
@@ -60,7 +64,7 @@ public class ComponentsController {
 	}
 	
 	@PostMapping("/update")
-	public Components updateComponent(@RequestBody ComponentRequest componentRequest) {
+	public ComponentDetailsResponse updateComponent(@RequestBody ComponentRequest componentRequest) { // CAMBIADO: Tipo de retorno a ComponentDetailsResponse
 		logger.info("Updating info for component: " + componentRequest.getComponentName());
 		return service.updateComponent(componentRequest);
 	}

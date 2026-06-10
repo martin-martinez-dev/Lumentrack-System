@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../../core/api_config.dart';
 import '../../models/task_model.dart';
@@ -22,11 +23,12 @@ class _CargaTareaScreenState extends State<CargaTareaScreen> {
     //final task = Task(
     //  taskName: _nameCtrl.text,
     //  taskDescription: _descCtrl.text,
-    //  taskEstimatedDate: _selectedDate!,
+    //  componentId: 0, // Requerido por el modelo
+    //  taskEstimatedDate: DateFormat('yyyy-MM-dd HH:mm:ss').format(_selectedDate!),
     //);
 
     //final res = await http.post(
-    //  Uri.parse("${ApiConfig.tasks}save"),
+    //  Uri.parse("${ApiConfig.tasks}/save"),
     //  headers: {'Content-Type': 'application/json'},
     //  body: jsonEncode(task.toJson()),
     //);

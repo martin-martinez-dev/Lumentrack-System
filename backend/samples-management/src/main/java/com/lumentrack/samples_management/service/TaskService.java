@@ -22,11 +22,14 @@ public class TaskService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(TaskService.class);
 	
-	@Autowired
-	private TasksRepository repository;
-	
-	@Autowired
-	private ComponentsRepository componentRepository; // Se mantiene por si hay otros usos, aunque getTaskDetails ya no lo usará directamente.
+	private final TasksRepository repository; // Hacerlo final
+	private final ComponentsRepository componentRepository; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public TaskService(TasksRepository repository, ComponentsRepository componentRepository) {
+        this.repository = repository;
+        this.componentRepository = componentRepository;
+    }
 	
 	@Transactional
 	public Tasks saveTask(TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
@@ -57,7 +60,7 @@ public class TaskService {
 	// Nuevo método para obtener tareas por userId de sus componentes
 	public List<Tasks> getTasksByUserId(Integer userId) {
 		logger.info("Retrieving tasks for userId: " + userId);
-		return repository.findByComponentsUserId(userId);
+		return repository.findByComponentsUserIdWithComponent(userId); // CAMBIADO: Nombre del método
 	}
 	
 	public Optional<Tasks> getTaskById(Integer id) {
@@ -66,10 +69,10 @@ public class TaskService {
 	}
 
 	@Transactional
-	public Tasks updateTaks(TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
+	public TaskDetailsResponse updateTaks(TaskRequest taskRequest) { // Modificado para devolver TaskDetailsResponse
 		logger.info("Updating the task: " + taskRequest.getTaskName());
 		
-		return repository.findById( taskRequest.getTaskId() ).map(task -> {
+		Tasks updatedTask = repository.findById( taskRequest.getTaskId() ).map(task -> {
 			task.setTaskName(taskRequest.getTaskName()); // Actualizar nombre
 			task.setTaskDescription( taskRequest.getTaskDescription() );
 			task.setTaskPhotoUrl(taskRequest.getTaskPhotoUrl());
@@ -86,6 +89,9 @@ public class TaskService {
 			
 			return repository.save(task);
 		}).orElseThrow( () -> new ResourceNotFoundException("Tarea no encontrada con id: " + taskRequest.getTaskId()) );
+
+		// Mapear la entidad actualizada a un DTO de respuesta
+		return mapTaskToTaskDetailsResponse(updatedTask);
 	}
 	
 	public void deleteTasks(Integer id) {
@@ -118,6 +124,22 @@ public class TaskService {
 				.taskPhotoId( task.getTaskPhotoId() )
 				.taskEstimatedDate( task.getTaskEstimatedDate() )
 				.taskRealDateTime( task.getTaskRealDateTime() )
+				.build();
+	}
+
+	// Método privado para mapear una entidad Tasks a TaskDetailsResponse
+	private TaskDetailsResponse mapTaskToTaskDetailsResponse(Tasks task) {
+		Components component = task.getComponent();
+		return TaskDetailsResponse.builder()
+				.taskId(task.getTaskId())
+				.taskName(task.getTaskName())
+				.taskDescription(task.getTaskDescription())
+				.componentId(component != null ? component.getComponentId() : null)
+				.componentName(component != null ? component.getComponentName() : null)
+				.taskPhotoUrl(task.getTaskPhotoUrl())
+				.taskPhotoId(task.getTaskPhotoId())
+				.taskEstimatedDate(task.getTaskEstimatedDate())
+				.taskRealDateTime(task.getTaskRealDateTime()) // CORREGIDO: Usar getTaskRealDateTime()
 				.build();
 	}
 }

@@ -22,8 +22,12 @@ public class ImageController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ImageController.class);
 	
-	@Autowired
-	CloudinaryService cloudinaryService;
+	private final CloudinaryService cloudinaryService; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public ImageController(CloudinaryService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
 	
 //	@PostMapping("/upload")
 //	public ResponseEntity<String> upload(@RequestParam("file") MultipartFile multipartFile) throws IOException {

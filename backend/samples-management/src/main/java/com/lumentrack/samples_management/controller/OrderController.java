@@ -29,8 +29,12 @@ public class OrderController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(OrderController.class);
 	
-	@Autowired
-	OrderService service;
+	private final OrderService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public OrderController(OrderService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
 	public ResponseEntity<Orders> saveOrder(@RequestBody OrderRequest orderRequest) {
@@ -66,7 +70,7 @@ public class OrderController {
 	}
 	
 	@PostMapping("/update")
-	public Orders updateOrder(@RequestBody OrderRequest orderRequest) {
+	public OrderDetailsResponse updateOrder(@RequestBody OrderRequest orderRequest) { // CAMBIADO: Tipo de retorno a OrderDetailsResponse
 		logger.info("Updating information for order: " + orderRequest.getOrderName());
 		return service.updateOrder(orderRequest);
 	}

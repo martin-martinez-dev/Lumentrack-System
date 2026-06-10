@@ -17,8 +17,12 @@ public class MaterialService {
 	
 	private final static Logger logger = LoggerFactory.getLogger(MaterialService.class);
 	
-	@Autowired
-	private MaterialsRepository repository;
+	private final MaterialsRepository repository; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public MaterialService(MaterialsRepository repository) {
+        this.repository = repository;
+    }
 	
 	public Materials saveMaterial(Materials material) {
 		logger.info("Saving information for Material: " + material.getMaterialName());
@@ -36,12 +40,18 @@ public class MaterialService {
 	}
 	
 	@Transactional
-	public Materials updateMaterialInformation(Materials updatedMaterial) {
+	public Materials updateMaterialInformation(Materials updatedMaterial) { // El tipo de retorno sigue siendo Materials, pero devolveremos un DTO-like
 		logger.info("Updating information for material: " + updatedMaterial.getMaterialName());
-		return repository.findById( updatedMaterial.getMaterialId() ).map(materials -> {
+		Materials materialEntity = repository.findById( updatedMaterial.getMaterialId() ).map(materials -> {
 			materials.setMaterialName( updatedMaterial.getMaterialName() );
 			return repository.save(materials);
 		}).orElseThrow( () -> new RuntimeException("Muestra no encontrada") );
+
+		// Devolver un objeto Materials "DTO-like" para evitar problemas de serialización
+		return Materials.builder()
+				.materialId(materialEntity.getMaterialId())
+				.materialName(materialEntity.getMaterialName())
+				.build();
 	}
 	
 	public void deleteMaterialById(Integer id) {

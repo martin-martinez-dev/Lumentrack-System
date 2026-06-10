@@ -1,0 +1,40 @@
+server:
+  port: 8084 #Puerto para Admin Management
+  servlet:
+    context-path: /lumentrack/auth
+
+# CONFIGURACIÓN PERSONALIZADA PARA JWT (A la misma altura que server y spring)
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000} # 1 hora por defecto
+
+spring:
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: auth-management
+  datasource:
+    url: ${AIVEN_DB_URL}
+    username: ${AIVEN_DB_USER}
+    password: ${AIVEN_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa: # CORRECCIÓN DE IDENTACIÓN: jpa debe colgar directamente de spring, no de datasource
+    hibernate:
+      ddl-auto: update # or 'create', 'create-drop', 'none'
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        dialect: org.hibernate.dialect.MySQLDialect
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health
+    endpoint:
+      health:
+        show-details: always # Esto permite que Actuator verifique la conexión a la DB

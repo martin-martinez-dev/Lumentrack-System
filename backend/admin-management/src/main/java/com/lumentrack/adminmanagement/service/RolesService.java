@@ -16,8 +16,12 @@ public class RolesService {
 
     private final static Logger logger = LoggerFactory.getLogger(RolesService.class);
 
-    @Autowired
-    private RolesRepository repository;
+    private final RolesRepository repository; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public RolesService(RolesRepository repository) {
+        this.repository = repository;
+    }
 
     public Roles saveRole(Roles role) {
         logger.info("Saving information for role: " + role.getRoleName());

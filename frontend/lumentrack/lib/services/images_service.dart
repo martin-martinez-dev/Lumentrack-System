@@ -43,7 +43,9 @@ class ImagesService {
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final Map<String, dynamic> responseData = jsonDecode(response.body);
+      final Map<String, dynamic> responseData = jsonDecode(
+        utf8.decode(response.bodyBytes),
+      );
       return CloudinaryResponse.fromJson(responseData);
     } else {
       throw Exception(

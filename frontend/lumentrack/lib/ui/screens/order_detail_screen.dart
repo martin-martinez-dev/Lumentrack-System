@@ -175,8 +175,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
               // 🟢 EL COMBOBOX SOLICITADO: Muestra nombres pero controla IDs nulos/enteros
               DropdownButtonFormField<int>(
-                value: _selectedClientId,
-                //enabled: _isEditing,
+                // Validación de seguridad: el valor debe existir en la lista de items
+                value: _clientsList.any((c) => c.clientId == _selectedClientId)
+                    ? _selectedClientId
+                    : null,
                 decoration: InputDecoration(
                   labelText: "Cliente Asignado",
                   prefixIcon: const Icon(

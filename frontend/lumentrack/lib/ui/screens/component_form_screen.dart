@@ -43,7 +43,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
   List<Task> _componentTasks = [];
 
   int? _selectedMaterialId;
-  String? _selectedEmployeeName;
+  int? _selectedUserId;
   String?
   _selectedStatus; // 🟢 Estado para almacenar el statusResume del ComboBox
 
@@ -86,9 +86,7 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
       _uploadedPhotoUrl = widget.component?.componentPhotoUrl;
       _uploadedPhotoId = widget.component?.componentPhotoId;
       _selectedMaterialId = widget.component?.materialId;
-      _selectedEmployeeName = widget.component?.ulaLightEmployee.isEmpty == true
-          ? null
-          : widget.component?.ulaLightEmployee;
+      _selectedUserId = widget.component?.userId;
 
       // Validamos que el estado del backend coincida con nuestras opciones fijas
       final backendStatus = widget.component?.statusResume;
@@ -125,6 +123,22 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
 
       _materials = data[0] as List<MaterialItem>;
       _users = data[1] as List<UserItem>;
+
+      // Soporte para datos heredados: si falta el userId pero tenemos el nombre, buscamos el ID
+      if (!_isNew &&
+          _selectedUserId == null &&
+          widget.component?.ulaLightEmployee != null &&
+          widget.component!.ulaLightEmployee.isNotEmpty) {
+        try {
+          _selectedUserId = _users
+              .firstWhere(
+                (u) => u.fullName == widget.component!.ulaLightEmployee,
+              )
+              .userId;
+        } catch (e) {
+          debugPrint("No se pudo mapear el nombre del empleado a un ID: $e");
+        }
+      }
 
       if (!_isNew) {
         setState(() => _isLoadingDetails = true);
@@ -424,8 +438,8 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
                     ),
                     const SizedBox(height: 15),
 
-                    DropdownButtonFormField<String>(
-                      value: _selectedEmployeeName,
+                    DropdownButtonFormField<int>(
+                      value: _selectedUserId,
                       decoration: InputDecoration(
                         labelText: "Encargado de Operación (Empleado)",
                         prefixIcon: const Icon(
@@ -439,13 +453,13 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
                         filled: !_isEditing,
                       ),
                       items: _users.map((u) {
-                        return DropdownMenuItem<String>(
-                          value: u.fullName,
+                        return DropdownMenuItem<int>(
+                          value: u.userId,
                           child: Text(u.fullName),
                         );
                       }).toList(),
                       onChanged: _isEditing
-                          ? (val) => setState(() => _selectedEmployeeName = val)
+                          ? (val) => setState(() => _selectedUserId = val)
                           : null,
                       validator: (value) =>
                           value == null ? "Asigne un empleado encargado" : null,
@@ -677,6 +691,9 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
+    // Recuperamos el usuario seleccionado para obtener tanto el ID como el nombre completo
+    final selectedUser = _users.firstWhere((u) => u.userId == _selectedUserId);
+
     try {
       // 🟢 Payload completo incluyendo deliveryDate y statusResume mapeados correctamente
       final componentData = Component(
@@ -686,7 +703,8 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
         componentType: _typeController.text,
         componentDescription: _descriptionController.text,
         materialId: _selectedMaterialId!,
-        ulaLightEmployee: _selectedEmployeeName!,
+        ulaLightEmployee: selectedUser.fullName,
+        userId: _selectedUserId,
         componentPhotoUrl: _uploadedPhotoUrl ?? '',
         componentPhotoId: _uploadedPhotoId ?? '',
         deliveryDate: _deliveryDateController
