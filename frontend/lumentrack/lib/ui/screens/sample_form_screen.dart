@@ -10,6 +10,7 @@ import '../../services/samples_service.dart';
 import '../../services/orders_service.dart';
 import '../../services/images_service.dart';
 import '../../core/date_formatter.dart';
+import '../../core/session_manager.dart'; // Import SessionManager
 import 'component_form_screen.dart'; // Importación integrada
 
 class SampleFormScreen extends StatefulWidget {
@@ -194,6 +195,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userRole = SessionManager().roleName;
     final bool canUpload =
         _isEditing && !_isUploadingToCloudinary && _imageFile != null;
 
@@ -421,7 +423,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                         ),
                       ),
 
-                    // COMPONENTES ASOCIADOS: Se despliega si la muestra ya está registrada en base de datos
+                    // COMPONENTES ASOCIADOS: Se despliega si la muestra ya está registrada en base de datos y el rol lo permite
                     if (!_isNew) ...[
                       const Divider(height: 50, thickness: 1.5),
                       Row(
@@ -447,30 +449,34 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
                               ),
                             ],
                           ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF3E5B42),
-                              size: 32,
-                            ),
-                            onPressed: () async {
-                              final bool? actualizado = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ComponentFormScreen(
-                                    sampleId: widget.sample!.sampleId!,
+                          if (userRole !=
+                              'ROLE_SALES') // Hide add component button for SALES
+                            IconButton(
+                              icon: const Icon(
+                                Icons.add_circle,
+                                color: Color(0xFF3E5B42),
+                                size: 32,
+                              ),
+                              onPressed: () async {
+                                final bool? actualizado = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ComponentFormScreen(
+                                      sampleId: widget.sample!.sampleId!,
+                                    ),
                                   ),
-                                ),
-                              );
-                              if (actualizado == true) {
-                                _recargarMuestra();
-                              }
-                            },
-                          ),
+                                );
+                                if (actualizado == true) {
+                                  _recargarMuestra();
+                                }
+                              },
+                            ),
                         ],
                       ),
                       const SizedBox(height: 15),
-                      _buildComponentsList(),
+                      if (userRole !=
+                          'ROLE_SALES') // Hide components list for SALES
+                        _buildComponentsList(),
                     ],
                   ],
                 ),

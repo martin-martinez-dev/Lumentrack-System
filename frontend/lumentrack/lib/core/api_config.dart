@@ -1,8 +1,8 @@
 class ApiConfig {
   static const String baseUrl =
       //"http://10.0.2.2:8080"; // IP de emulador
-      "http://192.168.100.15"; // IP en casa
-  //"http://192.168.1.133"; // IP en Ula
+      //"http://192.168.100.15"; // IP en casa
+      "http://192.168.1.148"; // IP en Ula
 
   // Dashboard Screen Endpoints
   static const String dashboard = "$baseUrl:8081/lumentrack/dashboard/getData";

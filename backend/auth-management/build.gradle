@@ -58,7 +58,7 @@ tasks.named('test') {
 }
 
 bootJar {
-    archiveFileName = 'lumentrack-dashboard-backend.jar'
+    archiveFileName = 'lumentrack-auth-backend.jar'
 }
 
 jar {

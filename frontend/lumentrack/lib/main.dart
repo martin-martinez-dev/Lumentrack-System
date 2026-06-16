@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ui/screens/login_screen.dart';
 //import 'ui/screens/nueva_muestra_screen.dart';
 import 'ui/screens/carga_tarea_screen.dart';
+import 'core/session_manager.dart'; // Import SessionManager
 import 'ui/screens/register_screen.dart';
 import 'ui/screens/carga_componente_screen.dart';
 import 'ui/screens/no_role_screen.dart';
@@ -35,8 +36,16 @@ class LumenTrackApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
-        '/dashboard': (context) =>
-            const MainWrapper(), // Ahora envuelve las pantallas principales
+        '/dashboard': (context) {
+          final roleName = SessionManager().roleName;
+          int initialIndexHint = 0; // Default: Dashboard
+
+          if (roleName == 'ROLE_PRODUCTION' || roleName == 'ROLE_SALES') {
+            initialIndexHint = 1; // Hint for Orders screen
+          }
+
+          return MainWrapper(initialIndexHint: initialIndexHint);
+        },
         //'/nueva-muestra': (context) => const NuevaMuestraScreen(),
         '/register': (context) => const RegisterScreen(),
         '/carga-tarea': (context) => const CargaTareaScreen(),

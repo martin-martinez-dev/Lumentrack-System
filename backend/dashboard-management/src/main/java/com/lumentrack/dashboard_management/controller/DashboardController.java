@@ -33,7 +33,7 @@ public class DashboardController {
     }
 	
 	@GetMapping("/getData")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO de hasAnyRole a hasAnyAuthority
 	public ResponseEntity<Dashboard> getDashboardData() {
 		logger.info("Retrieving the Dashboard information");
 		return ResponseEntity.ok(dashboardService.getDashboardData());
@@ -46,7 +46,7 @@ public class DashboardController {
      * @return Un objeto Dashboard con los datos filtrados para el usuario.
      */
     @GetMapping("/getData/user/{userId}")
-    @PreAuthorize("hasAnyRole('DESIGN')")
+    @PreAuthorize("hasAnyAuthority('DESIGN')") // CAMBIADO de hasAnyRole a hasAnyAuthority
     public ResponseEntity<Dashboard> getDashboardDataForUser(@PathVariable Integer userId) {
         logger.info("Retrieving Dashboard information for user with ID: {}", userId);
         return ResponseEntity.ok(dashboardUserFilteredService.getDashboardDataForUser(userId));

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/dashboard_model.dart';
 import '../core/api_config.dart';
+import '../core/session_manager.dart';
 
 class DashboardService {
   // Endpoint para datos generales del dashboard
@@ -9,10 +10,15 @@ class DashboardService {
   // Endpoint para datos del dashboard filtrados por usuario
   final String _userFilteredDashboardUrl = ApiConfig.dashboardUserFiltered;
 
-  final Map<String, String> _headers = {
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-  };
+  // Getter dinámico para incluir el token JWT de la sesión activa
+  Map<String, String> get _headers {
+    final token = SessionManager().token;
+    return {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      if (token != null) "Authorization": "Bearer $token",
+    };
+  }
 
   Future<DashboardData> fetchDashboardData() async {
     print("DEBUG: Enviando petición GET al Dashboard: $_generalDashboardUrl");

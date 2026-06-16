@@ -37,4 +37,9 @@ class AuthResponse {
       roleDisplayName: json['roleDisplayName'] ?? '',
     );
   }
+
+  @override
+  String toString() {
+    return 'AuthResponse(userId: $userId, userName: $userName, roleName: $roleName, jwt: ${jwt.length > 10 ? '${jwt.substring(0, 10)}...' : jwt})';
+  }
 }

@@ -32,7 +32,7 @@ public class UserFilteredDataController {
      * @return Una lista de OrderDetailsResponse con los datos filtrados.
      */
     @GetMapping("/orders/{userId}")
-    @PreAuthorize("hasAnyRole('DESIGN')")
+    @PreAuthorize("hasAnyAuthority('DESIGN')")
     public ResponseEntity<List<OrderDetailsResponse>> getFilteredOrdersForUser(@PathVariable Integer userId) {
         List<OrderDetailsResponse> filteredOrders = userFilteredDataService.getOrdersWithFilteredDetailsForUser(userId);
         if (filteredOrders.isEmpty()) {
@@ -42,7 +42,7 @@ public class UserFilteredDataController {
     }
 
     @GetMapping("/samples/{userId}")
-    @PreAuthorize("hasAnyRole('DESIGN')")
+    @PreAuthorize("hasAnyAuthority('DESIGN')")
     public ResponseEntity<List<Samples>> getFilteredSamplesForUser(@PathVariable Integer userId) {
         List<Samples> filteredSamples = userFilteredDataService.getSamplesForUserOrders(userId);
         if (filteredSamples.isEmpty()) {
@@ -52,7 +52,7 @@ public class UserFilteredDataController {
     }
 
     @GetMapping("/components/{userId}")
-    @PreAuthorize("hasAnyRole('DESIGN')")
+    @PreAuthorize("hasAnyAuthority('DESIGN')")
     public ResponseEntity<List<Components>> getFilteredComponentsForUser(@PathVariable Integer userId) {
         List<Components> filteredComponents = userFilteredDataService.getComponentsForUser(userId);
         if (filteredComponents.isEmpty()) {
@@ -62,7 +62,7 @@ public class UserFilteredDataController {
     }
 
     @GetMapping("/tasks/{userId}")
-    @PreAuthorize("hasAnyRole('DESIGN')")
+    @PreAuthorize("hasAnyAuthority('DESIGN')")
     public ResponseEntity<List<Tasks>> getFilteredTasksForUser(@PathVariable Integer userId) {
         List<Tasks> filteredTasks = userFilteredDataService.getTasksForUserComponents(userId);
         if (filteredTasks.isEmpty()) {

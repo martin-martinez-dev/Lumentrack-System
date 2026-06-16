@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/orders_model.dart';
+import '../../core/session_manager.dart';
 import '../../services/orders_service.dart';
 import 'order_detail_screen.dart';
 
@@ -22,7 +23,12 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
   void _cargarProyectos() {
     setState(() {
-      _futureOrders = _ordersService.fetchOrders();
+      final session = SessionManager();
+      if (session.roleName == "ROLE_DESIGN" && session.userId != null) {
+        _futureOrders = _ordersService.fetchOrdersByUserId(session.userId!);
+      } else {
+        _futureOrders = _ordersService.fetchOrders();
+      }
     });
   }
 

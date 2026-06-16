@@ -9,13 +9,17 @@ services:
     env_file:
       - .env
     environment:
-      # Mapeo explícito (opcional pero recomendado)
+      # Variables de entorno para la base de datos
       - AIVEN_DB_URL=${AIVEN_DB_URL}
       - AIVEN_DB_USER=${AIVEN_DB_USER}
       - AIVEN_DB_PASSWORD=${AIVEN_DB_PASSWORD}
+      # Variables de entorno para Cloudinary
       - CLOUDINARY_NAME=${CLOUDINARY_NAME}
       - CLOUDINARY_KEY=${CLOUDINARY_KEY}
       - CLOUDINARY_SECRET=${CLOUDINARY_SECRET}
+      # Variables de entorno para JWT (AÑADIDAS)
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
     # --- CONFIGURACIÓN DEL HEALTHCHECK ---
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]

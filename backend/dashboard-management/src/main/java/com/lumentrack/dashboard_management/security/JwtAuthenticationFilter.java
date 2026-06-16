@@ -41,8 +41,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Extraer el token del header Authorization: Bearer
+        // --- AÑADIDO PARA DEPURACIÓN ---
+        logger.debug("Processing request for URI: {}", request.getRequestURI());
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        // logger.debug("Authorization Header: {}", header); // Eliminado para no imprimir el token
+        // --- FIN AÑADIDO PARA DEPURACIÓN ---
+
+        // 1. Extraer el token del header Authorization: Bearer
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -83,6 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("User '{}' authenticated with roles: {}", username, authorities); // Log de éxito
             }
 
         } catch (SignatureException ex) {

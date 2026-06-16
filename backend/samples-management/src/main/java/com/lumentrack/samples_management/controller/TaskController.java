@@ -38,14 +38,14 @@ public class TaskController {
     }
 	
 	@PostMapping("/save")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')") // CAMBIADO
 	public ResponseEntity<Tasks> saveTask(@RequestBody TaskRequest taskRequest) { // Modificado para aceptar TaskRequest
 		logger.info("Saving info for task: " + taskRequest.getTaskName());
 		return new ResponseEntity<>(service.saveTask(taskRequest), HttpStatus.CREATED); // Pasar el request al servicio
 	}
 	
 	@GetMapping("/list")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	public List<Tasks> retrieveAllTasks() {
 		logger.info("Getting information of all tasks");
 		return service.getAllTasks();
@@ -53,14 +53,14 @@ public class TaskController {
 
 	// Nuevo endpoint para listar tareas por userId
 	@GetMapping("/list/user/{userId}")
-	@PreAuthorize("hasAnyRole('DESIGN')")
+	@PreAuthorize("hasAnyAuthority('DESIGN')") // CAMBIADO
 	public List<Tasks> retrieveTasksByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing tasks for userId: " + userId);
 		return service.getTasksByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')") // CAMBIADO
 	public ResponseEntity<Tasks> searchTaskById(@PathVariable("id") Integer id) {
 		logger.info("Getting info for id: " + id);
 		return service.getTaskById(id)
@@ -69,14 +69,14 @@ public class TaskController {
 	}
 	
 	@PostMapping("/update")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')") // CAMBIADO
 	public TaskDetailsResponse updateTask(@RequestBody TaskRequest taskRequest) { // CAMBIADO: Tipo de retorno a TaskDetailsResponse
 		logger.info("Updating info for task: " + taskRequest.getTaskName());
 		return service.updateTaks(taskRequest); // Pasar el request al servicio
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteTask(@PathVariable("id") Integer id) {
 		logger.info("Deleting info for id: " + id);
@@ -84,7 +84,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("/getTasksDetails/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')") // CAMBIADO
 	public TaskDetailsResponse getTasksDetails( @PathVariable("id") Integer id ) { // Modificado para devolver TaskDetailsResponse
 		logger.info("Getting task details for id " + id);
 		return service.getTaskDetails(id);

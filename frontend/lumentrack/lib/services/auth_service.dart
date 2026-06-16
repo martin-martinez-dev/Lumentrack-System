@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
 import '../models/auth_models.dart';
@@ -20,9 +21,11 @@ class AuthService {
       final response = await http.post(url, headers: _headers, body: body);
 
       if (response.statusCode == 200) {
-        return AuthResponse.fromJson(
+        final authResponse = AuthResponse.fromJson(
           jsonDecode(utf8.decode(response.bodyBytes)),
         );
+        debugPrint("DEBUG: Objeto AuthResponse recibido: $authResponse");
+        return authResponse;
       } else {
         // Cualquier otro código (como el 403 Forbidden) lanza una excepción
         throw Exception("Error de autenticación: ${response.statusCode}");

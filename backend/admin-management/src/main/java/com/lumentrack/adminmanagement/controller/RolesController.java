@@ -27,21 +27,21 @@ public class RolesController {
     }
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN')")
     public ResponseEntity<Roles> saveRole( @RequestBody Roles role ) {
         logger.info("Saving information for role: " + role.getRoleName());
         return new ResponseEntity<Roles>( service.saveRole(role), HttpStatus.CREATED );
     }
 
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN')")
     public List<Roles> getAllRoles() {
         logger.info("Retrieving all the roles");
         return service.getAllRoles();
     }
 
     @GetMapping("/search/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN')")
     public ResponseEntity<Roles> getRoleById( @PathVariable("id") Integer id ) {
         logger.info("Get a single role by id: " + id);
         return service.getRoleById(id)
@@ -50,14 +50,14 @@ public class RolesController {
     }
 
     @PostMapping("/update")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN')")
     public Roles updateRole( @RequestBody Roles role ) {
         logger.info("Updating the role: " + role.getRoleName());
         return service.updateRole(role);
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRole( @PathVariable("id") Integer id ) {
         logger.info("Deleting information for the role with id: " + id);

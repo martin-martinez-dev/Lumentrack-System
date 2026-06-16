@@ -39,28 +39,28 @@ public class ComponentsController {
     }
 	
 	@PostMapping("/save")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Components> saveComponent(@RequestBody ComponentRequest componentRequest) {
 		logger.info("Start saving of component: " + componentRequest.getComponentName());
 		return new ResponseEntity<>(service.saveComponent(componentRequest),HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/list")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'PRODUCTION', 'SALES')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'PRODUCTION', 'SALES')")
 	public List<Components> retrieveAll() { // Revertido a List<Components>
 		logger.info("Listing all the components");
 		return service.getAllComponent(); // Llama al método que devuelve List<Components>
 	}
 
 	@GetMapping("/list/user/{userId}")
-	@PreAuthorize("hasAnyRole('DESIGN')")
+	@PreAuthorize("hasAnyAuthority('DESIGN')")
 	public List<Components> retrieveComponentsByUserId(@PathVariable("userId") Integer userId) {
 		logger.info("Listing components for userId: " + userId);
 		return service.getComponentsByUserId(userId);
 	}
 	
 	@GetMapping("/search/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ResponseEntity<Components> searchComponentById(@PathVariable("id") Integer id) {
 		logger.info("Search component by id: " + id);
 		return service.getComponentById(id)
@@ -69,14 +69,14 @@ public class ComponentsController {
 	}
 	
 	@PostMapping("/update")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ComponentDetailsResponse updateComponent(@RequestBody ComponentRequest componentRequest) { // CAMBIADO: Tipo de retorno a ComponentDetailsResponse
 		logger.info("Updating info for component: " + componentRequest.getComponentName());
 		return service.updateComponent(componentRequest);
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteComponent(@PathVariable("id") Integer id) {
 		logger.info("Deleting info for component id: " + id);
@@ -84,7 +84,7 @@ public class ComponentsController {
 	}
 	
 	@GetMapping("/getComponentDetails/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ComponentDetailsResponse getComponentDetails( @PathVariable("id") Integer id ) {
 		logger.info("Getting the Details of the Component with id: " + id);
 		// Este método ahora usa el findById original y luego mapea
@@ -95,7 +95,7 @@ public class ComponentsController {
 
 	// NUEVO: Endpoint para listar todos los componentes con detalles
 	@GetMapping("/list/details")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public List<ComponentDetailsResponse> retrieveAllComponentDetails() {
 		logger.info("Listing all component details");
 		return service.getAllComponentDetails();
@@ -103,7 +103,7 @@ public class ComponentsController {
 
 	// NUEVO: Endpoint para buscar un componente por ID con detalles
 	@GetMapping("/search/details/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
 	public ComponentDetailsResponse searchComponentDetailsById(@PathVariable("id") Integer id) {
 		logger.info("Search component details by id: " + id);
 		return service.getComponentDetailsById(id);

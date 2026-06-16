@@ -2,6 +2,7 @@ package com.lumentrack.commons.model;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set; // Nueva importación para Set
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 // import com.fasterxml.jackson.annotation.JsonIgnore; // Eliminado
@@ -61,5 +62,5 @@ public class Samples {
 	// Relación OneToMany con Components
 	// @JsonIgnore // ELIMINADO
 	@OneToMany(mappedBy = "sample", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Components> components; // Renombrado de componentList a components
+	private Set<Components> components; // CAMBIADO de List a Set
 }

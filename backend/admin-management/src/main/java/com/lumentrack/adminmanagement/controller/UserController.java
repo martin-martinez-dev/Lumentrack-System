@@ -33,35 +33,35 @@ public class UserController {
 	}
 	
 	@GetMapping("/list")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public List<Users> getAllUsers() {
 		logger.info("Getting all the users");
 		return service.getAllUsers();
 	}
 
 	@GetMapping("/listUserDetails")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public List<Users> getAllUserDetails() {
 		logger.info("Getting all the users details");
 		return service.getAllUserDetails();
 	}
 	
 	@GetMapping("/getUserDetails/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public Users getUserDetails( @PathVariable("id") Integer id ) {
 		logger.info("Getting the details for user with id " + id);
 		return service.getUserDetails(id);
 	}
 	
 	@PostMapping("/update")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public Users updateUser( @RequestBody Users user ) {
 		logger.info("Updating information for user " + user.getUserName());
 		return service.updateUser(user);
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteUser( @PathVariable("id") Integer id ) {
 		logger.info("Deletting info for user with id " + id);

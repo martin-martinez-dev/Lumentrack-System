@@ -2,14 +2,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart'; // Asegúrate de que apunte correctamente a tu configuración de IP/puerto
+import '../core/session_manager.dart';
 import '../models/component_model.dart';
 
 class ComponentsService {
   // Encabezados estándar para comunicarse con Spring Boot
-  final Map<String, String> _headers = {
-    'Content-Type': 'application/json; charset=UTF-8',
-    'Accept': 'application/json',
-  };
+  // Getter dinámico para incluir el token JWT de la sesión activa
+  Map<String, String> get _headers {
+    final token = SessionManager().token;
+    return {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      if (token != null) "Authorization": "Bearer $token",
+    };
+  }
 
   /// 1. Guardar un componente nuevo (POST /components/save)
   Future<Component> saveComponent(Component component) async {

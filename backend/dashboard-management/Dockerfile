@@ -8,7 +8,7 @@ COPY gradle gradle
 COPY build.gradle .
 COPY settings.gradle .
 
-# Truco Senior real: Descargamos SOLO las dependencias a la caché de Docker 
+# Truco Senior real: Descargamos SOLO las dependencias a la caché de Docker
 # sin intentar compilar un código que aún no existe.
 RUN chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon
@@ -31,9 +31,13 @@ RUN apk add --no-cache curl
 # 4. Copiamos el JAR generado con nombre exacto
 COPY --from=build /app/build/libs/lumentrack-dashboard-backend.jar lumentrack-dashboard-backend.jar
 
-# 5. Tus optimizaciones de memoria y puerto
+# 5. Copiamos el certificado ca.pem
+# AÑADIDO
+COPY src/main/resources/ca.pem ca.pem
+
+# 6. Tus optimizaciones de memoria y puerto
 ENV JAVA_OPTS="-Dserver.port=8081 -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 EXPOSE 8081
 
-# 6. Ejecución
+# 7. Ejecución
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar lumentrack-dashboard-backend.jar"]

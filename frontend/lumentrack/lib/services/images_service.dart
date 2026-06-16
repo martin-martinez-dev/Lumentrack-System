@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../models/cloudinary_response_model.dart';
+import '../core/session_manager.dart';
 import '../core/api_config.dart';
 
 class ImagesService {
@@ -24,6 +25,12 @@ class ImagesService {
 
     // Adjuntamos el parámetro de la carpeta destino que espera tu @RequestParam
     request.fields['folder'] = folderName;
+
+    // 🟢 Inyectamos el token JWT para cumplir con @PreAuthorize en el Backend
+    final token = SessionManager().token;
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
 
     // Abrimos el stream del archivo físico
     final stream = http.ByteStream(imageFile.openRead());

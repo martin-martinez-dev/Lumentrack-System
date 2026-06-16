@@ -38,3 +38,8 @@ spring:
     endpoint:
       health:
         show-details: always # Esto permite que Actuator verifique la conexión a la DB
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.lumentrack: DEBUG

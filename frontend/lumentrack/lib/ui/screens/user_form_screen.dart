@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/users_model.dart';
 import '../../services/users_service.dart';
 import '../../models/roles_model.dart';
+import '../../core/session_manager.dart'; // Import SessionManager
 import '../../services/roles_service.dart';
 
 class UserFormScreen extends StatefulWidget {
@@ -71,14 +72,22 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
     setState(() => _isSaving = true);
 
-    final userData = UserItem(
-      userId: widget.user?.userId,
-      userName: _nameController.text,
-      userLastName: _lastNameController.text,
-      userMail: _mailController.text,
-      userPhoneNumber: _phoneController.text,
-      userRoleId: _selectedRoleId ?? 0,
-    );
+    // 🟢 Fix: Preservar la contraseña y otros datos usando copyWith si es edición
+    final userData = widget.user != null
+        ? widget.user!.copyWith(
+            userName: _nameController.text.trim(),
+            userLastName: _lastNameController.text.trim(),
+            userMail: _mailController.text.trim(),
+            userPhoneNumber: _phoneController.text.trim(),
+            userRoleId: _selectedRoleId ?? 0,
+          )
+        : UserItem(
+            userName: _nameController.text.trim(),
+            userLastName: _lastNameController.text.trim(),
+            userMail: _mailController.text.trim(),
+            userPhoneNumber: _phoneController.text.trim(),
+            userRoleId: _selectedRoleId ?? 0,
+          );
 
     try {
       if (widget.user == null) {
@@ -101,6 +110,9 @@ class _UserFormScreenState extends State<UserFormScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isEdit = widget.user != null;
+    final String? userRole = SessionManager().roleName;
+    // 🟢 Comportamiento: ROLE_ADMIN puede ver pero no tocar
+    final bool isReadOnly = isEdit && userRole == 'ROLE_ADMIN';
 
     return Scaffold(
       appBar: AppBar(
@@ -128,12 +140,15 @@ class _UserFormScreenState extends State<UserFormScreen> {
                       _nameController,
                       "Nombre",
                       Icons.person_outline,
+                      enabled:
+                          !isReadOnly, // 🟢 Deshabilitar campo individualmente
                     ),
                     const SizedBox(height: 15),
                     _buildField(
                       _lastNameController,
                       "Apellidos",
                       Icons.people_outline,
+                      enabled: !isReadOnly,
                     ),
                     const SizedBox(height: 15),
                     _buildField(
@@ -141,6 +156,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                       "Correo",
                       Icons.alternate_email,
                       keyboardType: TextInputType.emailAddress,
+                      enabled: !isReadOnly,
                     ),
                     const SizedBox(height: 15),
                     _buildField(
@@ -148,6 +164,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                       "Teléfono",
                       Icons.phone_android,
                       keyboardType: TextInputType.phone,
+                      enabled: !isReadOnly,
                     ),
                     const SizedBox(height: 15),
 
@@ -171,15 +188,20 @@ class _UserFormScreenState extends State<UserFormScreen> {
                             ),
                           )
                           .toList(),
-                      onChanged: (val) => setState(() => _selectedRoleId = val),
+                      onChanged: isReadOnly
+                          ? null
+                          : (val) => setState(() => _selectedRoleId = val),
                       validator: (v) => v == null ? "Seleccione un rol" : null,
                     ),
 
                     const SizedBox(height: 40),
+                    // 🟢 El botón se deshabilita visualmente si es de solo lectura
                     ElevatedButton(
-                      onPressed: _saveForm,
+                      onPressed: isReadOnly ? null : _saveForm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFA8BCB1),
+                        backgroundColor: isReadOnly
+                            ? Colors.grey
+                            : const Color(0xFFA8BCB1),
                         minimumSize: const Size(double.infinity, 55),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -193,7 +215,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
                         ),
                       ),
                     ),
-                    if (isEdit) ...[
+                    // 🟢 Solo el SUPER_ADMIN (o roles distintos a ADMIN) ven el botón de borrado
+                    if (isEdit && userRole != 'ROLE_ADMIN') ...[
                       const SizedBox(height: 15),
                       TextButton(
                         onPressed: () => _confirmDelete(),
@@ -215,10 +238,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
     String label,
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
+    bool enabled = true,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      enabled: enabled,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFFA8BCB1)),

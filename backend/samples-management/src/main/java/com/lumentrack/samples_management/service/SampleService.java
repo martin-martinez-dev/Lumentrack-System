@@ -3,6 +3,7 @@ package com.lumentrack.samples_management.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -142,7 +143,7 @@ public class SampleService {
 	// Cambiado de private a public para que OrderService pueda acceder a él
 	public SampleDetailsResponse mapSampleToSampleDetailsResponse(Samples sample) {
 		Orders associatedOrder = sample.getOrder();
-		List<Components> sampleComponents = sample.getComponents();
+		Set<Components> sampleComponents = sample.getComponents();
 
 		List<ComponentDetailsResponse> safeComponents = (sampleComponents != null) ?
 				sampleComponents.stream()

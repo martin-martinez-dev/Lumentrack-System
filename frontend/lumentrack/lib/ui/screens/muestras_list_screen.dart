@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/samples_model.dart';
+import '../../core/session_manager.dart';
 import '../../services/samples_service.dart';
 import 'sample_form_screen.dart';
 
@@ -22,7 +23,14 @@ class _MuestrasListScreenState extends State<MuestrasListScreen> {
 
   void _refrescarListado() {
     setState(() {
-      _futureSamples = _samplesService.fetchSampleDetails();
+      final session = SessionManager();
+      if (session.roleName == "ROLE_DESIGN" && session.userId != null) {
+        _futureSamples = _samplesService.fetchSampleDetailsByUserId(
+          session.userId!,
+        );
+      } else {
+        _futureSamples = _samplesService.fetchSampleDetails();
+      }
     });
   }
 

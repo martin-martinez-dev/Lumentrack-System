@@ -11,13 +11,16 @@ services:
     env_file:
       - .env
     environment:
-      # Mapeo explícito (opcional pero recomendado)
+      # Variables de entorno para la base de datos
       - AIVEN_DB_URL=${AIVEN_DB_URL}
       - AIVEN_DB_USER=${AIVEN_DB_USER}
       - AIVEN_DB_PASSWORD=${AIVEN_DB_PASSWORD}
+      # Variables de entorno para JWT (AÑADIDAS)
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
     # --- CONFIGURACIÓN DEL HEALTHCHECK ---
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"] # PUERTO CORREGIDO a 8084
       interval: 30s      # Tiempo entre pruebas
       timeout: 10s       # Tiempo de espera para la respuesta
       retries: 3         # Cuántos intentos fallidos antes de marcar como unhealthy

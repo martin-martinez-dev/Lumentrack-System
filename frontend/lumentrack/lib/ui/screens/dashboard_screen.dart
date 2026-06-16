@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../models/dashboard_model.dart';
+import '../../core/session_manager.dart';
 import '../../services/dashboard_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -17,7 +18,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _futureDashboard = _service.fetchDashboardData();
+    final session = SessionManager();
+    if (session.roleName == "ROLE_DESIGN" && session.userId != null) {
+      _futureDashboard = _service.fetchDashboardDataForUser(session.userId!);
+    } else {
+      _futureDashboard = _service.fetchDashboardData();
+    }
   }
 
   @override
@@ -38,7 +44,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           color: const Color(0xFF934B3D),
           onRefresh: () async {
             setState(() {
-              _futureDashboard = _service.fetchDashboardData();
+              final session = SessionManager();
+              if (session.roleName == "ROLE_DESIGN" && session.userId != null) {
+                _futureDashboard = _service.fetchDashboardDataForUser(
+                  session.userId!,
+                );
+              } else {
+                _futureDashboard = _service.fetchDashboardData();
+              }
             });
           },
           child: SingleChildScrollView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/users_model.dart';
 import '../../services/users_service.dart'; // Asumiendo la ubicación estándar
+import '../../core/session_manager.dart';
 import 'user_form_screen.dart';
 
 class UserListScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userRole = SessionManager().roleName;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -107,17 +109,22 @@ class _UserListScreenState extends State<UserListScreen> {
                 },
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFA8BCB1),
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const UserFormScreen()),
-          );
-          if (result == true) _loadUsers();
-        },
-        child: const Icon(Icons.person_add, color: Colors.white),
-      ),
+      // 🟢 Ocultar botón de creación si el usuario es ROLE_ADMIN
+      floatingActionButton: userRole == 'ROLE_ADMIN'
+          ? null
+          : FloatingActionButton(
+              backgroundColor: const Color(0xFFA8BCB1),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserFormScreen(),
+                  ),
+                );
+                if (result == true) _loadUsers();
+              },
+              child: const Icon(Icons.person_add, color: Colors.white),
+            ),
     );
   }
 }

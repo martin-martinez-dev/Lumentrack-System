@@ -25,50 +25,50 @@ import com.lumentrack.samples_management.service.UsersService;
 @RequestMapping("/users")
 @CrossOrigin(origins = "*")
 public class UserController {
-	
+
 	private final static Logger logger = LoggerFactory.getLogger(UserController.class);
-	
+
 	private final UsersService service; // Hacerlo final
 
-    @Autowired // Inyección por constructor
-    public UserController(UsersService service) {
-        this.service = service;
-    }
-	
+	@Autowired // Inyección por constructor
+	public UserController(UsersService service) {
+		this.service = service;
+	}
+
 	@PostMapping("/save")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	public ResponseEntity<Users> saveUser( @RequestBody Users user ) {
 		logger.info("Saving information for user " + user.getUserName());
 		return new ResponseEntity<Users>( service.saveUser(user), HttpStatus.CREATED );
 	}
-	
+
 	@GetMapping("/list")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	public List<Users> getAllUsers() {
 		logger.info("Getting all the users");
 		return service.getAllUsers();
 	}
-	
+
 	@GetMapping("/getUserDetails/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	public Users getUserDetails( @PathVariable("id") Integer id ) {
 		logger.info("Getting the details for user with id " + id);
 		return service.getUserDetails(id);
 	}
-	
+
 	@PostMapping("/update")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	public Users updateUser( @RequestBody Users user ) {
 		logger.info("Updating information for user " + user.getUserName());
 		return service.updateUser(user);
 	}
-	
+
 	@DeleteMapping("/delete/{id}")
-	@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteUser( @PathVariable("id") Integer id ) {
 		logger.info("Deletting info for user with id " + id);
 		service.deleteUser(id);
 	}
-	
+
 }

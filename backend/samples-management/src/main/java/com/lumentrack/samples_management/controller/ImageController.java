@@ -20,17 +20,17 @@ import java.util.Map;
 @RequestMapping("/images")
 @CrossOrigin(origins = "*")
 public class ImageController {
-	
-	private final static Logger logger = LoggerFactory.getLogger(ImageController.class);
-	
-	private final CloudinaryService cloudinaryService; // Hacerlo final
+
+    private final static Logger logger = LoggerFactory.getLogger(ImageController.class);
+
+    private final CloudinaryService cloudinaryService; // Hacerlo final
 
     @Autowired // Inyección por constructor
     public ImageController(CloudinaryService cloudinaryService) {
         this.cloudinaryService = cloudinaryService;
     }
-	
-//	@PostMapping("/upload")
+
+    //	@PostMapping("/upload")
 //	public ResponseEntity<String> upload(@RequestParam("file") MultipartFile multipartFile) throws IOException {
 //		try {
 //	        String url = cloudinaryService.upload(multipartFile);
@@ -39,52 +39,52 @@ public class ImageController {
 //			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 //		}
 //    }
-	@PostMapping("/upload")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DESIGN')")
+    @PostMapping("/upload")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN', 'DESIGN')") // CAMBIADO
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile multipartFile,
-    		@RequestParam(value = "folder", defaultValue = "general") String folder) {
-		
-		logger.info("Starting cloudinary upload process");
-		
+                                    @RequestParam(value = "folder", defaultValue = "general") String folder) {
+
+        logger.info("Starting cloudinary upload process");
+
         try {
             CloudinaryResponse response = cloudinaryService.upload(multipartFile, "lumentrack/" + folder);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-        	logger.info("There was an exception during the image upload process");
+            logger.info("There was an exception during the image upload process");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }
     }
-	
-	@DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')") // CAMBIADO
     public ResponseEntity<?> delete(@PathVariable("id") String publicId) {
         try {
-        	logger.info("Deleting image " + publicId);
+            logger.info("Deleting image " + publicId);
             Map<?, ?> result = cloudinaryService.delete(publicId);
-            
+
             // Cloudinary devuelve "not found" en el campo result si el ID no existe
             if ("ok".equals(result.get("result"))) {
-            	logger.info("Image deleted successfully");
+                logger.info("Image deleted successfully");
                 return ResponseEntity.ok(Map.of("message", "Imagen eliminada con éxito"));
             } else {
-            	logger.info("Image not found");
+                logger.info("Image not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "No se encontró el archivo con ID: " + publicId));
             }
         } catch (IOException e) {
-        	logger.error("There was an error while trying to delete the image");
+            logger.error("There was an error while trying to delete the image");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error en la conexión con Cloudinary"));
         }
     }
-	
-	// Captura el error si el archivo es más grande de lo permitido en el YAML
+
+    // Captura el error si el archivo es más grande de lo permitido en el YAML
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<String> handleMaxSizeException(MaxUploadSizeExceededException exc) {
-    	logger.info("File is too big to being processed");
+        logger.info("File is too big to being processed");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("El archivo es demasiado grande. El límite es de 5MB.");
     }
-    
+
 }
