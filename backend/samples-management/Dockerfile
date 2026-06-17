@@ -12,7 +12,7 @@ WORKDIR /app
 ARG JAR_FILE=build/libs/*.jar
 
 # Paso 5: Copiar el JAR al contenedor
-COPY build/libs/samples-management-0.0.1-SNAPSHOT.jar lumentrack-samples-backend.jar
+COPY build/libs/lumentrack-samples-backend.jar lumentrack-samples-backend.jar
 
 COPY src/main/resources/ca.pem ca.pem
 

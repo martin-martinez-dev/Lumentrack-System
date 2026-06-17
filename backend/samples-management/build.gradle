@@ -6,6 +6,7 @@ plugins {
 
 group = 'com.lumentrack'
 version = '0.0.1-SNAPSHOT'
+description = 'samples-management'
 
 springBoot {
     buildInfo()
@@ -62,4 +63,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = 'lumentrack-samples-backend.jar'
+}
+
+jar {
+    enabled = false
 }

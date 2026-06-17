@@ -14,7 +14,7 @@ ARG JAR_FILE=build/libs/*.jar
 # Paso 5: Copiar el JAR al contenedor
 # Usamos el nombre por defecto del JAR generado por Gradle si no se especifica bootJar.archiveFileName
 # Y lo renombramos a un nombre consistente para el backend de auth
-COPY build/libs/auth-management-0.0.1-SNAPSHOT.jar lumentrack-auth-backend.jar
+COPY build/libs/lumentrack-auth-backend.jar lumentrack-auth-backend.jar
 
 # Copiamos el certificado ca.pem
 # AÑADIDO

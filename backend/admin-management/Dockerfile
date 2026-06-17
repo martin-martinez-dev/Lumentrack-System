@@ -12,7 +12,7 @@ WORKDIR /app
 ARG JAR_FILE=build/libs/*.jar
 
 # Paso 5: Copiar el JAR al contenedor
-COPY build/libs/admin-management-0.0.1-SNAPSHOT.jar lumentrack-admin-backend.jar
+COPY build/libs/lumentrack-admin-backend.jar lumentrack-admin-backend.jar
 
 # Copiamos el certificado ca.pem
 # AÑADIDO
