@@ -16,6 +16,20 @@ spring:
     username: ${AIVEN_DB_USER}
     password: ${AIVEN_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # CONFIGURACIÓN DE HIKARICP PARA BASES DE DATOS EN LA NUBE (AIVEN)
+    hikari:
+      pool-name: HikariPool-Admin
+      maximum-pool-size: 10
+      minimum-idle: 2
+      # Max Lifetime: Tiempo máximo que una conexión puede estar viva (15 minutos = 900000 ms)
+      # Esto evita que Aiven la mate de forma abrupta.
+      max-lifetime: 900000
+      # Connection Timeout: Cuánto tiempo espera la app por una conexión disponible (30 segundos)
+      connection-timeout: 30000
+      # Validation Timeout: Tiempo para verificar si una conexión sirve antes de usarla (5 segundos)
+      validation-timeout: 5000
+      # Query de validación para asegurarse de que el socket responda antes de entregar la conexión
+      connection-test-query: SELECT 1
   jpa:
     hibernate:
       ddl-auto: update # or 'create', 'create-drop', 'none'

@@ -41,11 +41,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // --- AÑADIDO PARA DEPURACIÓN ---
         logger.debug("Processing request for URI: {}", request.getRequestURI());
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        // logger.debug("Authorization Header: {}", header); // Eliminado para no imprimir el token
-        // --- FIN AÑADIDO PARA DEPURACIÓN ---
+        logger.debug("Authorization Header: {}", header); // Este log ahora siempre se mostrará
 
         // 1. Extraer el token del header Authorization: Bearer
         if (header == null || !header.startsWith("Bearer ")) {
