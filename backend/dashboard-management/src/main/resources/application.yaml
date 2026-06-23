@@ -45,9 +45,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health, info
   endpoint:
     health:
+      probes:
+        enabled: true
       show-details: always # Esto permite que Actuator verifique la conexión a la DB
 
 logging:

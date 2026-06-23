@@ -27,6 +27,9 @@
 **/.idea/
 **.iml
 
+# --- GRADLE ---
+**/.gradle/
+
 # --- SISTEMA / DOCKER ---
 **.DS_Store
 **Thumbs.db
