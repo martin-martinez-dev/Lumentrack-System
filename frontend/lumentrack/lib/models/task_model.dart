@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart';
+import '../core/date_formatter.dart';
 
 class Task {
   final int? taskId; // Opcional porque una nueva tarea no tiene ID de MySQL aún
@@ -26,12 +26,18 @@ class Task {
 
   /// Factory para deserealizar el JSON proveniente de Spring Boot
   factory Task.fromJson(Map<String, dynamic> json) {
+    final componentMap = json['component'] as Map<String, dynamic>?;
+
     return Task(
       taskId: json['taskId'] as int?,
       taskName: json['taskName'] ?? '',
       taskDescription: json['taskDescription'] ?? '',
-      componentId: json['componentId'] ?? 0,
-      componentName: json['componentName'] ?? '',
+      componentId:
+          json['componentId'] ??
+          (componentMap != null ? (componentMap['componentId'] ?? 0) : 0),
+      componentName:
+          json['componentName'] ??
+          (componentMap != null ? (componentMap['componentName'] ?? '') : ''),
       taskPhotoUrl: json['taskPhotoUrl'] ?? '',
       taskPhotoId: json['taskPhotoId'] ?? '',
       taskEstimatedDate: json['taskEstimatedDate']?.toString() ?? '',
@@ -44,19 +50,11 @@ class Task {
     'taskId': taskId,
     'taskName': taskName,
     'taskDescription': taskDescription,
-    'componentId': componentId,
+    'componentId': componentId, // 🟢 Alineado con TaskRequest.componentId
     'taskPhotoUrl': taskPhotoUrl,
     'taskPhotoId': taskPhotoId,
-    // Mapeo seguro de fechas para evitar enviar cadenas vacías al backend
-    'taskEstimatedDate': taskEstimatedDate.isEmpty
-        ? null
-        : Task.formatToServer(taskEstimatedDate),
-    'taskRealDateTime':
-        (taskRealDateTime.isEmpty ||
-            taskRealDateTime.toLowerCase().contains('sin fecha') ||
-            taskRealDateTime.toLowerCase().contains('sin entrega'))
-        ? null
-        : Task.formatToServer(taskRealDateTime),
+    'taskEstimatedDate': DateFormatter.toServer(taskEstimatedDate),
+    'taskRealDateTime': DateFormatter.toServer(taskRealDateTime),
   };
 
   // =========================================================================
@@ -66,8 +64,7 @@ class Task {
   String get formattedEstimatedDate {
     if (taskEstimatedDate.isEmpty) return "Sin fecha";
     try {
-      DateTime parsed = DateTime.parse(taskEstimatedDate);
-      return DateFormat('dd/MM/yyyy HH:mm').format(parsed);
+      return DateFormatter.toUi(taskEstimatedDate, includeTime: true);
     } catch (e) {
       return taskEstimatedDate;
     }
@@ -80,51 +77,9 @@ class Task {
       return "Pendiente";
     }
     try {
-      DateTime parsed = DateTime.parse(taskRealDateTime);
-      return DateFormat('dd/MM/yyyy HH:mm').format(parsed);
+      return DateFormatter.toUi(taskRealDateTime, includeTime: true);
     } catch (e) {
       return taskRealDateTime;
-    }
-  }
-
-  /// Convierte una fecha de formato UI (dd/MM/yyyy HH:mm) al formato ISO de Spring Boot (yyyy-MM-dd HH:mm:ss)
-  /// Este método es robusto para manejar múltiples formatos de entrada y siempre retorna el formato ISO 8601.
-  static String? formatToServer(String uiDate) {
-    if (uiDate.isEmpty ||
-        uiDate.toLowerCase().contains('sin') ||
-        uiDate.toLowerCase().contains('pendiente')) {
-      return null;
-    }
-
-    try {
-      DateTime parsedDate;
-
-      // 1. Si ya es yyyy-MM-dd HH:mm:ss
-      if (uiDate.length == 19 && uiDate.contains('-') && uiDate.contains(' ')) {
-        return uiDate;
-      }
-      // 2. Intentar parsear como ISO 8601
-      else if (uiDate.contains('T')) {
-        parsedDate = DateTime.parse(uiDate);
-      }
-      // 3. Intentar parsear como yyyy-MM-dd
-      else if (uiDate.length == 10 && uiDate.contains('-')) {
-        parsedDate = DateFormat('yyyy-MM-dd').parse(uiDate);
-      }
-      // 4. Formatos con barra (UI)
-      else if (uiDate.contains('/')) {
-        String pattern = uiDate.contains(' ')
-            ? 'dd/MM/yyyy HH:mm'
-            : 'dd/MM/yyyy';
-        parsedDate = DateFormat(pattern).parse(uiDate);
-      } else {
-        parsedDate = DateTime.parse(uiDate);
-      }
-
-      // Retornamos solo la fecha para coincidir con LocalDate en el Backend
-      return DateFormat('yyyy-MM-dd').format(parsedDate);
-    } catch (e) {
-      return null;
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../models/dashboard_model.dart';
+import '../../core/session_manager.dart';
 import '../../services/dashboard_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -17,7 +18,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _futureDashboard = _service.fetchDashboardData();
+    final session = SessionManager();
+    if (session.roleName == "ROLE_DESIGN" && session.userId != null) {
+      _futureDashboard = _service.fetchDashboardDataForUser(session.userId!);
+    } else {
+      _futureDashboard = _service.fetchDashboardData();
+    }
   }
 
   @override
@@ -32,104 +38,120 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return const Center(child: Text('Error de conexión al puerto 8081'));
         }
 
-        final data = snapshot.data!;
-
-        return RefreshIndicator(
-          color: const Color(0xFF934B3D),
-          onRefresh: () async {
-            setState(() {
-              _futureDashboard = _service.fetchDashboardData();
-            });
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Panel de Control',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-
-                // Tarjetas de Resumen
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildSummaryCard(
-                      "Proyectos",
-                      "${data.ordersCount}",
-                      const Color(0xFF934B3D),
-                    ),
-                    _buildSummaryCard(
-                      "Muestras",
-                      "${data.sampleCount}",
-                      const Color(0xFF3E5B42),
-                    ),
-                    _buildSummaryCard(
-                      "Tareas",
-                      "${data.tasksCount}",
-                      const Color(0xFFD9B44A),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-
-                // Gráfica de Pay
-                SizedBox(
-                  height: 200,
-                  child: PieChart(
-                    PieChartData(
-                      sections: [
-                        PieChartSectionData(
-                          value: data.ordersCount.toDouble(),
-                          color: const Color(0xFF934B3D),
-                          title: '${data.ordersCount}',
-                          radius: 50,
+        return SafeArea(
+          child: Builder(
+            builder: (context) {
+              final data = snapshot.data!;
+              return RefreshIndicator(
+                color: const Color(0xFF934B3D),
+                onRefresh: () async {
+                  setState(() {
+                    final session = SessionManager();
+                    if (session.roleName == "ROLE_DESIGN" &&
+                        session.userId != null) {
+                      _futureDashboard = _service.fetchDashboardDataForUser(
+                        session.userId!,
+                      );
+                    } else {
+                      _futureDashboard = _service.fetchDashboardData();
+                    }
+                  });
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Panel de Control',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                        PieChartSectionData(
-                          value: data.sampleCount.toDouble(),
-                          color: const Color(0xFF3E5B42),
-                          title: '${data.sampleCount}',
-                          radius: 50,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Tarjetas de Resumen
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildSummaryCard(
+                            "Proyectos",
+                            "${data.ordersCount}",
+                            const Color(0xFF934B3D),
+                          ),
+                          _buildSummaryCard(
+                            "Muestras",
+                            "${data.sampleCount}",
+                            const Color(0xFF3E5B42),
+                          ),
+                          _buildSummaryCard(
+                            "Tareas",
+                            "${data.tasksCount}",
+                            const Color(0xFFD9B44A),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // Gráfica de Pay
+                      SizedBox(
+                        height: 200,
+                        child: PieChart(
+                          PieChartData(
+                            sections: [
+                              PieChartSectionData(
+                                value: data.ordersCount.toDouble(),
+                                color: const Color(0xFF934B3D),
+                                title: '${data.ordersCount}',
+                                radius: 50,
+                              ),
+                              PieChartSectionData(
+                                value: data.sampleCount.toDouble(),
+                                color: const Color(0xFF3E5B42),
+                                title: '${data.sampleCount}',
+                                radius: 50,
+                              ),
+                              PieChartSectionData(
+                                value: data.tasksCount.toDouble(),
+                                color: const Color(0xFFD9B44A),
+                                title: '${data.tasksCount}',
+                                radius: 50,
+                              ),
+                            ],
+                          ),
                         ),
-                        PieChartSectionData(
-                          value: data.tasksCount.toDouble(),
-                          color: const Color(0xFFD9B44A),
-                          title: '${data.tasksCount}',
-                          radius: 50,
-                        ),
-                      ],
-                    ),
+                      ),
+
+                      const SizedBox(height: 30),
+                      const Divider(),
+
+                      // Listas Colapsables
+                      _buildCollapsibleList(
+                        "Proyectos",
+                        data.ordersList,
+                        Icons.inventory_2_outlined,
+                        const Color(0xFF934B3D),
+                      ),
+                      _buildCollapsibleList(
+                        "Muestras",
+                        data.samplesList,
+                        Icons.lightbulb_outline,
+                        const Color(0xFF3E5B42),
+                      ),
+                      _buildCollapsibleList(
+                        "Tareas",
+                        data.tasksList,
+                        Icons.grid_view_rounded,
+                        const Color(0xFFD9B44A),
+                      ),
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 30),
-                const Divider(),
-
-                // Listas Colapsables
-                _buildCollapsibleList(
-                  "Proyectos",
-                  data.ordersList,
-                  Icons.inventory_2_outlined,
-                  const Color(0xFF934B3D),
-                ),
-                _buildCollapsibleList(
-                  "Muestras",
-                  data.samplesList,
-                  Icons.lightbulb_outline,
-                  const Color(0xFF3E5B42),
-                ),
-                _buildCollapsibleList(
-                  "Tareas",
-                  data.tasksList,
-                  Icons.grid_view_rounded,
-                  const Color(0xFFD9B44A),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },

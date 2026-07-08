@@ -57,70 +57,72 @@ class _ClientListScreenState extends State<ClientListScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadClients,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(10),
-                itemCount: _clients.length,
-                itemBuilder: (context, index) {
-                  final client = _clients[index];
-                  return Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFA8BCB1).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFA8BCB1),
-                            width: 2,
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
+              )
+            : RefreshIndicator(
+                onRefresh: _loadClients,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: _clients.length,
+                  itemBuilder: (context, index) {
+                    final client = _clients[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFA8BCB1).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFA8BCB1),
+                              width: 2,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            _getInitials(client.clientName),
-                            style: const TextStyle(
-                              color: Color(0xFFA8BCB1),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                          child: Center(
+                            child: Text(
+                              _getInitials(client.clientName),
+                              style: const TextStyle(
+                                color: Color(0xFFA8BCB1),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
                         ),
+                        title: Text(
+                          client.clientName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(client.companyName),
+                        trailing: const Icon(
+                          Icons.edit_note,
+                          color: Color(0xFFA8BCB1),
+                        ),
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ClientFormScreen(client: client),
+                            ),
+                          );
+                          if (result == true) _loadClients();
+                        },
                       ),
-                      title: Text(
-                        client.clientName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(client.companyName),
-                      trailing: const Icon(
-                        Icons.edit_note,
-                        color: Color(0xFFA8BCB1),
-                      ),
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ClientFormScreen(client: client),
-                          ),
-                        );
-                        if (result == true) _loadClients();
-                      },
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFA8BCB1),
         onPressed: () async {

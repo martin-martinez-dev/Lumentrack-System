@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/users_model.dart';
 import '../../services/users_service.dart';
+import '../../models/roles_model.dart';
+import '../../core/session_manager.dart'; // Import SessionManager
+import '../../services/roles_service.dart';
 
 class UserFormScreen extends StatefulWidget {
   final UserItem? user;
@@ -14,20 +17,17 @@ class UserFormScreen extends StatefulWidget {
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final UsersService _usersService = UsersService();
+  final RolesService _rolesService = RolesService();
   bool _isSaving = false;
+  bool _isLoadingRoles = true;
 
   late TextEditingController _nameController;
   late TextEditingController _lastNameController;
   late TextEditingController _mailController;
   late TextEditingController _phoneController;
-  String? _selectedRole;
+  int? _selectedRoleId;
 
-  final List<String> _roles = [
-    "Administrador",
-    "Diseñador",
-    "Producción",
-    "Ventas",
-  ];
+  List<RoleItem> _rolesList = [];
 
   @override
   void initState() {
@@ -41,9 +41,20 @@ class _UserFormScreenState extends State<UserFormScreen> {
       text: widget.user?.userPhoneNumber ?? '',
     );
 
-    // Si el rol que viene de DB no está en la lista (por ser anterior), lo manejamos
-    if (widget.user != null && _roles.contains(widget.user!.userRole)) {
-      _selectedRole = widget.user!.userRole;
+    _selectedRoleId = widget.user?.userRoleId;
+    _loadRoles();
+  }
+
+  Future<void> _loadRoles() async {
+    try {
+      final roles = await _rolesService.retrieveRoles();
+      setState(() {
+        _rolesList = roles;
+        _isLoadingRoles = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingRoles = false);
+      debugPrint("Error al cargar catálogo de roles: $e");
     }
   }
 
@@ -61,14 +72,24 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
     setState(() => _isSaving = true);
 
-    final userData = UserItem(
-      userId: widget.user?.userId,
-      userName: _nameController.text,
-      userLastName: _lastNameController.text,
-      userMail: _mailController.text,
-      userPhoneNumber: _phoneController.text,
-      userRole: _selectedRole ?? "Producción", // Valor por defecto
-    );
+    // 🟢 Fix: Preservar la contraseña y otros datos usando copyWith si es edición
+    final userData = widget.user != null
+        ? widget.user!.copyWith(
+            userName: _nameController.text.trim(),
+            userLastName: _lastNameController.text.trim(),
+            userMail: _mailController.text.trim(),
+            userPhoneNumber: _phoneController.text.trim(),
+            userRoleId: _selectedRoleId ?? 0,
+          )
+        : UserItem(
+            userName: _nameController.text.trim(),
+            userLastName: _lastNameController.text.trim(),
+            userMail: _mailController.text.trim(),
+            userPhoneNumber: _phoneController.text.trim(),
+            userRoleId: _selectedRoleId ?? 0,
+            // 🟢 Asignar una contraseña temporal para nuevos usuarios creados por un admin
+            password: "temp12345",
+          );
 
     try {
       if (widget.user == null) {
@@ -91,6 +112,9 @@ class _UserFormScreenState extends State<UserFormScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isEdit = widget.user != null;
+    final String? userRole = SessionManager().roleName;
+    // 🟢 Comportamiento: ROLE_ADMIN puede ver pero no tocar
+    final bool isReadOnly = isEdit && userRole == 'ROLE_ADMIN';
 
     return Scaffold(
       appBar: AppBar(
@@ -104,99 +128,113 @@ class _UserFormScreenState extends State<UserFormScreen> {
         backgroundColor: const Color(0xFFA8BCB1),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isSaving
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildField(
-                      _nameController,
-                      "Nombre",
-                      Icons.person_outline,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _lastNameController,
-                      "Apellidos",
-                      Icons.people_outline,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _mailController,
-                      "Correo",
-                      Icons.alternate_email,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _phoneController,
-                      "Teléfono",
-                      Icons.phone_android,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 15),
-
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      decoration: InputDecoration(
-                        labelText: "Rol/Responsabilidades",
-                        prefixIcon: const Icon(
-                          Icons.admin_panel_settings,
-                          color: Color(0xFFA8BCB1),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+      body: SafeArea(
+        child: (_isSaving || _isLoadingRoles)
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildField(
+                        _nameController,
+                        "Nombre",
+                        Icons.person_outline,
+                        enabled:
+                            !isReadOnly, // 🟢 Deshabilitar campo individualmente
                       ),
-                      items: _roles
-                          .map(
-                            (role) => DropdownMenuItem(
-                              value: role,
-                              child: Text(role),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedRole = val),
-                      validator: (v) => v == null ? "Seleccione un rol" : null,
-                    ),
-
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _saveForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFA8BCB1),
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        isEdit ? "ACTUALIZAR USUARIO" : "CREAR USUARIO",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (isEdit) ...[
                       const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () => _confirmDelete(),
-                        child: const Text(
-                          "Dar de baja usuario",
-                          style: TextStyle(color: Colors.red),
+                      _buildField(
+                        _lastNameController,
+                        "Apellidos",
+                        Icons.people_outline,
+                        enabled: !isReadOnly,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _mailController,
+                        "Correo",
+                        Icons.alternate_email,
+                        keyboardType: TextInputType.emailAddress,
+                        enabled: !isReadOnly,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _phoneController,
+                        "Teléfono",
+                        Icons.phone_android,
+                        keyboardType: TextInputType.phone,
+                        enabled: !isReadOnly,
+                      ),
+                      const SizedBox(height: 15),
+
+                      DropdownButtonFormField<int>(
+                        value: _selectedRoleId,
+                        decoration: InputDecoration(
+                          labelText: "Rol/Responsabilidades",
+                          prefixIcon: const Icon(
+                            Icons.admin_panel_settings,
+                            color: Color(0xFFA8BCB1),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: _rolesList
+                            .map(
+                              (role) => DropdownMenuItem<int>(
+                                value: role.roleId,
+                                child: Text(role.roleDisplayName),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: isReadOnly
+                            ? null
+                            : (val) => setState(() => _selectedRoleId = val),
+                        validator: (v) =>
+                            v == null ? "Seleccione un rol" : null,
+                      ),
+
+                      const SizedBox(height: 40),
+                      // 🟢 El botón se deshabilita visualmente si es de solo lectura
+                      ElevatedButton(
+                        onPressed: isReadOnly ? null : _saveForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isReadOnly
+                              ? Colors.grey
+                              : const Color(0xFFA8BCB1),
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isEdit ? "ACTUALIZAR USUARIO" : "CREAR USUARIO",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
+                      // 🟢 Solo el SUPER_ADMIN (o roles distintos a ADMIN) ven el botón de borrado
+                      if (isEdit && userRole != 'ROLE_ADMIN') ...[
+                        const SizedBox(height: 15),
+                        TextButton(
+                          onPressed: () => _confirmDelete(),
+                          child: const Text(
+                            "Dar de baja usuario",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
@@ -205,10 +243,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
     String label,
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
+    bool enabled = true,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      enabled: enabled,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFFA8BCB1)),
