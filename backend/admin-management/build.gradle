@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.lumentrack'
+version = '0.0.1-SNAPSHOT'
+description = 'admin-management'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal() // Para encontrar lumentrack-commons
+}
+
+dependencies {
+    // Módulo común de Lumentrack
+    implementation 'com.lumentrack:lumentrack-commons:0.0.1-SNAPSHOT'
+
+    // Spring Boot Starters esenciales para un microservicio web y Resource Server
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc' // Incluye funcionalidades web
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Para persistencia con JPA
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // Para validación de datos
+    implementation 'org.springframework.boot:spring-boot-starter-security' // **ESENCIAL para Resource Server**
+    implementation 'org.springframework.boot:spring-boot-starter-actuator' // Para monitoreo y gestión
+
+    // JWT (JSON Web Token) para la validación local del token
+    implementation platform('io.jsonwebtoken:jjwt-root:0.12.6') // Alinea todas las dependencias JJWT a la versión 0.12.6
+    implementation 'io.jsonwebtoken:jjwt-api'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl' // Implementación de JJWT
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson' // Para el procesamiento de JSON en JWT
+
+    // Base de datos y utilidades
+    runtimeOnly 'com.mysql:mysql-connector-j' // Driver de MySQL
+
+    // Lombok para reducir el código repetitivo (boilerplate)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Dependencias de testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-test' // Para pruebas de seguridad
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test' // Para pruebas de la capa web
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = 'lumentrack-admin-backend.jar'
+}
+
+jar {
+    enabled = false
+}

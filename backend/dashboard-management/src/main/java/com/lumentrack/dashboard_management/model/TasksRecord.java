@@ -1,7 +1,6 @@
 package com.lumentrack.dashboard_management.model;
 
 import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public record TasksRecord (
@@ -11,5 +10,8 @@ public record TasksRecord (
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	LocalDate taskEstimatedDate,
 	@JsonFormat(pattern = "yyyy-MM-dd")
-	LocalDate taskRealDateTime
+	LocalDate taskRealDateTime,
+	// Eliminado: ComponentsRecord component // Reemplazado por componentId y componentName
+	Integer componentId, // Añadido: ID del Component padre
+	String componentName // Añadido: Nombre del Component padre
 ) { }

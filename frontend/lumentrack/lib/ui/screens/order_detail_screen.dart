@@ -141,175 +141,204 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Datos de la Orden de Producción",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF3E5B42),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              _buildTextField(
-                controller: _nameController,
-                label: "Nombre del Proyecto",
-                icon: Icons.inventory_2_outlined,
-                enabled: _isEditing,
-              ),
-              const SizedBox(height: 15),
-              _buildTextField(
-                controller: _numberController,
-                label: "Número de Orden",
-                icon: Icons.tag,
-                enabled: _isEditing,
-              ),
-              const SizedBox(height: 15),
-
-              // 🟢 EL COMBOBOX SOLICITADO: Muestra nombres pero controla IDs nulos/enteros
-              DropdownButtonFormField<int>(
-                value: _selectedClientId,
-                //enabled: _isEditing,
-                decoration: InputDecoration(
-                  labelText: "Cliente Asignado",
-                  prefixIcon: const Icon(
-                    Icons.business,
-                    color: Color(0xFF3E5B42),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: !_isEditing,
-                  fillColor: _isEditing ? Colors.white : Colors.grey[100],
-                ),
-                // Transformamos la lista de objetos Client a DropdownMenuItems
-                items: _clientsList.map((Client client) {
-                  return DropdownMenuItem<int>(
-                    value: client.clientId,
-                    child: Text(client.clientName),
-                  );
-                }).toList(),
-                onChanged: _isEditing
-                    ? (int? newValue) {
-                        setState(() {
-                          _selectedClientId = newValue;
-                        });
-                      }
-                    : null,
-                validator: (value) =>
-                    value == null ? "Por favor selecciona un cliente" : null,
-              ),
-              const SizedBox(height: 15),
-
-              _buildTextField(
-                controller: _estimatedDateController,
-                label: "Fecha Estimada de Entrega",
-                icon: Icons.calendar_today,
-                enabled: _isEditing,
-                readOnly: true,
-                onTap: _isEditing ? () => _selectDate(context) : null,
-              ),
-              const SizedBox(height: 30),
-
-              if (_isEditing)
-                ElevatedButton(
-                  onPressed: _procesarEnvio,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF934B3D),
-                    minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _isNew ? "REGISTRAR PROYECTO" : "GUARDAR CAMBIOS",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                )
-              else ...[
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  "Muestras de Luminarias Asignadas",
+                  "Datos de la Orden de Producción",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF3E5B42),
                   ),
                 ),
-                const SizedBox(height: 12),
-                _currentOrder == null || _currentOrder!.sampleList.isEmpty
-                    ? Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        child: const Center(
-                          child: Text(
-                            "Este proyecto no cuenta con muestras registradas.",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _currentOrder!.sampleList.length,
-                        itemBuilder: (context, index) {
-                          final sample = _currentOrder!.sampleList[index];
-                          return Card(
-                            margin: const EdgeInsets.symmetric(vertical: 6),
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.lightbulb,
-                                color: Color(0xFF934B3D),
-                              ),
-                              title: Text(
-                                sample.sampleName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              subtitle: Text(
-                                "Estado Real: ${sample.realDeliveryDate ?? 'Pendiente'}",
-                              ),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: Colors.grey,
-                              ),
-                              onTap: () async {
-                                // Navegamos a tu pantalla real pasándole la muestra actual en el parámetro 'sample'
-                                final seActualizoMuestra =
-                                    await Navigator.push<bool>(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            SampleFormScreen(sample: sample),
-                                      ),
-                                    );
+                const SizedBox(height: 15),
 
-                                // Si el usuario guardó cambios dentro de SampleFormScreen, refrescamos el detalle de la orden
-                                if (seActualizoMuestra == true) {
-                                  _inicializarPantalla(); // Invoca tu método actual que vuelve a pedir la orden a Spring Boot
-                                }
-                              },
+                _buildTextField(
+                  controller: _nameController,
+                  label: "Nombre del Proyecto",
+                  icon: Icons.inventory_2_outlined,
+                  enabled: _isEditing,
+                ),
+                const SizedBox(height: 15),
+                _buildTextField(
+                  controller: _numberController,
+                  label: "Número de Orden",
+                  icon: Icons.tag,
+                  enabled: _isEditing,
+                ),
+                const SizedBox(height: 15),
+
+                // 🟢 EL COMBOBOX SOLICITADO: Muestra nombres pero controla IDs nulos/enteros
+                DropdownButtonFormField<int>(
+                  // Validación de seguridad: el valor debe existir en la lista de items
+                  value:
+                      _clientsList.any((c) => c.clientId == _selectedClientId)
+                      ? _selectedClientId
+                      : null,
+                  decoration: InputDecoration(
+                    labelText: "Cliente Asignado",
+                    prefixIcon: const Icon(
+                      Icons.business,
+                      color: Color(0xFF3E5B42),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: !_isEditing,
+                    fillColor: _isEditing ? Colors.white : Colors.grey[100],
+                  ),
+                  // Transformamos la lista de objetos Client a DropdownMenuItems
+                  items: _clientsList.map((Client client) {
+                    return DropdownMenuItem<int>(
+                      value: client.clientId,
+                      child: Text(client.clientName),
+                    );
+                  }).toList(),
+                  onChanged: _isEditing
+                      ? (int? newValue) {
+                          setState(() {
+                            _selectedClientId = newValue;
+                          });
+                        }
+                      : null,
+                  validator: (value) =>
+                      value == null ? "Por favor selecciona un cliente" : null,
+                ),
+                const SizedBox(height: 15),
+
+                _buildTextField(
+                  controller: _estimatedDateController,
+                  label: "Fecha Estimada de Entrega",
+                  icon: Icons.calendar_today,
+                  enabled: _isEditing,
+                  readOnly: true,
+                  onTap: _isEditing ? () => _selectDate(context) : null,
+                ),
+                const SizedBox(height: 30),
+
+                if (_isEditing)
+                  ElevatedButton(
+                    onPressed: _procesarEnvio,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF934B3D),
+                      minimumSize: const Size(double.infinity, 55),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      _isNew ? "REGISTRAR PROYECTO" : "GUARDAR CAMBIOS",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  )
+                else ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Muestras de Luminarias Asignadas",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3E5B42),
+                        ),
+                      ),
+                      // 🟢 BOTÓN AGREGADO: Permite añadir una muestra directamente a este proyecto
+                      IconButton(
+                        icon: const Icon(
+                          Icons.add_circle,
+                          color: Color(0xFF934B3D), // Terracota para contraste
+                          size: 28,
+                        ),
+                        onPressed: () async {
+                          final result = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SampleFormScreen(
+                                orderId: _currentOrder?.orderId,
+                              ),
                             ),
                           );
+                          if (result == true) _inicializarPantalla();
                         },
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _currentOrder == null || _currentOrder!.samples.isEmpty
+                      ? Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          child: const Center(
+                            child: Text(
+                              "Este proyecto no cuenta con muestras registradas.",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _currentOrder!.samples.length,
+                          itemBuilder: (context, index) {
+                            final sample = _currentOrder!.samples[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.lightbulb,
+                                  color: Color(0xFF934B3D),
+                                ),
+                                title: Text(
+                                  sample.sampleName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "Estado Real: ${sample.realDeliveryDate ?? 'Pendiente'}",
+                                ),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: Colors.grey,
+                                ),
+                                onTap: () async {
+                                  // Navegamos a tu pantalla real pasándole la muestra actual en el parámetro 'sample'
+                                  final seActualizoMuestra =
+                                      await Navigator.push<bool>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              SampleFormScreen(sample: sample),
+                                        ),
+                                      );
+
+                                  // Si el usuario guardó cambios dentro de SampleFormScreen, refrescamos el detalle de la orden
+                                  if (seActualizoMuestra == true) {
+                                    _inicializarPantalla(); // Invoca tu método actual que vuelve a pedir la orden a Spring Boot
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

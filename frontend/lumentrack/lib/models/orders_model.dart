@@ -1,4 +1,5 @@
 import 'samples_model.dart';
+import '../core/date_formatter.dart';
 
 class Order {
   final int? orderId;
@@ -9,7 +10,7 @@ class Order {
   clientName; // 🟢 Permite nulos de forma nativa para el Null Safety de Dart
   final String estimatedDeliveryDate;
   final String? realDeliveryDate;
-  final List<Sample> sampleList;
+  final List<Sample> samples;
 
   Order({
     this.orderId,
@@ -19,12 +20,12 @@ class Order {
     this.clientName, // 🟢 Al no llevar 'required', es completamente opcional al instanciar
     required this.estimatedDeliveryDate,
     this.realDeliveryDate,
-    this.sampleList = const [],
+    this.samples = const [],
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
-    var list = json['sampleList'] as List?;
-    List<Sample> samples = list != null
+    var list = json['samples'] as List?;
+    List<Sample> samplesList = list != null
         ? list.map((i) => Sample.fromJson(i)).toList()
         : [];
 
@@ -37,7 +38,7 @@ class Order {
           json['clientName'], // Si el JSON no trae el campo, se setea como null automáticamente
       estimatedDeliveryDate: json['estimatedDeliveryDate'] ?? '',
       realDeliveryDate: json['realDeliveryDate'],
-      sampleList: samples,
+      samples: samplesList,
     );
   }
 
@@ -47,9 +48,7 @@ class Order {
     'orderName': orderName,
     'clientId':
         clientId, // 🟢 Este es el ID relacional real que Hibernate usará para mapear
-    'clientName':
-        clientName, // Viajará null o el String si existía en la UI, sin provocar crashes
-    'estimatedDeliveryDate': estimatedDeliveryDate,
-    'realDeliveryDate': realDeliveryDate,
+    'estimatedDeliveryDate': DateFormatter.toServer(estimatedDeliveryDate),
+    'realDeliveryDate': DateFormatter.toServer(realDeliveryDate),
   };
 }

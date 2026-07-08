@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/users_model.dart';
 import '../../services/users_service.dart'; // Asumiendo la ubicación estándar
+import '../../core/session_manager.dart';
 import 'user_form_screen.dart';
 
 class UserListScreen extends StatefulWidget {
@@ -23,7 +24,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
   Future<void> _loadUsers() async {
     try {
-      final data = await _usersService.retrieveUsers();
+      final data = await _usersService.retrieveUsersDetails();
       setState(() {
         _users = data;
         _isLoading = false;
@@ -44,6 +45,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userRole = SessionManager().roleName;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -54,68 +56,77 @@ class _UserListScreenState extends State<UserListScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadUsers,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(10),
-                itemCount: _users.length,
-                itemBuilder: (context, index) {
-                  final user = _users[index];
-                  return Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: const Color(0xFFA8BCB1),
-                        child: Text(
-                          _getInitials(user),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
+              )
+            : RefreshIndicator(
+                onRefresh: _loadUsers,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: _users.length,
+                  itemBuilder: (context, index) {
+                    final user = _users[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFFA8BCB1),
+                          child: Text(
+                            _getInitials(user),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
+                        title: Text(
+                          "${user.userName} ${user.userLastName}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          "${user.roleDisplayName ?? 'Sin Rol'} • ${user.userMail}",
+                        ),
+                        trailing: const Icon(
+                          Icons.manage_accounts,
+                          color: Color(0xFFA8BCB1),
+                        ),
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserFormScreen(user: user),
+                            ),
+                          );
+                          if (result == true) _loadUsers();
+                        },
                       ),
-                      title: Text(
-                        "${user.userName} ${user.userLastName}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text("${user.userRole} • ${user.userMail}"),
-                      trailing: const Icon(
-                        Icons.manage_accounts,
-                        color: Color(0xFFA8BCB1),
-                      ),
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UserFormScreen(user: user),
-                          ),
-                        );
-                        if (result == true) _loadUsers();
-                      },
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFA8BCB1),
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const UserFormScreen()),
-          );
-          if (result == true) _loadUsers();
-        },
-        child: const Icon(Icons.person_add, color: Colors.white),
       ),
+      // 🟢 Ocultar botón de creación si el usuario es ROLE_ADMIN
+      floatingActionButton: userRole == 'ROLE_ADMIN'
+          ? null
+          : FloatingActionButton(
+              backgroundColor: const Color(0xFFA8BCB1),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserFormScreen(),
+                  ),
+                );
+                if (result == true) _loadUsers();
+              },
+              child: const Icon(Icons.person_add, color: Colors.white),
+            ),
     );
   }
 }
