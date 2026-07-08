@@ -274,252 +274,259 @@ class _ComponentFormScreenState extends State<ComponentFormScreen> {
             ),
         ],
       ),
-      body: _isLoadingDropdowns
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3E5B42)),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPhotoSection(),
-                    const SizedBox(height: 12),
+      body: SafeArea(
+        child: _isLoadingDropdowns
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF3E5B42)),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPhotoSection(),
+                      const SizedBox(height: 12),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: canUpload ? _uploadImageToCloudinary : null,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: canUpload
-                                ? const Color(0xFF3E5B42)
-                                : Colors.grey[300]!,
-                            width: 1.5,
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: canUpload ? _uploadImageToCloudinary : null,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: canUpload
+                                  ? const Color(0xFF3E5B42)
+                                  : Colors.grey[300]!,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        icon: _isUploadingToCloudinary
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFF3E5B42),
+                          icon: _isUploadingToCloudinary
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF3E5B42),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.cloud_upload_outlined,
+                                  color: canUpload
+                                      ? const Color(0xFF3E5B42)
+                                      : Colors.grey,
                                 ),
-                              )
-                            : Icon(
-                                Icons.cloud_upload_outlined,
-                                color: canUpload
-                                    ? const Color(0xFF3E5B42)
-                                    : Colors.grey,
-                              ),
-                        label: Text(
-                          _isUploadingToCloudinary
-                              ? "SUBIENDO..."
-                              : "SUBIR IMAGEN DE INSUMO",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: canUpload
-                                ? const Color(0xFF3E5B42)
-                                : Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-
-                    _buildTextField(
-                      controller: _nameController,
-                      label: "Nombre del Componente",
-                      icon: Icons.precision_manufacturing_outlined,
-                      enabled: _isEditing,
-                    ),
-                    const SizedBox(height: 15),
-
-                    _buildTextField(
-                      controller: _typeController,
-                      label: "Tipo de Componente (Ej. Mecánico, Eléctrico)",
-                      icon: Icons.category_outlined,
-                      enabled: _isEditing,
-                    ),
-                    const SizedBox(height: 15),
-
-                    _buildTextField(
-                      controller: _descriptionController,
-                      label: "Descripción del Componente",
-                      icon: Icons.description_outlined,
-                      enabled: _isEditing,
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 15),
-
-                    // 🟢 Campo nuevo: Fecha de Entrega del Componente (deliveryDate)
-                    _buildTextField(
-                      controller: _deliveryDateController,
-                      label: "Fecha de Entrega / Recepción",
-                      icon: Icons.calendar_today_outlined,
-                      enabled: _isEditing,
-                      readOnly: true,
-                      onTap: _isEditing
-                          ? () async {
-                              final date = await _askDateOnly(context);
-                              if (date != null) {
-                                setState(() {
-                                  _deliveryDateController.text = DateFormat(
-                                    DateFormatter.uiFormat,
-                                  ).format(date);
-                                });
-                              }
-                            }
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-
-                    // 🟢 Campo nuevo: ComboBox Hardcodeado para el statusResume
-                    DropdownButtonFormField<String>(
-                      value: _selectedStatus,
-                      decoration: InputDecoration(
-                        labelText: "Estatus del Insumo",
-                        prefixIcon: const Icon(
-                          Icons.analytics_outlined,
-                          color: Color(0xFF3E5B42),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        fillColor: _isEditing ? Colors.white : Colors.grey[100],
-                        filled: !_isEditing,
-                      ),
-                      items: _statusOptions.map((status) {
-                        return DropdownMenuItem<String>(
-                          value: status,
-                          child: Text(status),
-                        );
-                      }).toList(),
-                      onChanged: _isEditing
-                          ? (val) => setState(() => _selectedStatus = val)
-                          : null,
-                      validator: (value) =>
-                          value == null ? "Seleccione el estatus actual" : null,
-                    ),
-                    const SizedBox(height: 15),
-
-                    DropdownButtonFormField<int>(
-                      value: _selectedMaterialId,
-                      decoration: InputDecoration(
-                        labelText: "Material de Manufactura",
-                        prefixIcon: const Icon(
-                          Icons.layers_outlined,
-                          color: Color(0xFF3E5B42),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        fillColor: _isEditing ? Colors.white : Colors.grey[100],
-                        filled: !_isEditing,
-                      ),
-                      items: _materials.map((m) {
-                        return DropdownMenuItem<int>(
-                          value: m.materialId,
-                          child: Text(m.materialName),
-                        );
-                      }).toList(),
-                      onChanged: _isEditing
-                          ? (val) => setState(() => _selectedMaterialId = val)
-                          : null,
-                      validator: (value) =>
-                          value == null ? "Seleccione un material" : null,
-                    ),
-                    const SizedBox(height: 15),
-
-                    DropdownButtonFormField<int>(
-                      value: _selectedUserId,
-                      decoration: InputDecoration(
-                        labelText: "Encargado de Operación (Empleado)",
-                        prefixIcon: const Icon(
-                          Icons.badge_outlined,
-                          color: Color(0xFF3E5B42),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        fillColor: _isEditing ? Colors.white : Colors.grey[100],
-                        filled: !_isEditing,
-                      ),
-                      items: _users.map((u) {
-                        return DropdownMenuItem<int>(
-                          value: u.userId,
-                          child: Text(u.fullName),
-                        );
-                      }).toList(),
-                      onChanged: _isEditing
-                          ? (val) => setState(() => _selectedUserId = val)
-                          : null,
-                      validator: (value) =>
-                          value == null ? "Asigne un empleado encargado" : null,
-                    ),
-                    const SizedBox(height: 30),
-
-                    if (_isEditing)
-                      ElevatedButton(
-                        onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD9B44A),
-                          minimumSize: const Size(double.infinity, 55),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          _isNew ? "REGISTRAR COMPONENTE" : "GUARDAR CAMBIOS",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-
-                    if (!_isEditing && !_isNew) ...[
-                      const SizedBox(height: 25),
-                      const Divider(thickness: 1.5),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Control de Tareas y Evidencias",
+                          label: Text(
+                            _isUploadingToCloudinary
+                                ? "SUBIENDO..."
+                                : "SUBIR IMAGEN DE INSUMO",
                             style: TextStyle(
-                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF3E5B42),
+                              color: canUpload
+                                  ? const Color(0xFF3E5B42)
+                                  : Colors.grey,
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF934B3D),
-                              size: 28,
-                            ),
-                            onPressed: _navigateToNewTask,
-                          ),
-                        ],
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+
+                      _buildTextField(
+                        controller: _nameController,
+                        label: "Nombre del Componente",
+                        icon: Icons.precision_manufacturing_outlined,
+                        enabled: _isEditing,
                       ),
                       const SizedBox(height: 15),
-                      _isLoadingDetails
-                          ? const Center(child: CircularProgressIndicator())
-                          : _buildTasksList(),
+
+                      _buildTextField(
+                        controller: _typeController,
+                        label: "Tipo de Componente (Ej. Mecánico, Eléctrico)",
+                        icon: Icons.category_outlined,
+                        enabled: _isEditing,
+                      ),
+                      const SizedBox(height: 15),
+
+                      _buildTextField(
+                        controller: _descriptionController,
+                        label: "Descripción del Componente",
+                        icon: Icons.description_outlined,
+                        enabled: _isEditing,
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 15),
+
+                      // 🟢 Campo nuevo: Fecha de Entrega del Componente (deliveryDate)
+                      _buildTextField(
+                        controller: _deliveryDateController,
+                        label: "Fecha de Entrega / Recepción",
+                        icon: Icons.calendar_today_outlined,
+                        enabled: _isEditing,
+                        readOnly: true,
+                        onTap: _isEditing
+                            ? () async {
+                                final date = await _askDateOnly(context);
+                                if (date != null) {
+                                  setState(() {
+                                    _deliveryDateController.text = DateFormat(
+                                      DateFormatter.uiFormat,
+                                    ).format(date);
+                                  });
+                                }
+                              }
+                            : null,
+                      ),
+                      const SizedBox(height: 15),
+
+                      // 🟢 Campo nuevo: ComboBox Hardcodeado para el statusResume
+                      DropdownButtonFormField<String>(
+                        value: _selectedStatus,
+                        decoration: InputDecoration(
+                          labelText: "Estatus del Insumo",
+                          prefixIcon: const Icon(
+                            Icons.analytics_outlined,
+                            color: Color(0xFF3E5B42),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fillColor:
+                              _isEditing ? Colors.white : Colors.grey[100],
+                          filled: !_isEditing,
+                        ),
+                        items: _statusOptions.map((status) {
+                          return DropdownMenuItem<String>(
+                            value: status,
+                            child: Text(status),
+                          );
+                        }).toList(),
+                        onChanged: _isEditing
+                            ? (val) => setState(() => _selectedStatus = val)
+                            : null,
+                        validator: (value) => value == null
+                            ? "Seleccione el estatus actual"
+                            : null,
+                      ),
+                      const SizedBox(height: 15),
+
+                      DropdownButtonFormField<int>(
+                        value: _selectedMaterialId,
+                        decoration: InputDecoration(
+                          labelText: "Material de Manufactura",
+                          prefixIcon: const Icon(
+                            Icons.layers_outlined,
+                            color: Color(0xFF3E5B42),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fillColor:
+                              _isEditing ? Colors.white : Colors.grey[100],
+                          filled: !_isEditing,
+                        ),
+                        items: _materials.map((m) {
+                          return DropdownMenuItem<int>(
+                            value: m.materialId,
+                            child: Text(m.materialName),
+                          );
+                        }).toList(),
+                        onChanged: _isEditing
+                            ? (val) => setState(() => _selectedMaterialId = val)
+                            : null,
+                        validator: (value) =>
+                            value == null ? "Seleccione un material" : null,
+                      ),
+                      const SizedBox(height: 15),
+
+                      DropdownButtonFormField<int>(
+                        value: _selectedUserId,
+                        decoration: InputDecoration(
+                          labelText: "Encargado de Operación (Empleado)",
+                          prefixIcon: const Icon(
+                            Icons.badge_outlined,
+                            color: Color(0xFF3E5B42),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fillColor:
+                              _isEditing ? Colors.white : Colors.grey[100],
+                          filled: !_isEditing,
+                        ),
+                        items: _users.map((u) {
+                          return DropdownMenuItem<int>(
+                            value: u.userId,
+                            child: Text(u.fullName),
+                          );
+                        }).toList(),
+                        onChanged: _isEditing
+                            ? (val) => setState(() => _selectedUserId = val)
+                            : null,
+                        validator: (value) => value == null
+                            ? "Asigne un empleado encargado"
+                            : null,
+                      ),
+                      const SizedBox(height: 30),
+
+                      if (_isEditing)
+                        ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD9B44A),
+                            minimumSize: const Size(double.infinity, 55),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            _isNew ? "REGISTRAR COMPONENTE" : "GUARDAR CAMBIOS",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+
+                      if (!_isEditing && !_isNew) ...[
+                        const SizedBox(height: 25),
+                        const Divider(thickness: 1.5),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Control de Tareas y Evidencias",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF3E5B42),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.add_circle,
+                                color: Color(0xFF934B3D),
+                                size: 28,
+                              ),
+                              onPressed: _navigateToNewTask,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        _isLoadingDetails
+                            ? const Center(child: CircularProgressIndicator())
+                            : _buildTasksList(),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 

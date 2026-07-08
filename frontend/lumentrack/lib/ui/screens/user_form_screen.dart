@@ -87,6 +87,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
             userMail: _mailController.text.trim(),
             userPhoneNumber: _phoneController.text.trim(),
             userRoleId: _selectedRoleId ?? 0,
+            // 🟢 Asignar una contraseña temporal para nuevos usuarios creados por un admin
+            password: "temp12345",
           );
 
     try {
@@ -126,110 +128,113 @@ class _UserFormScreenState extends State<UserFormScreen> {
         backgroundColor: const Color(0xFFA8BCB1),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: (_isSaving || _isLoadingRoles)
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildField(
-                      _nameController,
-                      "Nombre",
-                      Icons.person_outline,
-                      enabled:
-                          !isReadOnly, // 🟢 Deshabilitar campo individualmente
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _lastNameController,
-                      "Apellidos",
-                      Icons.people_outline,
-                      enabled: !isReadOnly,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _mailController,
-                      "Correo",
-                      Icons.alternate_email,
-                      keyboardType: TextInputType.emailAddress,
-                      enabled: !isReadOnly,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _phoneController,
-                      "Teléfono",
-                      Icons.phone_android,
-                      keyboardType: TextInputType.phone,
-                      enabled: !isReadOnly,
-                    ),
-                    const SizedBox(height: 15),
-
-                    DropdownButtonFormField<int>(
-                      value: _selectedRoleId,
-                      decoration: InputDecoration(
-                        labelText: "Rol/Responsabilidades",
-                        prefixIcon: const Icon(
-                          Icons.admin_panel_settings,
-                          color: Color(0xFFA8BCB1),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+      body: SafeArea(
+        child: (_isSaving || _isLoadingRoles)
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildField(
+                        _nameController,
+                        "Nombre",
+                        Icons.person_outline,
+                        enabled:
+                            !isReadOnly, // 🟢 Deshabilitar campo individualmente
                       ),
-                      items: _rolesList
-                          .map(
-                            (role) => DropdownMenuItem<int>(
-                              value: role.roleId,
-                              child: Text(role.roleDisplayName),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: isReadOnly
-                          ? null
-                          : (val) => setState(() => _selectedRoleId = val),
-                      validator: (v) => v == null ? "Seleccione un rol" : null,
-                    ),
-
-                    const SizedBox(height: 40),
-                    // 🟢 El botón se deshabilita visualmente si es de solo lectura
-                    ElevatedButton(
-                      onPressed: isReadOnly ? null : _saveForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isReadOnly
-                            ? Colors.grey
-                            : const Color(0xFFA8BCB1),
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        isEdit ? "ACTUALIZAR USUARIO" : "CREAR USUARIO",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    // 🟢 Solo el SUPER_ADMIN (o roles distintos a ADMIN) ven el botón de borrado
-                    if (isEdit && userRole != 'ROLE_ADMIN') ...[
                       const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () => _confirmDelete(),
-                        child: const Text(
-                          "Dar de baja usuario",
-                          style: TextStyle(color: Colors.red),
+                      _buildField(
+                        _lastNameController,
+                        "Apellidos",
+                        Icons.people_outline,
+                        enabled: !isReadOnly,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _mailController,
+                        "Correo",
+                        Icons.alternate_email,
+                        keyboardType: TextInputType.emailAddress,
+                        enabled: !isReadOnly,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _phoneController,
+                        "Teléfono",
+                        Icons.phone_android,
+                        keyboardType: TextInputType.phone,
+                        enabled: !isReadOnly,
+                      ),
+                      const SizedBox(height: 15),
+
+                      DropdownButtonFormField<int>(
+                        value: _selectedRoleId,
+                        decoration: InputDecoration(
+                          labelText: "Rol/Responsabilidades",
+                          prefixIcon: const Icon(
+                            Icons.admin_panel_settings,
+                            color: Color(0xFFA8BCB1),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: _rolesList
+                            .map(
+                              (role) => DropdownMenuItem<int>(
+                                value: role.roleId,
+                                child: Text(role.roleDisplayName),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: isReadOnly
+                            ? null
+                            : (val) => setState(() => _selectedRoleId = val),
+                        validator: (v) =>
+                            v == null ? "Seleccione un rol" : null,
+                      ),
+
+                      const SizedBox(height: 40),
+                      // 🟢 El botón se deshabilita visualmente si es de solo lectura
+                      ElevatedButton(
+                        onPressed: isReadOnly ? null : _saveForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isReadOnly
+                              ? Colors.grey
+                              : const Color(0xFFA8BCB1),
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isEdit ? "ACTUALIZAR USUARIO" : "CREAR USUARIO",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
+                      // 🟢 Solo el SUPER_ADMIN (o roles distintos a ADMIN) ven el botón de borrado
+                      if (isEdit && userRole != 'ROLE_ADMIN') ...[
+                        const SizedBox(height: 15),
+                        TextButton(
+                          onPressed: () => _confirmDelete(),
+                          child: const Text(
+                            "Dar de baja usuario",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 

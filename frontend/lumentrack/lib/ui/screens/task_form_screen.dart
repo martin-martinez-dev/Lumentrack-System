@@ -177,143 +177,147 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildPhotoSection(),
-              const SizedBox(height: 12),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPhotoSection(),
+                const SizedBox(height: 12),
 
-              // Botón de subida
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: canUpload ? _uploadImageToCloudinary : null,
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: canUpload
-                          ? const Color(0xFF3E5B42)
-                          : Colors.grey[300]!,
-                      width: 1.5,
+                // Botón de subida
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: canUpload ? _uploadImageToCloudinary : null,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: canUpload
+                            ? const Color(0xFF3E5B42)
+                            : Colors.grey[300]!,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  icon: _isUploadingToCloudinary
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF3E5B42),
+                    icon: _isUploadingToCloudinary
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF3E5B42),
+                            ),
+                          )
+                        : Icon(
+                            Icons.cloud_upload_outlined,
+                            color: canUpload
+                                ? const Color(0xFF3E5B42)
+                                : Colors.grey,
                           ),
-                        )
-                      : Icon(
-                          Icons.cloud_upload_outlined,
-                          color: canUpload
-                              ? const Color(0xFF3E5B42)
-                              : Colors.grey,
-                        ),
-                  label: Text(
-                    _isUploadingToCloudinary
-                        ? "SUBIENDO..."
-                        : "SUBIR EVIDENCIA",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: canUpload ? const Color(0xFF3E5B42) : Colors.grey,
+                    label: Text(
+                      _isUploadingToCloudinary
+                          ? "SUBIENDO..."
+                          : "SUBIR EVIDENCIA",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: canUpload
+                            ? const Color(0xFF3E5B42)
+                            : Colors.grey,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-              _buildTextField(
-                controller: _nameController,
-                label: "Nombre de la Tarea",
-                icon: Icons.assignment_outlined,
-                enabled: _isEditing,
-              ),
-              const SizedBox(height: 15),
-
-              _buildTextField(
-                controller: _descriptionController,
-                label: "Descripción / Observaciones",
-                icon: Icons.description_outlined,
-                enabled: _isEditing,
-                maxLines: 3,
-              ),
-              const SizedBox(height: 15),
-
-              // Fecha Estimada
-              _buildTextField(
-                controller: _estimatedDateController,
-                label: "Fecha Estimada de Finalización",
-                icon: Icons.event_note,
-                enabled: _isNew, // Solo se define al crear
-                readOnly: true,
-                onTap: _isNew
-                    ? () async {
-                        final date = await _askDateOnly(context);
-                        if (date != null) {
-                          setState(() {
-                            _estimatedDateController.text = DateFormat(
-                              DateFormatter.uiFormat,
-                            ).format(date);
-                          });
-                        }
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 15),
-
-              // Fecha Real (Se llena cuando la tarea se completa)
-              _buildTextField(
-                controller: _realDateController,
-                label: "Fecha Real de Ejecución",
-                icon: Icons.task_alt,
-                enabled: _isEditing,
-                readOnly: true,
-                requiredField: false,
-                onTap: _isEditing
-                    ? () async {
-                        final date = await _askDateOnly(context);
-                        if (date != null) {
-                          setState(() {
-                            _realDateController.text = DateFormat(
-                              DateFormatter.uiFormat,
-                            ).format(date);
-                          });
-                        }
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 40),
-
-              if (_isEditing)
-                ElevatedButton(
-                  onPressed: _processData,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9B44A),
-                    minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _isNew ? "REGISTRAR TAREA" : "GUARDAR AVANCE",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                _buildTextField(
+                  controller: _nameController,
+                  label: "Nombre de la Tarea",
+                  icon: Icons.assignment_outlined,
+                  enabled: _isEditing,
                 ),
-            ],
+                const SizedBox(height: 15),
+
+                _buildTextField(
+                  controller: _descriptionController,
+                  label: "Descripción / Observaciones",
+                  icon: Icons.description_outlined,
+                  enabled: _isEditing,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 15),
+
+                // Fecha Estimada
+                _buildTextField(
+                  controller: _estimatedDateController,
+                  label: "Fecha Estimada de Finalización",
+                  icon: Icons.event_note,
+                  enabled: _isNew, // Solo se define al crear
+                  readOnly: true,
+                  onTap: _isNew
+                      ? () async {
+                          final date = await _askDateOnly(context);
+                          if (date != null) {
+                            setState(() {
+                              _estimatedDateController.text = DateFormat(
+                                DateFormatter.uiFormat,
+                              ).format(date);
+                            });
+                          }
+                        }
+                      : null,
+                ),
+                const SizedBox(height: 15),
+
+                // Fecha Real (Se llena cuando la tarea se completa)
+                _buildTextField(
+                  controller: _realDateController,
+                  label: "Fecha Real de Ejecución",
+                  icon: Icons.task_alt,
+                  enabled: _isEditing,
+                  readOnly: true,
+                  requiredField: false,
+                  onTap: _isEditing
+                      ? () async {
+                          final date = await _askDateOnly(context);
+                          if (date != null) {
+                            setState(() {
+                              _realDateController.text = DateFormat(
+                                DateFormatter.uiFormat,
+                              ).format(date);
+                            });
+                          }
+                        }
+                      : null,
+                ),
+                const SizedBox(height: 40),
+
+                if (_isEditing)
+                  ElevatedButton(
+                    onPressed: _processData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD9B44A),
+                      minimumSize: const Size(double.infinity, 55),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      _isNew ? "REGISTRAR TAREA" : "GUARDAR AVANCE",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

@@ -52,50 +52,52 @@ class _RoleListScreenState extends State<RoleListScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: adminColor))
-          : RefreshIndicator(
-              onRefresh: _loadRoles,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(10),
-                itemCount: _roles.length,
-                itemBuilder: (context, index) {
-                  final role = _roles[index];
-                  return Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: adminColor,
-                        child: Icon(Icons.security, color: Colors.white),
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: adminColor))
+            : RefreshIndicator(
+                onRefresh: _loadRoles,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: _roles.length,
+                  itemBuilder: (context, index) {
+                    final role = _roles[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      title: Text(
-                        role.roleDisplayName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: adminColor,
+                          child: Icon(Icons.security, color: Colors.white),
+                        ),
+                        title: Text(
+                          role.roleDisplayName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          "${role.roleName}\n${role.roleDescription ?? 'Sin descripción'}",
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        isThreeLine: true,
+                        trailing: const Icon(Icons.edit, color: adminColor),
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RoleFormScreen(role: role),
+                            ),
+                          );
+                          if (result == true) _loadRoles();
+                        },
                       ),
-                      subtitle: Text(
-                        "${role.roleName}\n${role.roleDescription ?? 'Sin descripción'}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      isThreeLine: true,
-                      trailing: const Icon(Icons.edit, color: adminColor),
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RoleFormScreen(role: role),
-                          ),
-                        );
-                        if (result == true) _loadRoles();
-                      },
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: adminColor,
         onPressed: () async {

@@ -13,6 +13,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final UsersService _usersService = UsersService();
   bool _isSaving = false;
+  bool _isPasswordVisible = false;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -84,83 +85,85 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isSaving
-          ? Center(child: CircularProgressIndicator(color: primaryColor))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Text(
-                      "Ingresa tus datos para comenzar",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    _buildField(
-                      _nameController,
-                      "Nombre",
-                      Icons.person_outline,
-                      primaryColor,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _lastNameController,
-                      "Apellidos",
-                      Icons.people_outline,
-                      primaryColor,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _mailController,
-                      "Correo Electrónico",
-                      Icons.email_outlined,
-                      primaryColor,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _phoneController,
-                      "Teléfono",
-                      Icons.phone_android,
-                      primaryColor,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _passwordController,
-                      "Crea tu Contraseña",
-                      Icons.lock_outline,
-                      primaryColor,
-                      obscureText: true,
-                    ),
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _handleRegister,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "SOLICITAR ALTA",
+      body: SafeArea(
+        child: _isSaving
+            ? Center(child: CircularProgressIndicator(color: primaryColor))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Ingresa tus datos para comenzar",
                         style: TextStyle(
-                          color: Colors.white,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          color: primaryColor,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 25),
+                      _buildField(
+                        _nameController,
+                        "Nombre",
+                        Icons.person_outline,
+                        primaryColor,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _lastNameController,
+                        "Apellidos",
+                        Icons.people_outline,
+                        primaryColor,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _mailController,
+                        "Correo Electrónico",
+                        Icons.email_outlined,
+                        primaryColor,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _phoneController,
+                        "Teléfono",
+                        Icons.phone_android,
+                        primaryColor,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _passwordController,
+                        "Crea tu Contraseña",
+                        Icons.lock_outline,
+                        primaryColor,
+                        obscureText: !_isPasswordVisible,
+                      ),
+                      const SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: _handleRegister,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          "SOLICITAR ALTA",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
@@ -175,11 +178,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      obscureText: obscureText,
+      obscureText: obscureText && !_isPasswordVisible,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: color),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        suffixIcon: obscureText
+            ? IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: color,
+                ),
+                onPressed: () {
+                  setState(() => _isPasswordVisible = !_isPasswordVisible);
+                },
+              )
+            : null,
       ),
       validator: (v) => (v == null || v.isEmpty) ? "Campo obligatorio" : null,
     );

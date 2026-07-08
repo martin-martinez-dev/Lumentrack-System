@@ -72,82 +72,84 @@ class _MuestrasListScreenState extends State<MuestrasListScreen> {
         onPressed: _nuevaMuestra,
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
-      body: FutureBuilder<List<Sample>>(
-        future: _futureSamples,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return _buildErrorWidget(snapshot.error.toString());
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return _buildEmptyWidget();
-          }
+      body: SafeArea(
+        child: FutureBuilder<List<Sample>>(
+          future: _futureSamples,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return _buildErrorWidget(snapshot.error.toString());
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return _buildEmptyWidget();
+            }
 
-          final samples = snapshot.data!;
+            final samples = snapshot.data!;
 
-          return RefreshIndicator(
-            color: const Color(0xFF934B3D),
-            onRefresh: () async => _refrescarListado(),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12.0),
-              itemCount: samples.length,
-              itemBuilder: (context, index) {
-                final sample = samples[index];
-                return Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12.0),
-                    leading: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[300]!),
+            return RefreshIndicator(
+              color: const Color(0xFF934B3D),
+              onRefresh: () async => _refrescarListado(),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12.0),
+                itemCount: samples.length,
+                itemBuilder: (context, index) {
+                  final sample = samples[index];
+                  return Card(
+                    elevation: 3,
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(12.0),
+                      leading: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: sample.samplePhotoUrl.isNotEmpty
+                              ? Image.network(
+                                  sample.samplePhotoUrl,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Icon(
+                                  Icons.broken_image_outlined,
+                                  color: Colors.grey,
+                                ),
+                        ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: sample.samplePhotoUrl.isNotEmpty
-                            ? Image.network(
-                                sample.samplePhotoUrl,
-                                fit: BoxFit.cover,
-                              )
-                            : const Icon(
-                                Icons.broken_image_outlined,
-                                color: Colors.grey,
-                              ),
+                      title: Text(
+                        sample.sampleName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    title: Text(
-                      sample.sampleName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text("Orden: ${sample.orderName}"),
+                          Text("Entrega Real: ${sample.realDeliveryDate}"),
+                        ],
                       ),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF3E5B42),
+                      ),
+                      onTap: () => _editarMuestra(sample),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text("Orden: ${sample.orderName}"),
-                        Text("Entrega Real: ${sample.realDeliveryDate}"),
-                      ],
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      color: Color(0xFF3E5B42),
-                    ),
-                    onTap: () => _editarMuestra(sample),
-                  ),
-                );
-              },
-            ),
-          );
-        },
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

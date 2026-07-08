@@ -15,6 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   final AuthService _authService = AuthService();
+  bool _isPasswordVisible = false;
+  bool _isLoading = false; // 🟢 Estado para controlar la carga
 
   Future<void> _handleLogin() async {
     final email = _userController.text.trim();
@@ -26,6 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
+
+    setState(() => _isLoading = true); // 🟢 Activar estado de carga
 
     try {
       final response = await _authService.login(email, pass);
@@ -71,6 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false); // 🟢 Desactivar estado de carga
+      }
     }
   }
 
@@ -80,103 +88,135 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icono en Terracota
-              Icon(
-                Icons.lightbulb_outline_rounded,
-                size: 90,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 10),
-
-              Text(
-                'Lumentrack',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Icono en Terracota
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  size: 90,
                   color: theme.colorScheme.primary,
-                  letterSpacing: 1.2,
                 ),
-              ),
+                const SizedBox(height: 10),
 
-              const Text(
-                'Siguiendo el camino a un mundo de luz',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFFA7B3A9),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-
-              const SizedBox(height: 50),
-
-              TextField(
-                controller: _userController,
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(hintText: 'Usuario'),
-              ),
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: _passwordController,
-                textAlign: TextAlign.center,
-                obscureText: true,
-                decoration: const InputDecoration(hintText: 'Contraseña'),
-              ),
-
-              const SizedBox(height: 30),
-
-              // Botón de acceso en Verde Oliva
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _handleLogin, // Llamada al método
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.secondary,
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Entrar',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/register'),
-                child: Text(
-                  '¿No tienes cuenta? Regístrate aquí',
+                Text(
+                  'Lumentrack',
                   style: TextStyle(
-                    color: theme.colorScheme.secondary,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                    letterSpacing: 1.2,
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 80),
-
-              const Text(
-                'Developed for ula',
-                style: TextStyle(fontSize: 10, color: Color(0xFFA7B3A9)),
-              ),
-              const Text(
-                'By ZBK Systems',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFA7B3A9),
+                const Text(
+                  'Siguiendo el camino a un mundo de luz',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFFA7B3A9),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 50),
+
+                TextField(
+                  controller: _userController,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    hintText: 'Correo electrónico',
+                  ),
+                ),
+                const SizedBox(height: 15),
+
+                TextField(
+                  controller: _passwordController,
+                  textAlign: TextAlign.center,
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
+                    hintText: 'Contraseña',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(
+                          () => _isPasswordVisible = !_isPasswordVisible,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // Botón de acceso en Verde Oliva
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: _isLoading
+                        ? null
+                        : _handleLogin, // 🟢 Deshabilitar si está cargando
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.secondary,
+                      elevation: 0,
+                      disabledBackgroundColor: theme.colorScheme.secondary
+                          .withOpacity(0.5),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Entrar',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
+                  child: Text(
+                    '¿No tienes cuenta? Regístrate aquí',
+                    style: TextStyle(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 80),
+
+                const Text(
+                  'Developed for ula',
+                  style: TextStyle(fontSize: 10, color: Color(0xFFA7B3A9)),
+                ),
+                const Text(
+                  'By ZBK Systems',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFA7B3A9),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

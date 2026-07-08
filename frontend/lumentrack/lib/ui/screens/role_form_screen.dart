@@ -88,73 +88,77 @@ class _RoleFormScreenState extends State<RoleFormScreen> {
         backgroundColor: adminColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isSaving
-          ? const Center(child: CircularProgressIndicator(color: adminColor))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Identificadores del Sistema",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: adminColor,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildField(
-                      _nameController,
-                      "Nombre Técnico (Ej: ROLE_ADMIN)",
-                      Icons.code,
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z_]')),
-                        TextInputFormatter.withFunction((oldValue, newValue) {
-                          return newValue.copyWith(
-                            text: newValue.text.toUpperCase(),
-                          );
-                        }),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _displayNameController,
-                      "Nombre a Mostrar (Ej: Administrador)",
-                      Icons.badge_outlined,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _descriptionController,
-                      "Descripción de Responsabilidades",
-                      Icons.description_outlined,
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _saveForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: adminColor,
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        isEdit ? "GUARDAR CAMBIOS" : "ACTIVAR ROL",
-                        style: const TextStyle(
-                          color: Colors.white,
+      body: SafeArea(
+        child: _isSaving
+            ? const Center(child: CircularProgressIndicator(color: adminColor))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Identificadores del Sistema",
+                        style: TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: adminColor,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      _buildField(
+                        _nameController,
+                        "Nombre Técnico (Ej: ROLE_ADMIN)",
+                        Icons.code,
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[a-zA-Z_]'),
+                          ),
+                          TextInputFormatter.withFunction((oldValue, newValue) {
+                            return newValue.copyWith(
+                              text: newValue.text.toUpperCase(),
+                            );
+                          }),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _displayNameController,
+                        "Nombre a Mostrar (Ej: Administrador)",
+                        Icons.badge_outlined,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _descriptionController,
+                        "Descripción de Responsabilidades",
+                        Icons.description_outlined,
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: _saveForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: adminColor,
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isEdit ? "GUARDAR CAMBIOS" : "ACTIVAR ROL",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 

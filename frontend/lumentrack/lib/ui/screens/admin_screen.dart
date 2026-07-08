@@ -18,42 +18,44 @@ class AdminScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFA8BCB1),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              "Gestión de Catálogos",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFA8BCB1),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                "Gestión de Catálogos",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFA8BCB1),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            _buildMenuButton(
-              context,
-              label: "Clientes",
-              icon: Icons.business_center_outlined,
-              destination: const ClientListScreen(),
-            ),
-            const SizedBox(height: 20),
-            _buildMenuButton(
-              context,
-              label: "Usuarios",
-              icon: Icons.manage_accounts_outlined,
-              destination: const UserListScreen(),
-            ),
-            const SizedBox(height: 20),
-            _buildMenuButton(
-              context,
-              label: "Roles y Permisos",
-              icon: Icons.security_outlined,
-              destination: const RoleListScreen(),
-            ),
-          ],
+              const SizedBox(height: 30),
+              _buildMenuButton(
+                context,
+                label: "Clientes",
+                icon: Icons.business_center_outlined,
+                destination: const ClientListScreen(),
+              ),
+              const SizedBox(height: 20),
+              _buildMenuButton(
+                context,
+                label: "Usuarios",
+                icon: Icons.manage_accounts_outlined,
+                destination: const UserListScreen(),
+              ),
+              const SizedBox(height: 20),
+              _buildMenuButton(
+                context,
+                label: "Roles y Permisos",
+                icon: Icons.security_outlined,
+                destination: const RoleListScreen(),
+              ),
+            ],
+          ),
         ),
       ),
     );
