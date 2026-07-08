@@ -1,10 +1,9 @@
 package com.lumentrack.samples_management.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -14,31 +13,52 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lumentrack.samples_management.exception.ResourceNotFoundException;
-import com.lumentrack.samples_management.model.Components;
-import com.lumentrack.samples_management.model.Orders;
-import com.lumentrack.samples_management.model.Samples;
-import com.lumentrack.samples_management.repository.ComponentsRepository;
-import com.lumentrack.samples_management.repository.OrdersRepository;
-import com.lumentrack.samples_management.repository.SamplesRepository;
+import com.lumentrack.commons.model.Components;
+import com.lumentrack.commons.model.Orders;
+import com.lumentrack.commons.model.Samples;
+import com.lumentrack.commons.repository.ComponentsRepository;
+import com.lumentrack.commons.repository.OrdersRepository;
+import com.lumentrack.commons.repository.SamplesRepository;
+import com.lumentrack.samples_management.requestors.SampleRequest;
+import com.lumentrack.samples_management.requestors.SampleDetailsResponse;
+import com.lumentrack.samples_management.requestors.ComponentDetailsResponse;
 
 @Service
 public class SampleService {
 	
-	// La clase Service es la que se debe de encargar de la lógica del negocio
-	
 	private final static Logger logger = LoggerFactory.getLogger(SampleService.class);
 	
-	@Autowired
-	private SamplesRepository repository;
+	private final SamplesRepository repository; // Hacerlo final
+	private final OrdersRepository orderRepository; // Hacerlo final
+	private final ComponentsRepository componentsRepository; // Hacerlo final
+	private final ComponentService componentService; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public SampleService(SamplesRepository repository,
+                         OrdersRepository orderRepository,
+                         ComponentsRepository componentsRepository,
+                         ComponentService componentService) {
+        this.repository = repository;
+        this.orderRepository = orderRepository;
+        this.componentsRepository = componentsRepository;
+        this.componentService = componentService;
+    }
 	
-	@Autowired
-	private OrdersRepository orderRepository;
-	
-	@Autowired
-	private ComponentsRepository componentsRepository;
-	
-	public Samples saveSample( Samples sample ) {
-		logger.info( "Saving sample on service: " + sample.getSampleName() );
+	@Transactional
+	public Samples saveSample( SampleRequest sampleRequest ) {
+		logger.info( "Saving sample on service: " + sampleRequest.getSampleName() );
+		
+		Orders order = orderRepository.findById(sampleRequest.getOrderId())
+				.orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con id: " + sampleRequest.getOrderId()));
+		
+		Samples sample = Samples.builder()
+				.sampleName(sampleRequest.getSampleName())
+				.order(order)
+				.samplePhotoUrl(sampleRequest.getSamplePhotoUrl())
+				.samplePhotoId(sampleRequest.getSamplePhotoId())
+				.estimatedDeliveryDate(sampleRequest.getEstimatedDeliveryDate())
+				.realDeliveryDate(sampleRequest.getRealDeliveryDate())
+				.build();
 		
 		return repository.save(sample);
 	}
@@ -49,6 +69,11 @@ public class SampleService {
 		return repository.findAll();
 	}
 	
+	public List<Samples> getSamplesByUserId(Integer userId) {
+		logger.info("Retrieving samples for userId: " + userId);
+		return repository.findByComponentsUserId(userId);
+	}
+	
 	public Optional<Samples> getSampleById(Integer id) {
 		logger.info( "Get a single sample by id: " + id );
 		
@@ -56,81 +81,87 @@ public class SampleService {
 	}
 	
 	@Transactional
-	public Samples updateSampleDeliveryDate(Samples updatedSample) {
-		logger.info( "Updating information for the sample: " + updatedSample.getSampleName() );
+	public SampleDetailsResponse updateSample(SampleRequest sampleRequest) { // Modificado para devolver SampleDetailsResponse
+		logger.info( "Updating information for the sample: " + sampleRequest.getSampleName() );
 		
-		return repository.findById(updatedSample.getSampleId()).map(sample -> {
-			sample.setSampleName( updatedSample.getSampleName() );
-			sample.setSamplePhotoId( updatedSample.getSamplePhotoId() );
-			sample.setSamplePhotoUrl( updatedSample.getSamplePhotoUrl() );
-			sample.setRealDeliveryDate( updatedSample.getRealDeliveryDate() );
+		Samples updatedSample = repository.findById(sampleRequest.getSampleId()).map(sample -> {
+			sample.setSampleName( sampleRequest.getSampleName() );
+			sample.setSamplePhotoId( sampleRequest.getSamplePhotoId() );
+			sample.setSamplePhotoUrl( sampleRequest.getSamplePhotoUrl() );
+			sample.setEstimatedDeliveryDate(sampleRequest.getEstimatedDeliveryDate());
+			sample.setRealDeliveryDate( sampleRequest.getRealDeliveryDate() );
+			
+			if (!sample.getOrder().getOrderId().equals(sampleRequest.getOrderId())) {
+				Orders newOrder = orderRepository.findById(sampleRequest.getOrderId())
+						.orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con id: " + sampleRequest.getOrderId()));
+				sample.setOrder(newOrder);
+			}
+			
 			return repository.save( sample );
-		}).orElseThrow( () -> new RuntimeException("Muestra no encontrada") );
+		}).orElseThrow( () -> new ResourceNotFoundException("Muestra no encontrada con id: " + sampleRequest.getSampleId()) );
+
+		// Mapear la entidad actualizada a un DTO de respuesta
+		return mapSampleToSampleDetailsResponse(updatedSample);
 	}
 	
 	public void deleteSample( Integer id ) {
-		// Verifying that the Sample exists
-		Samples sample = repository.findById(id).orElseThrow(() -> new RuntimeException("Muestra no encontrada con id: " + id));
+		Samples sample = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Muestra no encontrada con id: " + id));
 		
 		logger.info( "Sample with id: " + id + " has been found!" );
 		logger.info( "Deleting information for sample: " + sample.getSampleName() );
 		repository.deleteById( sample.getSampleId() );
 	}
 	
-	public List<Samples> getSampleDetailsList() {
-		logger.info("Getting the Samples Details");
-		
-		List<Samples> allSamples = repository.findAll();
-		List<Orders> allOrders = orderRepository.findAll();
-		
-		Map<Integer, Orders> ordersMap = allOrders.stream().collect(Collectors.toMap(Orders::getOrderId, order -> order));
-		
-		// Cruzamos los datos usando la potencia de Java Streams y el @Builder de Lombok
-        return allSamples.stream().map(sample -> {
-            // Buscamos si existe la orden correspondiente en el mapa
-            Orders associatedOrder = ordersMap.get(sample.getOrderId());
-            
-            // Si la orden existe, extraemos el nombre; si no, manejamos un valor por defecto seguro
-            String orderName = (associatedOrder != null) ? associatedOrder.getOrderName() : "Orden No Encontrada";
-
-            // Construimos el ViewModel de forma fluida gracias a Lombok
-            return Samples.builder()
-                    .sampleId(sample.getSampleId())
-                    .sampleName(sample.getSampleName())
-                    .orderId(sample.getOrderId())
-                    .orderName(orderName) // <--- Aquí inyectamos el cruce de datos
-                    .samplePhotoUrl(sample.getSamplePhotoUrl())
-                    .samplePhotoId(sample.getSamplePhotoId())
-                    .estimatedDeliveryDate(sample.getEstimatedDeliveryDate())
-                    .realDeliveryDate(sample.getRealDeliveryDate())
-                    .build();
-        }).collect(Collectors.toList());
-		
+	// NUEVO: Método para obtener todas las muestras con detalles (eagerly fetched)
+	public List<SampleDetailsResponse> getAllSampleDetails() {
+		logger.info("Getting all Samples Details (eagerly fetched)");
+		List<Samples> allSamples = repository.findAllWithOrderAndComponents();
+        return allSamples.stream()
+				.map(this::mapSampleToSampleDetailsResponse)
+				.collect(Collectors.toList());
 	}
 	
-	public Samples getSampleDetails( Integer sampleId ) {
-		logger.info("Starting the service for the extraction of the Sample Details");
-		Samples sample = repository.findById(sampleId).orElseThrow(() -> new ResourceNotFoundException(
+	// NUEVO: Método para obtener los detalles de una muestra por ID (eagerly fetched)
+	public SampleDetailsResponse getSampleDetailsById( Integer sampleId ) {
+		logger.info("Starting the service for the extraction of the Sample Details by ID (eagerly fetched)");
+		Samples sample = repository.findByIdWithOrderAndComponents(sampleId)
+				.orElseThrow(() -> new ResourceNotFoundException(
                 "La muestra con id " + sampleId + " no existe."
             ));
-		
-		Optional<Orders> order = orderRepository.findById( sample.getOrderId() );
-		
-		List<Components> componentList = componentsRepository.findBySampleId(sampleId);
-		List<Components> safeComponents = ( componentList != null ) ? componentList : Collections.emptyList();
-		
-		return Samples.builder()
-				.sampleId( sample.getSampleId() )
-				.sampleName( sample.getSampleName() )
-				.orderId( sample.getOrderId() )
-				.orderName( order.get().getOrderName() )
-				.samplePhotoUrl( sample.getSamplePhotoUrl() )
-				.samplePhotoId( sample.getSamplePhotoId() )
-				.estimatedDeliveryDate( sample.getEstimatedDeliveryDate() )
-				.realDeliveryDate( sample.getRealDeliveryDate() )
-				.componentList( safeComponents )
+		return mapSampleToSampleDetailsResponse(sample);
+	}
+
+	// NUEVO: Método para obtener los detalles de muestras filtradas por userId (eagerly fetched)
+	public List<SampleDetailsResponse> getSampleDetailsByUserId(Integer userId) {
+		logger.info("Retrieving Samples Details for userId: " + userId + " (eagerly fetched)");
+		List<Samples> samples = repository.findByComponentsUserIdWithOrderAndComponents(userId);
+		return samples.stream()
+				.map(this::mapSampleToSampleDetailsResponse)
+				.collect(Collectors.toList());
+	}
+
+	// Cambiado de private a public para que OrderService pueda acceder a él
+	public SampleDetailsResponse mapSampleToSampleDetailsResponse(Samples sample) {
+		Orders associatedOrder = sample.getOrder();
+		Set<Components> sampleComponents = sample.getComponents();
+
+		List<ComponentDetailsResponse> safeComponents = (sampleComponents != null) ?
+				sampleComponents.stream()
+						.map(componentService::mapComponentToComponentDetailsResponse) // Delegar el mapeo de Componentes
+						.collect(Collectors.toList()) :
+				Collections.emptyList();
+
+		return SampleDetailsResponse.builder()
+				.sampleId(sample.getSampleId())
+				.sampleName(sample.getSampleName())
+				.orderId(associatedOrder != null ? associatedOrder.getOrderId() : null)
+				.orderName(associatedOrder != null ? associatedOrder.getOrderName() : null)
+				.samplePhotoUrl(sample.getSamplePhotoUrl())
+				.samplePhotoId(sample.getSamplePhotoId())
+				.estimatedDeliveryDate(sample.getEstimatedDeliveryDate())
+				.realDeliveryDate(sample.getRealDeliveryDate())
+				.components(safeComponents)
 				.build();
-		
 	}
 	
 }

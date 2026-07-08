@@ -137,119 +137,121 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         backgroundColor: const Color(0xFFA8BCB1),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: (_isSaving || _isLoadingData)
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildField(
-                      _nameController,
-                      "Nombre de Cliente",
-                      Icons.person,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _companyController,
-                      "Razón Social",
-                      Icons.business,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _contactController,
-                      "Representante de Cliente",
-                      Icons.assignment_ind,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _phoneController,
-                      "Numero de Contacto de Cliente",
-                      Icons.phone,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildField(
-                      _mailController,
-                      "Correo de Cliente",
-                      Icons.email,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 15),
+      body: SafeArea(
+        child: (_isSaving || _isLoadingData)
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFA8BCB1)),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildField(
+                        _nameController,
+                        "Nombre de Cliente",
+                        Icons.person,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _companyController,
+                        "Razón Social",
+                        Icons.business,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _contactController,
+                        "Representante de Cliente",
+                        Icons.assignment_ind,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _phoneController,
+                        "Numero de Contacto de Cliente",
+                        Icons.phone,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildField(
+                        _mailController,
+                        "Correo de Cliente",
+                        Icons.email,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 15),
 
-                    // Obtenemos nombres únicos para evitar errores de duplicados "2 or more items"
-                    // y validamos que el valor seleccionado exista en la lista actual.
-                    if (!_isLoadingData)
-                      DropdownButtonFormField<String>(
-                        value:
-                            _usersList.any(
-                              (u) => u.fullName == _selectedUlaEmployee,
-                            )
-                            ? _selectedUlaEmployee
-                            : null,
-                        decoration: InputDecoration(
-                          labelText: "Representante de Ula",
-                          prefixIcon: const Icon(
-                            Icons.badge,
-                            color: Color(0xFFA8BCB1),
+                      // Obtenemos nombres únicos para evitar errores de duplicados "2 or more items"
+                      // y validamos que el valor seleccionado exista en la lista actual.
+                      if (!_isLoadingData)
+                        DropdownButtonFormField<String>(
+                          value:
+                              _usersList.any(
+                                (u) => u.fullName == _selectedUlaEmployee,
+                              )
+                              ? _selectedUlaEmployee
+                              : null,
+                          decoration: InputDecoration(
+                            labelText: "Representante de Ula",
+                            prefixIcon: const Icon(
+                              Icons.badge,
+                              color: Color(0xFFA8BCB1),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          border: OutlineInputBorder(
+                          items: _usersList
+                              .map((u) => u.fullName)
+                              .toSet() // 🟢 Evita el error de duplicados si hay nombres iguales
+                              .map((name) {
+                                return DropdownMenuItem<String>(
+                                  value: name,
+                                  child: Text(name),
+                                );
+                              })
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() => _selectedUlaEmployee = val);
+                          },
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? "Seleccione un representante"
+                              : null,
+                        ),
+
+                      const SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: _saveForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA8BCB1),
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        items: _usersList
-                            .map((u) => u.fullName)
-                            .toSet() // 🟢 Evita el error de duplicados si hay nombres iguales
-                            .map((name) {
-                              return DropdownMenuItem<String>(
-                                value: name,
-                                child: Text(name),
-                              );
-                            })
-                            .toList(),
-                        onChanged: (val) {
-                          setState(() => _selectedUlaEmployee = val);
-                        },
-                        validator: (v) => (v == null || v.isEmpty)
-                            ? "Seleccione un representante"
-                            : null,
-                      ),
-
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _saveForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFA8BCB1),
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        child: Text(
+                          isEdit ? "ACTUALIZAR DATOS" : "REGISTRAR CLIENTE",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        isEdit ? "ACTUALIZAR DATOS" : "REGISTRAR CLIENTE",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      if (isEdit) ...[
+                        const SizedBox(height: 15),
+                        TextButton(
+                          onPressed: () => _confirmDelete(),
+                          child: const Text(
+                            "Eliminar Cliente",
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
-                      ),
-                    ),
-                    if (isEdit) ...[
-                      const SizedBox(height: 15),
-                      TextButton(
-                        onPressed: () => _confirmDelete(),
-                        child: const Text(
-                          "Eliminar Cliente",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 

@@ -2,14 +2,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
+import '../core/session_manager.dart';
 import '../models/users_model.dart';
 
 class UsersService {
-  // Encabezados estándar de comunicación JSON para Lumentrack
-  final Map<String, String> _headers = {
-    'Content-Type': 'application/json; charset=UTF-8',
-    'Accept': 'application/json',
-  };
+  // 🟢 Getter dinámico para incluir el token JWT cuando exista una sesión activa
+  // Requerido por @PreAuthorize en el UserController para métodos administrativos.
+  Map<String, String> get _headers {
+    final token = SessionManager().token;
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+      if (token != null) "Authorization": "Bearer $token",
+    };
+  }
 
   /// 1. Registrar un nuevo usuario (POST /users/save)
   Future<UserItem> saveUser(UserItem user) async {
@@ -18,6 +24,9 @@ class UsersService {
 
     try {
       debugPrint("Enviando a guardar usuario: ${user.userName}");
+      debugPrint(
+        "Cabeceras enviadas: $_headers",
+      ); // 🟢 Para verificar que no viaje el token en /save
       final response = await http.post(
         url,
         headers: _headers,
@@ -128,6 +137,28 @@ class UsersService {
       }
     } catch (e) {
       debugPrint("Error en deleteUser: $e");
+      rethrow;
+    }
+  }
+
+  /// 6. Listar usuarios con detalles enriquecidos (GET /users/listUserDetails)
+  /// 🟢 REQUERIMIENTO: Trae el objeto UserItem incluyendo campos @Transient como roleDisplayName
+  Future<List<UserItem>> retrieveUsersDetails() async {
+    final url = Uri.parse('${ApiConfig.users}/listUserDetails');
+
+    try {
+      final response = await http.get(url, headers: _headers);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(utf8.decode(response.bodyBytes));
+        return list.map((json) => UserItem.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          "Error al listar detalles de usuarios: Código ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      debugPrint("Error en retrieveUsersDetails: $e");
       rethrow;
     }
   }

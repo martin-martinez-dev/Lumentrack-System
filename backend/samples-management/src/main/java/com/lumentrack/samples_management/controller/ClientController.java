@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lumentrack.samples_management.model.Clients;
+import com.lumentrack.commons.model.Clients;
 import com.lumentrack.samples_management.service.ClientsService;
 
 @RestController
@@ -27,22 +28,29 @@ public class ClientController {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ClientController.class);
 	
-	@Autowired
-	private ClientsService service;
+	private final ClientsService service; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public ClientController(ClientsService service) {
+        this.service = service;
+    }
 	
 	@PostMapping("/save")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Clients> saveClient(@RequestBody Clients client) {
 		logger.info("Start saving process for " + client.getClientName());
 		return new ResponseEntity<Clients>(service.saveClient(client), HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/list")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public List<Clients> retrieveAllClients() {
 		logger.info("Retrieving the client list");
 		return service.getAllClients();
 	}
 	
 	@GetMapping("/search/{id}")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public ResponseEntity<Clients> searchClientById(@PathVariable("id") Integer id) {
 		logger.info("Search Client by Id: " + id);
 		return service.getClientById(id)
@@ -51,12 +59,14 @@ public class ClientController {
 	}
 	
 	@PostMapping("/update")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	public Clients updateClient(@RequestBody Clients client) {
 		logger.info("Update for Client:" + client.getClientName());
 		return service.updateClient(client);
 	}
 	
 	@DeleteMapping("/delete/{id}")
+	@PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteClient(@PathVariable("id") Integer id) {
 		logger.info("Delete client for id: " + id);

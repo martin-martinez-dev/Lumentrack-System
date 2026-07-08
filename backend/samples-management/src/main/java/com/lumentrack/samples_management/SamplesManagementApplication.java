@@ -4,8 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+//import org.springframework.boot.autoconfigure.domain.EntityScan; // Nueva importación
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories; // Nueva importación
 
 @SpringBootApplication
+@EntityScan("com.lumentrack.commons.model") // Añadido: Escanear entidades en el paquete commons
+@EnableJpaRepositories("com.lumentrack.commons.repository") // Añadido: Habilitar repositorios JPA en el paquete commons
 public class SamplesManagementApplication {
 
 	public static final Logger logger = LoggerFactory.getLogger(SamplesManagementApplication.class);
@@ -29,7 +34,6 @@ public class SamplesManagementApplication {
 		System.out.println("                     | | | | |/ _` |                      ");
 		System.out.println("                     | |_| | | (_| |                      ");
 		System.out.println("                      \\__,_|_|\\__,_|                      ");
-		System.out.println("                                                          ");
 		System.out.println("                                                          ");
 		System.out.println("Powered by ZBK Development");
 		

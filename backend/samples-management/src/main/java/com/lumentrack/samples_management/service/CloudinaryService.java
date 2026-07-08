@@ -3,9 +3,9 @@ package com.lumentrack.samples_management.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
-import com.lumentrack.samples_management.model.CloudinaryResponse;
-import com.lumentrack.samples_management.model.SavedImageLog;
-import com.lumentrack.samples_management.repository.SavedImageLogRepository;
+import com.lumentrack.commons.model.CloudinaryResponse;
+import com.lumentrack.commons.model.SavedImageLog;
+import com.lumentrack.commons.repository.SavedImageLogRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,12 @@ public class CloudinaryService {
 	
 	private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "webp");
 	
-	@Autowired
-	SavedImageLogRepository imageRepository;
-	
+	private final SavedImageLogRepository imageRepository; // Hacerlo final
 	private final Cloudinary cloudinary;
 	
-    public CloudinaryService(Cloudinary cloudinary) {
+    @Autowired // Inyección por constructor
+    public CloudinaryService(SavedImageLogRepository imageRepository, Cloudinary cloudinary) {
+        this.imageRepository = imageRepository;
         this.cloudinary = cloudinary;
     }
     

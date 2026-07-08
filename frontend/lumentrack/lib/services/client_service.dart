@@ -2,15 +2,21 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/client_model.dart';
 import '../core/api_config.dart';
+import '../core/session_manager.dart';
 
 class ClientService {
   // Asumiendo que ApiConfig.clientsEndpoint apunta a http://<tu-ip>:808X/clients
   static const String _baseUrl = ApiConfig.clients;
 
-  final Map<String, String> _headers = {
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-  };
+  // 🟢 Getter dinámico para incluir el token JWT en cada petición (Requerido por @PreAuthorize)
+  Map<String, String> get _headers {
+    final token = SessionManager().token;
+    return {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      if (token != null) "Authorization": "Bearer $token",
+    };
+  }
 
   /// 1. Obtener todos los clientes (GET /clients/list)
   Future<List<Client>> fetchClients() async {
