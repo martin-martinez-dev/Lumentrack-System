@@ -1,0 +1,61 @@
+server:
+  port: 8083 #Puerto para Admin Management
+  servlet:
+    context-path: /lumentrack/admin
+
+# CONFIGURACIÓN PERSONALIZADA PARA JWT (A la misma altura que server y spring)
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000} # 1 hora por defecto
+
+spring:
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: admin-management
+  datasource:
+    url: ${AIVEN_DB_URL}
+    username: ${AIVEN_DB_USER}
+    password: ${AIVEN_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # CONFIGURACIÓN DE HIKARICP PARA BASES DE DATOS EN LA NUBE (AIVEN)
+    hikari:
+      pool-name: HikariPool-Admin
+      maximum-pool-size: 10
+      minimum-idle: 2
+      # Max Lifetime: Tiempo máximo que una conexión puede estar viva (15 minutos = 900000 ms)
+      # Esto evita que Aiven la mate de forma abrupta.
+      max-lifetime: 900000
+      # Connection Timeout: Cuánto tiempo espera la app por una conexión disponible (30 segundos)
+      connection-timeout: 30000
+      # Validation Timeout: Tiempo para verificar si una conexión sirve antes de usarla (5 segundos)
+      validation-timeout: 5000
+      # Query de validación para asegurarse de que el socket responda antes de entregar la conexión
+      connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: update # or 'create', 'create-drop', 'none'
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        dialect: org.hibernate.dialect.MySQLDialect
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always # Esto permite que Actuator verifique la conexión a la DB
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.lumentrack: DEBUG

@@ -1,0 +1,66 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '4.0.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'maven-publish'
+}
+
+group = 'com.lumentrack'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'jakarta.persistence:jakarta.persistence-api'
+    implementation 'jakarta.validation:jakarta.validation-api'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+
+            groupId = 'com.lumentrack'
+            artifactId = 'lumentrack-commons'
+            version = '0.0.1-SNAPSHOT'
+
+            from components.java
+
+            // Suprimir todas las advertencias de metadatos del POM
+            // Esto es necesario cuando Spring Boot Dependency Management gestiona las versiones
+            // y el plugin de publicación no puede resolverlas explícitamente para el POM.
+            suppressAllPomMetadataWarnings()
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}

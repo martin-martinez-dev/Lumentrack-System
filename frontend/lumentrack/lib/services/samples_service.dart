@@ -1,16 +1,23 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/samples_model.dart'; // Importa el modelo de arriba
 import '../core/api_config.dart';
+import '../core/session_manager.dart';
 
 class SamplesService {
   // Conectado a la URL base centralizada (ej: http://localhost:8082/samples)
   static const String _baseUrl = ApiConfig.samples;
 
-  final Map<String, String> _headers = {
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-  };
+  // 🟢 Getter dinámico para incluir el token JWT de la sesión activa
+  Map<String, String> get _headers {
+    final token = SessionManager().token;
+    return {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      if (token != null) "Authorization": "Bearer $token",
+    };
+  }
 
   // 1. LISTAR ENTIDADES PURAS (GET /samples/list)
   Future<List<Sample>> fetchSamples() async {
@@ -19,10 +26,40 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      List<dynamic> body = json.decode(utf8.decode(response.bodyBytes));
+      List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
       return body.map((item) => Sample.fromJson(item)).toList();
     }
     throw Exception('Error del servidor al listar muestras base');
+  }
+
+  // 🟢 Nuevo: Listar muestras por userId (GET /samples/list/user/{userId})
+  Future<List<Sample>> fetchSamplesByUserId(int userId) async {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/list/user/$userId"),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
+      return body.map((item) => Sample.fromJson(item)).toList();
+    }
+    throw Exception(
+      'Error al listar muestras por usuario: ${response.statusCode}',
+    );
+  }
+
+  // 🟢 Nuevo: Listar detalles de muestras por userId (GET /samples/list/details/user/{userId})
+  Future<List<Sample>> fetchSampleDetailsByUserId(int userId) async {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/list/details/user/$userId"),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
+      return body.map((item) => Sample.fromJson(item)).toList();
+    }
+    throw Exception(
+      'Error al listar detalles de muestras por usuario: ${response.statusCode}',
+    );
   }
 
   // 2. BUSCAR POR ID (GET /samples/search/{id})
@@ -32,7 +69,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      return Sample.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+      return Sample.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
     }
     throw Exception('Sample con ID $id no encontrado');
   }
@@ -40,11 +77,14 @@ class SamplesService {
   // 3. GUARDAR NUEVO MODELO (POST /samples/save)
   // Envía el DTO (SampleView) que el @RequestBody SampleViewModel de Java espera
   Future<void> createSample(Sample sample) async {
+    final body = jsonEncode(sample.toJson());
+    debugPrint("DEBUG: Enviando POST a /samples/save con cuerpo: $body");
     final response = await http.post(
       Uri.parse("$_baseUrl/save"),
       headers: _headers,
-      body: json.encode(sample.toJson()),
+      body: body,
     );
+
     if (response.statusCode != 201 && response.statusCode != 200) {
       throw Exception('Fallo al registrar Sample en la base de datos');
     }
@@ -53,13 +93,17 @@ class SamplesService {
   // 4. ACTUALIZAR (POST /samples/update)
   // 🟢 CORREGIDO: Tu controlador recibe un '@RequestBody Samples sample'.
   // Debemos mandar la estructura original 'Sample', no el DTO parcial de la UI.
-  Future<void> updateSample(Sample sample) async {
+  Future<Sample> updateSample(Sample sample) async {
+    final body = jsonEncode(sample.toJson());
+    debugPrint("DEBUG: Enviando POST a /samples/update con cuerpo: $body");
     final response = await http.post(
       Uri.parse("$_baseUrl/update"),
       headers: _headers,
-      body: json.encode(sample.toJson()), // Usamos la entidad pura
+      body: body, // Usamos la entidad pura
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      return Sample.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
       throw Exception('Fallo al actualizar Sample');
     }
   }
@@ -83,7 +127,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      List<dynamic> body = json.decode(utf8.decode(response.bodyBytes));
+      List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
       return body.map((item) => Sample.fromJson(item)).toList();
     }
     throw Exception('Error de servidor al cargar detalles de muestras');
@@ -97,7 +141,7 @@ class SamplesService {
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      return Sample.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+      return Sample.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
     } else {
       throw Exception('Error al recuperar los componentes de la luminaria');
     }
