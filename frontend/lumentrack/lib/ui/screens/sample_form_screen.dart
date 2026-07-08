@@ -9,12 +9,15 @@ import '../../models/cloudinary_response_model.dart';
 import '../../services/samples_service.dart';
 import '../../services/orders_service.dart';
 import '../../services/images_service.dart';
+import '../../core/date_formatter.dart';
+import '../../core/session_manager.dart'; // Import SessionManager
 import 'component_form_screen.dart'; // Importación integrada
 
 class SampleFormScreen extends StatefulWidget {
   final Sample? sample;
+  final int? orderId; // 🟢 Nuevo parámetro para pre-vincular una orden
 
-  const SampleFormScreen({super.key, this.sample});
+  const SampleFormScreen({super.key, this.sample, this.orderId});
 
   @override
   State<SampleFormScreen> createState() => _SampleFormScreenState();
@@ -57,14 +60,11 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       text: widget.sample?.sampleName ?? '',
     );
     _estimatedDateController = TextEditingController(
-      text: widget.sample?.estimatedDeliveryDate ?? '',
+      text: widget.sample?.formattedEstimatedDeliveryDate ?? '',
     );
-
-    String inicialRealDate = widget.sample?.realDeliveryDate ?? '';
-    if (inicialRealDate.toLowerCase().contains('sin fecha')) {
-      inicialRealDate = '';
-    }
-    _realDateController = TextEditingController(text: inicialRealDate);
+    _realDateController = TextEditingController(
+      text: widget.sample?.formattedRealDeliveryDate ?? '',
+    );
 
     if (!_isNew) {
       _selectedOrderId = widget.sample?.orderId;
@@ -72,10 +72,13 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
       _uploadedPhotoId = widget.sample?.samplePhotoId;
 
       // 1. Carga inicial instantánea con lo que hereda de la vista anterior (UX veloz)
-      _associatedComponents = widget.sample?.componentList ?? [];
+      _associatedComponents = widget.sample?.components ?? [];
 
       // 2. 🟢 CONEXIÓN ASÍNCRONA: Vamos al backend por los datos reales y unificados en segundo plano
       _inicializarComponentesGenuinos();
+    } else {
+      // Si es una muestra nueva, intentamos pre-seleccionar el orderId si fue proporcionado
+      _selectedOrderId = widget.orderId;
     }
 
     _loadOrdersCatalog();
@@ -97,7 +100,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         widget.sample!.sampleId!,
       );
       setState(() {
-        _associatedComponents = sampleCompleta.componentList;
+        _associatedComponents = sampleCompleta.components;
       });
     } catch (e) {
       debugPrint(
@@ -192,6 +195,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userRole = SessionManager().roleName;
     final bool canUpload =
         _isEditing && !_isUploadingToCloudinary && _imageFile != null;
 
@@ -229,251 +233,262 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
             ),
         ],
       ),
-      body: _isLoadingOrders
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Color(0xFF3E5B42)),
-                  SizedBox(height: 16),
-                  Text(
-                    "Cargando datos de la muestra...",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Form(
-                key: _formKey,
+      body: SafeArea(
+        child: _isLoadingOrders
+            ? const Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildPhotoSection(),
-                    const SizedBox(height: 12),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: canUpload ? _uploadImageToCloudinary : null,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: canUpload
-                                ? const Color(0xFF3E5B42)
-                                : Colors.grey[300]!,
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        icon: _isUploadingToCloudinary
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFF3E5B42),
-                                ),
-                              )
-                            : Icon(
-                                Icons.cloud_upload_outlined,
-                                color: canUpload
-                                    ? const Color(0xFF3E5B42)
-                                    : Colors.grey,
-                              ),
-                        label: Text(
-                          _isUploadingToCloudinary
-                              ? "SUBIENDO..."
-                              : "SUBIR IMAGEN A CLOUDINARY",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: canUpload
-                                ? const Color(0xFF3E5B42)
-                                : Colors.grey,
-                          ),
-                        ),
-                      ),
+                    CircularProgressIndicator(color: Color(0xFF3E5B42)),
+                    SizedBox(height: 16),
+                    Text(
+                      "Cargando datos de la muestra...",
+                      style: TextStyle(color: Colors.grey),
                     ),
-                    const SizedBox(height: 25),
-
-                    _buildTextField(
-                      controller: _nameController,
-                      label: "Nombre de la Luminaria",
-                      icon: Icons.lightbulb_outline,
-                      enabled: _isEditing,
-                    ),
-                    const SizedBox(height: 15),
-
-                    DropdownButtonFormField<int>(
-                      value: _selectedOrderId,
-                      disabledHint: Text(
-                        _availableOrders.isEmpty
-                            ? (widget.sample?.orderName ?? 'Sin Orden')
-                            : _availableOrders
-                                  .firstWhere(
-                                    (o) => o.orderId == _selectedOrderId,
-                                    orElse: () => Order(
-                                      orderNumber: '',
-                                      orderName:
-                                          widget.sample?.orderName ??
-                                          'Sin Orden',
-                                      clientId: 0,
-                                      estimatedDeliveryDate: '',
-                                    ),
-                                  )
-                                  .orderName,
-                        style: const TextStyle(color: Colors.black87),
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Orden de Producción',
-                        prefixIcon: const Icon(
-                          Icons.assignment_outlined,
-                          color: Color(0xFF3E5B42),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        fillColor: Colors.grey[100],
-                        filled: !_isNew,
-                      ),
-                      onChanged: _isNew
-                          ? (int? value) =>
-                                setState(() => _selectedOrderId = value)
-                          : null,
-                      validator: (value) =>
-                          value == null ? "Debes vincular una orden" : null,
-                      items: _availableOrders
-                          .map(
-                            (o) => DropdownMenuItem(
-                              value: o.orderId,
-                              child: Text(o.orderName),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: 15),
-
-                    _buildTextField(
-                      controller: _estimatedDateController,
-                      label: "Fecha Estimada de Entrega",
-                      icon: Icons.calendar_today,
-                      enabled: _isNew,
-                      readOnly: true,
-                      onTap: _isNew
-                          ? () async {
-                              final date = await _askDateOnly(context);
-                              if (date != null) {
-                                setState(() {
-                                  _estimatedDateController.text = DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).format(date);
-                                });
-                              }
-                            }
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-
-                    _buildTextField(
-                      controller: _realDateController,
-                      label: "Fecha Real de Entrega",
-                      icon: Icons.calendar_month_outlined,
-                      enabled: _isEditing,
-                      readOnly: true,
-                      requiredField: false,
-                      onTap: _isEditing
-                          ? () async {
-                              final date = await _askDateOnly(context);
-                              if (date != null) {
-                                setState(() {
-                                  _realDateController.text = DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).format(date);
-                                });
-                              }
-                            }
-                          : null,
-                    ),
-                    const SizedBox(height: 30),
-
-                    if (_isEditing)
-                      ElevatedButton(
-                        onPressed: _processData,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3E5B42),
-                          minimumSize: const Size(double.infinity, 55),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          _isNew ? "REGISTRAR MUESTRA" : "GUARDAR CAMBIOS",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-
-                    // COMPONENTES ASOCIADOS: Se despliega si la muestra ya está registrada en base de datos
-                    if (!_isNew) ...[
-                      const Divider(height: 50, thickness: 1.5),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Componentes Asignados",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF3E5B42),
-                                ),
-                              ),
-                              Text(
-                                "Insumos vinculados a esta muestra (${_associatedComponents.length})",
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.add_circle,
-                              color: Color(0xFF3E5B42),
-                              size: 32,
-                            ),
-                            onPressed: () async {
-                              final bool? actualizado = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ComponentFormScreen(
-                                    sampleId: widget.sample!.sampleId!,
-                                  ),
-                                ),
-                              );
-                              if (actualizado == true) {
-                                _recargarMuestra();
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      _buildComponentsList(),
-                    ],
                   ],
                 ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPhotoSection(),
+                      const SizedBox(height: 12),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: canUpload
+                              ? _uploadImageToCloudinary
+                              : null,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: canUpload
+                                  ? const Color(0xFF3E5B42)
+                                  : Colors.grey[300]!,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: _isUploadingToCloudinary
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF3E5B42),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.cloud_upload_outlined,
+                                  color: canUpload
+                                      ? const Color(0xFF3E5B42)
+                                      : Colors.grey,
+                                ),
+                          label: Text(
+                            _isUploadingToCloudinary
+                                ? "SUBIENDO..."
+                                : "SUBIR IMAGEN A CLOUDINARY",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: canUpload
+                                  ? const Color(0xFF3E5B42)
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+
+                      _buildTextField(
+                        controller: _nameController,
+                        label: "Nombre de la Luminaria",
+                        icon: Icons.lightbulb_outline,
+                        enabled: _isEditing,
+                      ),
+                      const SizedBox(height: 15),
+
+                      DropdownButtonFormField<int>(
+                        value: _selectedOrderId,
+                        disabledHint: Text(
+                          _availableOrders.isEmpty
+                              ? (widget.sample?.orderName ?? 'Sin Orden')
+                              : _availableOrders
+                                    .firstWhere(
+                                      (o) => o.orderId == _selectedOrderId,
+                                      orElse: () => Order(
+                                        orderNumber: '',
+                                        orderName:
+                                            widget.sample?.orderName ??
+                                            'Sin Orden',
+                                        clientId: 0,
+                                        estimatedDeliveryDate: '',
+                                      ),
+                                    )
+                                    .orderName,
+                          style: const TextStyle(color: Colors.black87),
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Orden de Producción',
+                          prefixIcon: const Icon(
+                            Icons.assignment_outlined,
+                            color: Color(0xFF3E5B42),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          fillColor: Colors.grey[100],
+                          filled: !_isNew,
+                        ),
+                        onChanged: _isNew
+                            ? (int? value) =>
+                                  setState(() => _selectedOrderId = value)
+                            : null,
+                        validator: (value) =>
+                            value == null ? "Debes vincular una orden" : null,
+                        items: _availableOrders
+                            .map(
+                              (o) => DropdownMenuItem(
+                                value: o.orderId,
+                                child: Text(o.orderName),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 15),
+
+                      _buildTextField(
+                        controller: _estimatedDateController,
+                        label: "Fecha Estimada de Entrega",
+                        icon: Icons.calendar_today,
+                        enabled: _isNew,
+                        readOnly: true,
+                        onTap: _isNew
+                            ? () async {
+                                final date = await _askDateOnly(context);
+                                if (date != null) {
+                                  setState(() {
+                                    _estimatedDateController.text = DateFormat(
+                                      DateFormatter.uiFormat,
+                                    ).format(date);
+                                  });
+                                }
+                              }
+                            : null,
+                      ),
+                      const SizedBox(height: 15),
+
+                      _buildTextField(
+                        controller: _realDateController,
+                        label: "Fecha Real de Entrega",
+                        icon: Icons.calendar_month_outlined,
+                        enabled: _isEditing,
+                        readOnly: true,
+                        requiredField: false,
+                        onTap: _isEditing
+                            ? () async {
+                                final date = await _askDateOnly(context);
+                                if (date != null) {
+                                  setState(() {
+                                    _realDateController.text = DateFormat(
+                                      DateFormatter.uiFormat,
+                                    ).format(date);
+                                  });
+                                }
+                              }
+                            : null,
+                      ),
+                      const SizedBox(height: 30),
+
+                      if (_isEditing)
+                        ElevatedButton(
+                          onPressed: _processData,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3E5B42),
+                            minimumSize: const Size(double.infinity, 55),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            _isNew ? "REGISTRAR MUESTRA" : "GUARDAR CAMBIOS",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+
+                      // COMPONENTES ASOCIADOS: Se despliega si la muestra ya está registrada en base de datos y el rol lo permite
+                      if (!_isNew) ...[
+                        const Divider(height: 50, thickness: 1.5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Componentes Asignados",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF3E5B42),
+                                  ),
+                                ),
+                                Text(
+                                  "Insumos vinculados a esta muestra (${_associatedComponents.length})",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (userRole !=
+                                'ROLE_SALES') // Hide add component button for SALES
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.add_circle,
+                                  color: Color(0xFF3E5B42),
+                                  size: 32,
+                                ),
+                                onPressed: () async {
+                                  final bool? actualizado =
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ComponentFormScreen(
+                                                sampleId:
+                                                    widget.sample!.sampleId!,
+                                              ),
+                                        ),
+                                      );
+                                  if (actualizado == true) {
+                                    _recargarMuestra();
+                                  }
+                                },
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        if (userRole !=
+                            'ROLE_SALES') // Hide components list for SALES
+                          _buildComponentsList(),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+      ),
     );
   }
 
@@ -591,7 +606,7 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         widget.sample!.sampleId!,
       );
       setState(() {
-        _associatedComponents = sampleActualizada.componentList;
+        _associatedComponents = sampleActualizada.components;
       });
     } catch (e) {
       debugPrint("Error al sincronizar componentes de la muestra: $e");
@@ -697,12 +712,9 @@ class _SampleFormScreenState extends State<SampleFormScreen> {
         orderName: selectedOrderObj.orderName,
         samplePhotoUrl: _uploadedPhotoUrl ?? '',
         samplePhotoId: _uploadedPhotoId ?? '',
-        estimatedDeliveryDate:
-            Sample.formatToServer(_estimatedDateController.text) ?? '',
-        realDeliveryDate: _realDateController.text.isNotEmpty
-            ? (Sample.formatToServer(_realDateController.text) ?? '')
-            : 'Sin fecha',
-        componentList:
+        estimatedDeliveryDate: _estimatedDateController.text,
+        realDeliveryDate: _realDateController.text,
+        components:
             _associatedComponents, // Preservamos el estado reactivo actual
       );
 

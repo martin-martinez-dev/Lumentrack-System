@@ -1,0 +1,28 @@
+name: lumentrack-system
+services:
+  lumentrack-admin-service:
+    build:
+      context: ../  # <- Clave: Sube un nivel a la carpeta 'backend' como contexto raíz
+      dockerfile: admin-management/Dockerfile # <- Ruta relativa hacia el Dockerfile
+    image: lumentrack-admin-api:0.2
+    container_name: lumentrack-admin-backend-api
+    ports:
+      - "8083:8083"
+    env_file:
+      - .env
+    environment:
+      # Variables de entorno para la base de datos
+      - AIVEN_DB_URL=${AIVEN_DB_URL}
+      - AIVEN_DB_USER=${AIVEN_DB_USER}
+      - AIVEN_DB_PASSWORD=${AIVEN_DB_PASSWORD}
+      # Variables de entorno para JWT
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    # --- CONFIGURACIÓN DEL HEALTHCHECK ---
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always

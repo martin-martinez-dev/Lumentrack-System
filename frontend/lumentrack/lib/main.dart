@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // 🟢 Importar
 import 'ui/screens/login_screen.dart';
-//import 'ui/screens/nueva_muestra_screen.dart';
-import 'ui/screens/carga_tarea_screen.dart';
-import 'ui/screens/carga_componente_screen.dart';
+import 'core/session_manager.dart'; // Import SessionManager
+import 'ui/screens/register_screen.dart';
+import 'ui/screens/no_role_screen.dart';
+import 'core/api_config.dart'; // 🟢 Importar ApiConfig
 import 'main_wrapper.dart'; // Asegúrate de crearlo
 
-void main() => runApp(const LumenTrackApp());
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 🟢 Usamos las opciones por defecto para asegurar compatibilidad con iOS y Android
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 🟢 Imprime la URL que la app está usando para verificar la compilación
+  debugPrint("======================================================");
+  debugPrint("APP INICIADA CON BASE URL: ${ApiConfig.baseUrl}");
+  debugPrint("======================================================");
+  runApp(const LumenTrackApp());
+}
 
 class LumenTrackApp extends StatelessWidget {
   const LumenTrackApp({super.key});
@@ -14,6 +29,16 @@ class LumenTrackApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      // 🟢 INICIO: Configuración de localización
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'MX'), // Español (México)
+      ],
+      // 🟢 FIN: Configuración de localización
       title: 'Lumentrack',
       theme: ThemeData(
         useMaterial3: true,
@@ -33,11 +58,18 @@ class LumenTrackApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
-        '/dashboard': (context) =>
-            const MainWrapper(), // Ahora envuelve las pantallas principales
-        //'/nueva-muestra': (context) => const NuevaMuestraScreen(),
-        '/carga-tarea': (context) => const CargaTareaScreen(),
-        '/carga-componente': (context) => const CargaComponenteScreen(),
+        '/dashboard': (context) {
+          final roleName = SessionManager().roleName;
+          int initialIndexHint = 0; // Default: Dashboard
+
+          if (roleName == 'ROLE_PRODUCTION' || roleName == 'ROLE_SALES') {
+            initialIndexHint = 1; // Hint for Orders screen
+          }
+
+          return MainWrapper(initialIndexHint: initialIndexHint);
+        },
+        '/register': (context) => const RegisterScreen(),
+        '/no-role': (context) => const NoRoleScreen(),
       },
     );
   }

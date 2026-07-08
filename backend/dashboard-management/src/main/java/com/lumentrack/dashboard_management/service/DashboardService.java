@@ -12,38 +12,42 @@ import com.lumentrack.dashboard_management.mapper.OrdersMapper;
 import com.lumentrack.dashboard_management.mapper.SamplesMapper;
 import com.lumentrack.dashboard_management.mapper.TasksMapper;
 import com.lumentrack.dashboard_management.model.Dashboard;
-import com.lumentrack.dashboard_management.model.Orders;
+import com.lumentrack.commons.model.Orders;
 import com.lumentrack.dashboard_management.model.OrdersRecord;
-import com.lumentrack.dashboard_management.model.Samples;
+import com.lumentrack.commons.model.Samples;
 import com.lumentrack.dashboard_management.model.SamplesRecord;
-import com.lumentrack.dashboard_management.model.Tasks;
+import com.lumentrack.commons.model.Tasks;
 import com.lumentrack.dashboard_management.model.TasksRecord;
-import com.lumentrack.dashboard_management.repository.OrdersRepository;
-import com.lumentrack.dashboard_management.repository.SamplesRepository;
-import com.lumentrack.dashboard_management.repository.TasksRepository;
+import com.lumentrack.commons.repository.OrdersRepository;
+import com.lumentrack.commons.repository.SamplesRepository;
+import com.lumentrack.commons.repository.TasksRepository;
 
 @Service
 public class DashboardService {
 
 	private final static Logger logger = LoggerFactory.getLogger(DashboardService.class);
 	
-	@Autowired
-	SamplesRepository samplesRepository;
-	
-	@Autowired
-	OrdersRepository ordersRepository;
-	
-	@Autowired
-	TasksRepository tasksRepository;
-	
-	@Autowired
-	OrdersMapper orderMapper;
-	
-	@Autowired
-	SamplesMapper samplesMapper;
-	
-	@Autowired
-	TasksMapper tasksMapper;
+	private final SamplesRepository samplesRepository; // Hacerlo final
+	private final OrdersRepository ordersRepository; // Hacerlo final
+	private final TasksRepository tasksRepository; // Hacerlo final
+	private final OrdersMapper orderMapper; // Hacerlo final
+	private final SamplesMapper samplesMapper; // Hacerlo final
+	private final TasksMapper tasksMapper; // Hacerlo final
+
+    @Autowired // Inyección por constructor
+    public DashboardService(SamplesRepository samplesRepository,
+                            OrdersRepository ordersRepository,
+                            TasksRepository tasksRepository,
+                            OrdersMapper orderMapper,
+                            SamplesMapper samplesMapper,
+                            TasksMapper tasksMapper) {
+        this.samplesRepository = samplesRepository;
+        this.ordersRepository = ordersRepository;
+        this.tasksRepository = tasksRepository;
+        this.orderMapper = orderMapper;
+        this.samplesMapper = samplesMapper;
+        this.tasksMapper = tasksMapper;
+    }
 	
 	public Dashboard getDashboardData() {
 		
@@ -53,9 +57,9 @@ public class DashboardService {
 		
 		Pageable limitQuery = PageRequest.of(0, 5);
 		
-		List<Samples> samplesList = samplesRepository.findAllSortedByEstimatedDeliveryDate(limitQuery);
-		List<Orders> ordersList = ordersRepository.findAllSortedByEstimatedDeliveryDate(limitQuery);
-		List<Tasks> tasksList = tasksRepository.findAllSortedByTaskEstimatedDate(limitQuery);
+		List<Samples> samplesList = samplesRepository.findAllByOrderByEstimatedDeliveryDateDesc(limitQuery);
+		List<Orders> ordersList = ordersRepository.findAllByOrderByEstimatedDeliveryDateDesc(limitQuery);
+		List<Tasks> tasksList = tasksRepository.findAllByOrderByTaskEstimatedDateDesc(limitQuery);
 		
 		logger.info("Service has found " + samplesList.size() + " samples");
 		logger.info("Service has found " + ordersList.size() + " orders");

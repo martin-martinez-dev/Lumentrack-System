@@ -2,14 +2,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
+import '../core/session_manager.dart';
 import '../models/task_model.dart';
 
 class TasksService {
   // Encabezados estándar para la API REST de Spring Boot
-  final Map<String, String> _headers = {
-    'Content-Type': 'application/json; charset=UTF-8',
-    'Accept': 'application/json',
-  };
+  Map<String, String> get _headers {
+    final token = SessionManager().token;
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json',
+      if (token != null) "Authorization": "Bearer $token",
+    };
+  }
 
   /// 1. Registrar una nueva Tarea / Evidencia (POST /tasks/save)
   Future<Task> saveTask(Task task) async {
@@ -56,6 +61,28 @@ class TasksService {
       }
     } catch (e) {
       debugPrint("Error en retrieveAllTasks: $e");
+      rethrow;
+    }
+  }
+
+  /// 🟢 Nuevo: Listar tareas asignadas a un usuario específico (GET /tasks/list/user/{userId})
+  /// Requerido para el rol DESIGN
+  Future<List<Task>> retrieveTasksByUserId(int userId) async {
+    final url = Uri.parse('${ApiConfig.tasks}/list/user/$userId');
+
+    try {
+      final response = await http.get(url, headers: _headers);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(utf8.decode(response.bodyBytes));
+        return list.map((json) => Task.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          "Error al listar tareas por usuario: Código ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      debugPrint("Error en retrieveTasksByUserId: $e");
       rethrow;
     }
   }
