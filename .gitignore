@@ -39,7 +39,9 @@
 **.iml
 
 # --- GRADLE ---
-**/.gradle/
+.gradle/
+**/gradle/wrapper/gradle-wrapper.jar
+.gradle
 
 # --- SISTEMA / DOCKER ---
 **.DS_Store
